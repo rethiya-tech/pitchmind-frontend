@@ -29,7 +29,15 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
   return (
     <div
       className="w-full rounded-xl overflow-hidden shadow-2xl"
-      style={{ aspectRatio: '16/9', position: 'relative', backgroundColor: theme.bg, fontFamily: '"Plus Jakarta Sans", sans-serif' }}
+      style={{
+        aspectRatio: '16/9',
+        position: 'relative',
+        backgroundColor: theme.bg,
+        backgroundImage: `url(/themes/${theme.id}.png)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
+      }}
     >
       {/* Header band (0 – 13.33%) */}
       <div className="absolute left-0 right-0" style={{ top: 0, height: '13.33%', backgroundColor: theme.accent }} />

@@ -118,12 +118,12 @@ export interface Theme {
 
 // Colors MUST match pitchmind-backend/app/services/themes.py exactly
 export const THEMES: Theme[] = [
-  { id: 'clean_slate',     name: 'Clean Slate',     bg: '#FFFFFF', text: '#111827', accent: '#1E40AF' },
-  { id: 'navy_gold',       name: 'Navy Gold',       bg: '#0F1F3D', text: '#FFFFFF', accent: '#D4A017' },
-  { id: 'dark_tech',       name: 'Dark Tech',       bg: '#111827', text: '#F9FAFB', accent: '#06B6D4' },
-  { id: 'charcoal_amber',  name: 'Charcoal Amber',  bg: '#1F2937', text: '#F3F4F6', accent: '#F59E0B' },
-  { id: 'steel_blue',      name: 'Steel Blue',      bg: '#1E3A5F', text: '#FFFFFF', accent: '#60A5FA' },
-  { id: 'forest_pro',      name: 'Forest Pro',      bg: '#064E3B', text: '#FFFFFF', accent: '#34D399' },
+  { id: 'clean_slate',     name: 'Slate Pro',       bg: '#1E2A3A', text: '#FFFFFF', accent: '#60A5FA' },
+  { id: 'navy_gold',       name: 'Navy Gold',       bg: '#0A1628', text: '#FFFFFF', accent: '#D4A017' },
+  { id: 'dark_tech',       name: 'Dark Tech',       bg: '#0D1117', text: '#F9FAFB', accent: '#06B6D4' },
+  { id: 'charcoal_amber',  name: 'Charcoal Amber',  bg: '#1C2030', text: '#F3F4F6', accent: '#F59E0B' },
+  { id: 'steel_blue',      name: 'Steel Blue',      bg: '#1A3050', text: '#FFFFFF', accent: '#60A5FA' },
+  { id: 'forest_pro',      name: 'Forest Pro',      bg: '#04321E', text: '#FFFFFF', accent: '#34D399' },
 ]
 
 export const THEME_IDS = THEMES.map(t => t.id) as [string, ...string[]]

@@ -29,7 +29,14 @@ export function SlideCard({ slide, index, isActive, theme, onSelect, onDelete, o
           'relative flex-shrink-0 rounded-md overflow-hidden border',
           isActive ? 'border-pm-teal shadow-sm' : 'border-pm-border'
         )}
-        style={{ width: 72, height: 41, backgroundColor: theme.bg }}
+        style={{
+          width: 72,
+          height: 41,
+          backgroundColor: theme.bg,
+          backgroundImage: `url(/themes/${theme.id}.png)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
       >
         <div className="absolute top-0 left-0 right-0" style={{ height: '14%', backgroundColor: theme.accent }} />
         <div
