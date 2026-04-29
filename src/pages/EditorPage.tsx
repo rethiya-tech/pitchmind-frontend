@@ -34,34 +34,7 @@ function lighterHex(hex: string, amount: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
-/** Shared footer bar rendered by all layouts. */
-function SlideFooter({ theme }: { theme: Theme }) {
-  return (
-    <div
-      className="absolute left-0 right-0 flex items-center"
-      style={{ top: '97.34%', height: '2.66%', backgroundColor: theme.accent, paddingLeft: '5%' }}
-    >
-      <span className="text-white font-semibold" style={{ fontSize: 'clamp(5px, 0.7vw, 8px)', opacity: 0.9 }}>PitchMind</span>
-    </div>
-  )
-}
-
-/** Shared header band + slide number chip rendered by bullets / two_column / data_table. */
-function SlideHeader({ theme, index }: { theme: Theme; index: number }) {
-  return (
-    <>
-      <div className="absolute left-0 right-0" style={{ top: 0, height: '13.33%', backgroundColor: theme.accent }} />
-      <div
-        className="absolute flex items-center justify-center text-white font-bold"
-        style={{ right: 0, top: 0, width: '5%', height: '13.33%', backgroundColor: theme.accent, fontSize: 'clamp(7px, 1vw, 11px)', borderLeft: '1px solid rgba(255,255,255,0.2)' }}
-      >
-        {index + 1}
-      </div>
-    </>
-  )
-}
-
-function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; index: number }) {
+function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
   const bullets: string[] = slide.bullets ?? []
   const layout = slide.layout || 'bullets'
 
@@ -80,31 +53,24 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
     const subtitle = bullets[0] ?? ''
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
-        {/* Large title */}
         <div
           className="absolute font-extrabold leading-tight"
-          style={{ top: '30%', left: '5%', right: '5%', color: '#FFFFFF', fontSize: 'clamp(18px, 3.5vw, 42px)' }}
+          style={{ top: '28%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(18px, 3.5vw, 42px)' }}
         >
           {slide.title || 'Untitled Slide'}
         </div>
-
-        {/* Accent line */}
         <div
           className="absolute rounded-full"
-          style={{ top: '62%', left: '5%', width: '22%', height: '0.7%', backgroundColor: theme.accent }}
+          style={{ top: '60%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
         />
-
-        {/* Subtitle */}
         {subtitle && (
           <div
             className="absolute"
-            style={{ top: '67%', left: '5%', right: '5%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85 }}
+            style={{ top: '65%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85 }}
           >
             {subtitle}
           </div>
         )}
-
-        <SlideFooter theme={theme} />
       </div>
     )
   }
@@ -114,17 +80,13 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
     const mid = Math.ceil(bullets.length / 2)
     const leftBullets = bullets.slice(0, mid)
     const rightBullets = bullets.slice(mid)
-    const colHdrBg = theme.accent
-    const colHdrBgRight = lighterHex(theme.accent, 20)
 
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
-        <SlideHeader theme={theme} index={index} />
-
         {/* Title */}
         <div
           className="absolute font-extrabold leading-tight"
-          style={{ top: '15.56%', left: '5%', right: '5%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)' }}
+          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)' }}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -132,45 +94,34 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
         {/* Divider */}
         <div
           className="absolute rounded-full"
-          style={{ top: '37.78%', left: '5%', width: '20%', height: '0.9%', backgroundColor: theme.accent }}
+          style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
         />
 
-        {/* Column headers at ~40% */}
-        <div className="absolute" style={{ top: '40%', left: '5%', width: '47%' }}>
-          <div
-            className="flex items-center"
-            style={{ height: '6%', backgroundColor: colHdrBg, paddingLeft: '4%' }}
-          >
+        {/* Left column */}
+        <div className="absolute" style={{ top: '29%', left: '7%', width: '43%' }}>
+          <div className="flex items-center px-2 py-1 mb-2 rounded" style={{ backgroundColor: theme.accent }}>
             <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>Key Points</span>
           </div>
-          <div style={{ paddingTop: '2%' }}>
-            {leftBullets.map((b, i) => (
-              <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
-                <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
-                <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
-              </div>
-            ))}
-          </div>
+          {leftBullets.map((b, i) => (
+            <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
+              <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
+              <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
+            </div>
+          ))}
         </div>
 
-        <div className="absolute" style={{ top: '40%', left: '53%', right: '5%' }}>
-          <div
-            className="flex items-center"
-            style={{ height: '6%', backgroundColor: colHdrBgRight, paddingLeft: '4%' }}
-          >
+        {/* Right column */}
+        <div className="absolute" style={{ top: '29%', left: '53%', right: '7%' }}>
+          <div className="flex items-center px-2 py-1 mb-2 rounded" style={{ backgroundColor: lighterHex(theme.accent, 20) }}>
             <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>Details</span>
           </div>
-          <div style={{ paddingTop: '2%' }}>
-            {rightBullets.map((b, i) => (
-              <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
-                <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
-                <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
-              </div>
-            ))}
-          </div>
+          {rightBullets.map((b, i) => (
+            <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
+              <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
+              <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
+            </div>
+          ))}
         </div>
-
-        <SlideFooter theme={theme} />
       </div>
     )
   }
@@ -181,25 +132,23 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
 
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
-        <SlideHeader theme={theme} index={index} />
-
-        {/* Title — smaller to leave room for table */}
+        {/* Title */}
         <div
           className="absolute font-extrabold leading-tight"
-          style={{ top: '15.56%', left: '5%', right: '5%', color: theme.text, fontSize: 'clamp(10px, 1.7vw, 20px)' }}
+          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.7vw, 20px)' }}
         >
           {slide.title || 'Untitled Slide'}
         </div>
 
-        {/* Table rows starting at 38% */}
-        <div className="absolute overflow-hidden" style={{ top: '38%', left: '5%', right: '5%', bottom: '5.4%' }}>
+        {/* Table rows */}
+        <div className="absolute overflow-hidden" style={{ top: '26%', left: '7%', right: '7%', bottom: '4%' }}>
           {bullets.map((b, i) => {
             const sepIdx = b.indexOf(': ')
             const label = sepIdx !== -1 ? b.slice(0, sepIdx) : b
             const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : ''
             const labelBg = i % 2 === 0 ? theme.accent : lighterHex(theme.accent, 25)
             return (
-              <div key={i} className="flex" style={{ height: '8%', marginBottom: '0.8%' }}>
+              <div key={i} className="flex" style={{ height: '9%', marginBottom: '1%' }}>
                 <div
                   className="flex items-center flex-shrink-0"
                   style={{ width: '38%', backgroundColor: labelBg, paddingLeft: '3%', paddingRight: '2%' }}
@@ -216,8 +165,142 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
             )
           })}
         </div>
+      </div>
+    )
+  }
 
-        <SlideFooter theme={theme} />
+  // ── timeline ──────────────────────────────────────────────────────────────
+  if (layout === 'timeline') {
+    return (
+      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+        <div
+          className="absolute font-extrabold leading-tight"
+          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)' }}
+        >
+          {slide.title || 'Untitled Slide'}
+        </div>
+        <div className="absolute" style={{ top: '29%', left: '7%', right: '7%', bottom: '4%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ position: 'absolute', left: '1.4%', top: 0, bottom: 0, width: 2, backgroundColor: theme.accent, opacity: 0.45 }} />
+          {bullets.map((b, i) => {
+            const sepIdx = b.indexOf(': ')
+            const label = sepIdx !== -1 ? b.slice(0, sepIdx) : `Phase ${i + 1}`
+            const desc = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', flex: 1, minHeight: 0 }}>
+                <div style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: theme.accent, flexShrink: 0, marginRight: '2.5%', zIndex: 1 }} />
+                <span style={{ color: theme.accent, fontWeight: 700, fontSize: 'clamp(7px, 1vw, 11px)' }}>{label}</span>
+                {desc && <span style={{ color: theme.text, fontSize: 'clamp(6px, 0.85vw, 10px)', opacity: 0.8, marginLeft: '1.5%' }}>{desc}</span>}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  // ── big_stat ───────────────────────────────────────────────────────────────
+  if (layout === 'big_stat') {
+    const stats = bullets.slice(0, 3)
+    return (
+      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+        <div
+          className="absolute font-extrabold leading-tight"
+          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)' }}
+        >
+          {slide.title || 'Untitled Slide'}
+        </div>
+        <div className="absolute flex gap-[2%]" style={{ top: '34%', left: '7%', right: '7%', bottom: '8%' }}>
+          {stats.map((b, i) => {
+            const sepIdx = b.indexOf(': ')
+            const label = sepIdx !== -1 ? b.slice(0, sepIdx) : 'Metric'
+            const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
+            return (
+              <div key={i} className="relative flex flex-col overflow-hidden rounded flex-1" style={{ backgroundColor: lighterHex(theme.bg, 30) }}>
+                <div style={{ height: 4, backgroundColor: theme.accent, flexShrink: 0 }} />
+                <div style={{ padding: '8% 10%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ color: theme.accent, fontWeight: 800, fontSize: 'clamp(14px, 2.4vw, 30px)', lineHeight: 1.1 }}>{value}</div>
+                  <div style={{ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)', opacity: 0.75, marginTop: '6%' }}>{label}</div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  // ── process ────────────────────────────────────────────────────────────────
+  if (layout === 'process') {
+    const steps = bullets.slice(0, 5)
+    return (
+      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+        <div
+          className="absolute font-extrabold leading-tight"
+          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)' }}
+        >
+          {slide.title || 'Untitled Slide'}
+        </div>
+        <div
+          className="absolute rounded-full"
+          style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
+        />
+        <div className="absolute flex items-stretch gap-[1.5%]" style={{ top: '31%', left: '7%', right: '7%', bottom: '8%' }}>
+          {steps.map((b, i) => (
+            <div key={i} className="flex items-center" style={{ flex: i < steps.length - 1 ? '1 1 0' : '1 1 0' }}>
+              <div className="flex flex-col overflow-hidden rounded flex-1 h-full" style={{ backgroundColor: i % 2 === 0 ? theme.accent : lighterHex(theme.accent, 30) }}>
+                <div className="flex items-center justify-center font-bold text-white flex-shrink-0" style={{ height: '30%', fontSize: 'clamp(8px, 1.3vw, 16px)', backgroundColor: lighterHex(theme.accent, -20) }}>
+                  {i + 1}
+                </div>
+                <div style={{ padding: '5% 8%', color: '#fff', fontSize: 'clamp(5px, 0.8vw, 9px)', lineHeight: 1.4, overflow: 'hidden' }}>{b}</div>
+              </div>
+              {i < steps.length - 1 && (
+                <span style={{ color: theme.accent, fontSize: 'clamp(8px, 1.2vw, 14px)', flexShrink: 0, padding: '0 2%' }}>→</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ── quote ──────────────────────────────────────────────────────────────────
+  if (layout === 'quote') {
+    const quoteText = bullets[0] ?? ''
+    const attribution = bullets[1] ?? ''
+    return (
+      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+        <div
+          className="absolute"
+          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(8px, 1.3vw, 15px)', opacity: 0.6 }}
+        >
+          {slide.title}
+        </div>
+        <div
+          className="absolute font-extrabold leading-none"
+          style={{ top: '18%', left: '7%', color: theme.accent, fontSize: 'clamp(24px, 5vw, 60px)', lineHeight: 1 }}
+        >
+          &ldquo;
+        </div>
+        {quoteText && (
+          <div
+            className="absolute leading-snug"
+            style={{ top: '26%', left: '14%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.5vw, 18px)', fontStyle: 'italic' }}
+          >
+            {quoteText}
+          </div>
+        )}
+        <div
+          className="absolute rounded-full"
+          style={{ top: '74%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
+        />
+        {attribution && (
+          <div
+            className="absolute text-right"
+            style={{ top: '78%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', opacity: 0.7 }}
+          >
+            — {attribution}
+          </div>
+        )}
       </div>
     )
   }
@@ -225,12 +308,10 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
   // ── bullets (default) ─────────────────────────────────────────────────────
   return (
     <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
-      <SlideHeader theme={theme} index={index} />
-
       {/* Title */}
       <div
         className="absolute font-extrabold leading-tight"
-        style={{ top: '15.56%', left: '5%', right: '5%', color: theme.text, fontSize: 'clamp(11px, 2vw, 26px)' }}
+        style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(11px, 2vw, 26px)' }}
       >
         {slide.title || 'Untitled Slide'}
       </div>
@@ -238,25 +319,23 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
       {/* Accent divider */}
       <div
         className="absolute rounded-full"
-        style={{ top: '37.78%', left: '5%', width: '20%', height: '0.9%', backgroundColor: theme.accent }}
+        style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
       />
 
       {/* Bullets */}
-      <div className="absolute overflow-hidden" style={{ top: '40%', left: '5%', right: '5%', bottom: '5.4%' }}>
+      <div className="absolute overflow-hidden" style={{ top: '29%', left: '7%', right: '7%', bottom: '4%' }}>
         {bullets.map((b, i) => (
-          <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
+          <div key={i} className="flex items-start" style={{ marginBottom: '2%' }}>
             <span
               className="flex-shrink-0 rounded-full"
-              style={{ backgroundColor: theme.accent, width: '0.6em', height: '0.6em', minWidth: '0.6em', marginTop: '0.3em', marginRight: '0.6em', fontSize: 'clamp(9px, 1.3vw, 14px)' }}
+              style={{ backgroundColor: theme.accent, width: '0.6em', height: '0.6em', minWidth: '0.6em', marginTop: '0.35em', marginRight: '0.6em', fontSize: 'clamp(9px, 1.3vw, 14px)' }}
             />
-            <span style={{ color: theme.text, fontSize: 'clamp(9px, 1.3vw, 14px)', lineHeight: 1.4, opacity: 0.92 }}>
+            <span style={{ color: theme.text, fontSize: 'clamp(9px, 1.3vw, 14px)', lineHeight: 1.45, opacity: 0.92 }}>
               {b}
             </span>
           </div>
         ))}
       </div>
-
-      <SlideFooter theme={theme} />
     </div>
   )
 }
@@ -504,7 +583,7 @@ export function EditorPage() {
           <div className="flex-1 overflow-auto flex items-center justify-center p-10">
             {activeSlide ? (
               <div className="w-full max-w-4xl drop-shadow-2xl">
-                <SlidePreview slide={activeSlide} theme={theme} index={activeIndex} />
+                <SlidePreview slide={activeSlide} theme={theme} />
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3 text-gray-400">

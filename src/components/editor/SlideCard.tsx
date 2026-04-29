@@ -38,39 +38,24 @@ export function SlideCard({ slide, index, isActive, theme, onSelect, onDelete, o
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute top-0 left-0 right-0" style={{ height: '14%', backgroundColor: theme.accent }} />
+        {/* Title */}
         <div
-          className="absolute top-0 right-0 flex items-center justify-center text-white font-bold border-l border-white/20"
-          style={{ width: '16%', height: '14%', fontSize: 5, backgroundColor: theme.accent }}
-        >
-          {index + 1}
-        </div>
-        <div
-          className="absolute font-bold leading-none px-[6%] truncate"
-          style={{ top: '18%', left: 0, right: 0, fontSize: 5, color: theme.text }}
+          className="absolute font-bold leading-none px-[7%] truncate"
+          style={{ top: '8%', left: 0, right: 0, fontSize: 5, color: theme.text }}
         >
           {slide.title || `Slide ${index + 1}`}
         </div>
-        <div className="absolute rounded-full" style={{ top: '42%', left: '6%', width: '24%', height: '5%', backgroundColor: theme.accent }} />
-        <div className="absolute" style={{ top: '52%', left: '6%', right: '6%', bottom: '10%' }}>
+        {/* Accent divider */}
+        <div className="absolute rounded-full" style={{ top: '30%', left: '7%', width: '22%', height: '4%', backgroundColor: theme.accent }} />
+        {/* Bullets */}
+        <div className="absolute" style={{ top: '38%', left: '7%', right: '7%', bottom: '4%' }}>
           {slide.bullets.slice(0, 3).map((b, i) => (
             <div key={i} className="flex items-center gap-[3%] mb-[5%]">
               <div className="rounded-full flex-shrink-0" style={{ width: 2, height: 2, backgroundColor: theme.accent }} />
-              <div className="truncate" style={{ fontSize: 4, color: theme.text, opacity: 0.7 }}>{b}</div>
+              <div className="truncate" style={{ fontSize: 4, color: theme.text, opacity: 0.8 }}>{b}</div>
             </div>
           ))}
         </div>
-        <div className="absolute bottom-0 left-0 right-0" style={{ height: '8%', backgroundColor: theme.accent }} />
-
-        {/* Layout badge */}
-        {slide.layout && slide.layout !== 'bullets' && (
-          <div
-            className="absolute bottom-1 right-1 text-white rounded"
-            style={{ fontSize: 3, padding: '1px 2px', backgroundColor: theme.accent, opacity: 0.9 }}
-          >
-            {slide.layout === 'hero' ? 'HERO' : slide.layout === 'two_column' ? '2-COL' : 'TABLE'}
-          </div>
-        )}
       </div>
 
       {/* ── Info ── */}
