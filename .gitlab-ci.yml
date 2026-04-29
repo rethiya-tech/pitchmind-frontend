@@ -1,0 +1,86 @@
+stages:
+  - install
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+
+default:
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+
+install:
+  stage: install
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+typecheck:
+  stage: test
+  needs: [install]
+  script:
+    - npm run typecheck
+
+lint:
+  stage: test
+  needs: [install]
+  script:
+    - npm run lint
+
+unit-tests:
+  stage: test
+  needs: [install]
+  script:
+    - npm run test -- --run
+  coverage: '/Stmts\s*:\s*(\d+\.?\d*)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+build:
+  stage: build
+  needs: [install]
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 day
+  only:
+    - main
+    - develop
+
+deploy-preview:
+  stage: deploy
+  needs: [build]
+  script:
+    - echo "Deploy to Vercel preview"
+    # npx vercel --token $VERCEL_TOKEN
+  environment:
+    name: preview
+  only:
+    - develop
+
+deploy-production:
+  stage: deploy
+  needs: [build]
+  script:
+    - echo "Deploy to Vercel production"
+    # npx vercel --prod --token $VERCEL_TOKEN
+  environment:
+    name: production
+  only:
+    - main
+  when: manual
