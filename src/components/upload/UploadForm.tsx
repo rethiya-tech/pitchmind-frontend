@@ -73,7 +73,7 @@ const selectCls =
 export function UploadForm() {
   const navigate = useNavigate()
   const [file, setFile] = useState<File | null>(null)
-  const [theme, setTheme] = useState('executive_gold')
+  const [theme, setTheme] = useState('clean_slate')
   const [slideCount, setSlideCount] = useState(8)
   const [style, setStyle] = useState('professional')
   const [audienceLevel, setAudienceLevel] = useState('general')

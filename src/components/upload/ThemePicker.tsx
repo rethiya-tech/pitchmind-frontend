@@ -23,26 +23,37 @@ export function ThemePicker({ value, onChange, disabled }: ThemePickerProps) {
               : 'border-pm-border hover:border-gray-300'
           )}
         >
-          {/* Mini slide preview matching PPTX output */}
+          {/* Mini slide preview */}
           <div
-            className="w-full h-12 rounded-lg overflow-hidden relative"
-            style={{ backgroundColor: theme.bg }}
+            className="w-full rounded-lg overflow-hidden relative flex-shrink-0"
+            style={{ backgroundColor: theme.bg, height: 56 }}
           >
             {/* Top accent band */}
             <div className="absolute top-0 left-0 right-0 h-2" style={{ backgroundColor: theme.accent }} />
+            {/* Left accent bar */}
+            <div className="absolute left-0 top-2 bottom-2 w-1" style={{ backgroundColor: theme.accent, opacity: 0.6 }} />
             {/* Title line */}
             <div
               className="absolute rounded-full"
-              style={{ backgroundColor: theme.text, opacity: 0.7, top: 14, left: 6, width: '55%', height: 3 }}
+              style={{ backgroundColor: theme.text, opacity: 0.85, top: 16, left: 10, width: '52%', height: 3 }}
+            />
+            {/* Accent underline */}
+            <div
+              className="absolute rounded-full"
+              style={{ backgroundColor: theme.accent, top: 22, left: 10, width: '28%', height: 2 }}
             />
             {/* Bullet lines */}
             <div
               className="absolute rounded-full"
-              style={{ backgroundColor: theme.text, opacity: 0.4, top: 22, left: 6, width: '70%', height: 2 }}
+              style={{ backgroundColor: theme.text, opacity: 0.45, top: 30, left: 10, width: '65%', height: 2 }}
             />
             <div
               className="absolute rounded-full"
-              style={{ backgroundColor: theme.text, opacity: 0.4, top: 28, left: 6, width: '50%', height: 2 }}
+              style={{ backgroundColor: theme.text, opacity: 0.45, top: 36, left: 10, width: '48%', height: 2 }}
+            />
+            <div
+              className="absolute rounded-full"
+              style={{ backgroundColor: theme.text, opacity: 0.45, top: 42, left: 10, width: '55%', height: 2 }}
             />
             {/* Bottom accent band */}
             <div className="absolute bottom-0 left-0 right-0 h-1.5" style={{ backgroundColor: theme.accent }} />
