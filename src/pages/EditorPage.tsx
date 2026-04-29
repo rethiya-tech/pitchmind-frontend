@@ -254,7 +254,7 @@ export function EditorPage() {
             }
           />
           <div className="flex-1 overflow-y-auto p-3">
-            <SlideList conversionId={id ?? ''} />
+            <SlideList conversionId={id ?? ''} theme={theme} />
           </div>
         </aside>
 

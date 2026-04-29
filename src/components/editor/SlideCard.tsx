@@ -1,16 +1,17 @@
 import { cn } from '@/utils/cn'
-import type { Slide } from '@/types'
+import type { Slide, Theme } from '@/types'
 
 interface SlideCardProps {
   slide: Slide
   index: number
   isActive?: boolean
+  theme: Theme
   onSelect: () => void
   onDelete: () => void
   onTitleChange: (title: string) => void
 }
 
-export function SlideCard({ slide, index, isActive, onSelect, onDelete, onTitleChange }: SlideCardProps) {
+export function SlideCard({ slide, index, isActive, theme, onSelect, onDelete, onTitleChange }: SlideCardProps) {
   return (
     <div
       data-testid="slide-card"
@@ -25,34 +26,34 @@ export function SlideCard({ slide, index, isActive, onSelect, onDelete, onTitleC
       {/* ── Mini thumbnail ── */}
       <div
         className={cn(
-          'relative flex-shrink-0 rounded-md overflow-hidden border bg-white',
+          'relative flex-shrink-0 rounded-md overflow-hidden border',
           isActive ? 'border-pm-teal shadow-sm' : 'border-pm-border'
         )}
-        style={{ width: 72, height: 41 }}
+        style={{ width: 72, height: 41, backgroundColor: theme.bg }}
       >
-        <div className="absolute top-0 left-0 right-0 bg-pm-teal" style={{ height: '14%' }} />
+        <div className="absolute top-0 left-0 right-0" style={{ height: '14%', backgroundColor: theme.accent }} />
         <div
-          className="absolute top-0 right-0 flex items-center justify-center text-white font-bold bg-pm-teal border-l border-white/20"
-          style={{ width: '16%', height: '14%', fontSize: 5 }}
+          className="absolute top-0 right-0 flex items-center justify-center text-white font-bold border-l border-white/20"
+          style={{ width: '16%', height: '14%', fontSize: 5, backgroundColor: theme.accent }}
         >
           {index + 1}
         </div>
         <div
-          className="absolute font-bold text-pm-primary leading-none px-[6%] truncate"
-          style={{ top: '18%', left: 0, right: 0, fontSize: 5 }}
+          className="absolute font-bold leading-none px-[6%] truncate"
+          style={{ top: '18%', left: 0, right: 0, fontSize: 5, color: theme.text }}
         >
           {slide.title || `Slide ${index + 1}`}
         </div>
-        <div className="absolute bg-pm-teal rounded-full" style={{ top: '42%', left: '6%', width: '24%', height: '5%' }} />
+        <div className="absolute rounded-full" style={{ top: '42%', left: '6%', width: '24%', height: '5%', backgroundColor: theme.accent }} />
         <div className="absolute" style={{ top: '52%', left: '6%', right: '6%', bottom: '10%' }}>
           {slide.bullets.slice(0, 3).map((b, i) => (
             <div key={i} className="flex items-center gap-[3%] mb-[5%]">
-              <div className="rounded-full bg-pm-teal flex-shrink-0" style={{ width: 2, height: 2 }} />
-              <div className="text-pm-muted truncate" style={{ fontSize: 4 }}>{b}</div>
+              <div className="rounded-full flex-shrink-0" style={{ width: 2, height: 2, backgroundColor: theme.accent }} />
+              <div className="truncate" style={{ fontSize: 4, color: theme.text, opacity: 0.7 }}>{b}</div>
             </div>
           ))}
         </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-pm-teal" style={{ height: '8%' }} />
+        <div className="absolute bottom-0 left-0 right-0" style={{ height: '8%', backgroundColor: theme.accent }} />
       </div>
 
       {/* ── Info ── */}
