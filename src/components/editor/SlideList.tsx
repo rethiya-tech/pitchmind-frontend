@@ -3,10 +3,11 @@ import { useEditorStore } from '@/stores/editorStore'
 import { SlideCard } from './SlideCard'
 import api from '@/services/api'
 import toast from 'react-hot-toast'
-import type { Slide } from '@/types'
+import type { Slide, Theme } from '@/types'
 
 interface SlideListProps {
   conversionId: string
+  theme: Theme
   onSlideSaved?: () => void
 }
 
@@ -19,7 +20,7 @@ const BLANK_SLIDE: Omit<Slide, 'id' | 'conversion_id' | 'created_at' | 'updated_
   is_deleted: false,
 }
 
-export function SlideList({ conversionId, onSlideSaved }: SlideListProps) {
+export function SlideList({ conversionId, theme, onSlideSaved }: SlideListProps) {
   const { slides, activeSlideId, setActiveSlide, updateSlide, removeSlide, setSlides } = useEditorStore()
 
   const visibleSlides = slides.filter((s) => !s.is_deleted)
@@ -76,6 +77,7 @@ export function SlideList({ conversionId, onSlideSaved }: SlideListProps) {
           slide={slide}
           index={i}
           isActive={slide.id === activeSlideId}
+          theme={theme}
           onSelect={() => setActiveSlide(slide.id)}
           onDelete={() => handleDelete(slide.id)}
           onTitleChange={(title) => updateSlide(slide.id, { title })}
