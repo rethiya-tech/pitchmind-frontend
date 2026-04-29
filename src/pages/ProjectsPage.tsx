@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
 import api from '@/services/api'
+import { THEMES } from '@/types'
 import type { ConversionListResponse } from '@/types'
 
 async function downloadPptx(conversionId: string, name: string) {
@@ -42,9 +43,19 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
     <button
       onClick={handleClick}
       disabled={loading}
-      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors disabled:opacity-60"
+      title="Export PPTX"
+      className="w-8 h-8 rounded-lg flex items-center justify-center bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors disabled:opacity-60"
     >
-      {loading ? 'Exporting…' : 'Export'}
+      {loading ? (
+        <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 6" />
+        </svg>
+      ) : (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1v8M4 6l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M2 10v1.5A1.5 1.5 0 003.5 13h7a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )}
     </button>
   )
 }
@@ -71,9 +82,19 @@ function DeleteButton({ conversionId }: { conversionId: string }) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-colors disabled:opacity-60"
+      title="Delete project"
+      className="w-8 h-8 rounded-lg flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 transition-colors disabled:opacity-60"
     >
-      {loading ? 'Deleting…' : 'Delete'}
+      {loading ? (
+        <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 6" />
+        </svg>
+      ) : (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 4h10M5 4V2.5A.5.5 0 015.5 2h3a.5.5 0 01.5.5V4M6 7v3M8 7v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M3 4l.7 7.3A1 1 0 004.7 12h4.6a1 1 0 001-.7L11 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )}
     </button>
   )
 }
@@ -97,13 +118,17 @@ function statusBadge(status: string) {
   )
 }
 
-function MiniSlideThumb({ title }: { title: string }) {
-  const hue = (title.charCodeAt(0) * 37) % 360
+function MiniSlideThumb({ theme }: { theme: string | undefined }) {
+  const t = THEMES.find(th => th.id === theme) ?? THEMES[0]
   return (
     <div
-      className="w-8 h-5 rounded flex-shrink-0 rounded-sm"
-      style={{ background: `linear-gradient(135deg, hsl(${hue},40%,20%) 0%, hsl(${hue},50%,35%) 100%)` }}
-    />
+      className="w-8 h-5 flex-shrink-0 rounded-sm overflow-hidden flex flex-col justify-between p-0.5"
+      style={{ backgroundColor: t.bg }}
+    >
+      <div className="h-0.5 rounded-full w-4" style={{ backgroundColor: t.accent }} />
+      <div className="h-0.5 rounded-full w-3 opacity-60" style={{ backgroundColor: t.text }} />
+      <div className="h-0.5 rounded-full w-3.5 opacity-60" style={{ backgroundColor: t.text }} />
+    </div>
   )
 }
 
@@ -279,7 +304,7 @@ export function ProjectsPage() {
                     {/* Name */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3 min-w-0">
-                        <MiniSlideThumb title={filename} />
+                        <MiniSlideThumb theme={c.theme} />
                         <span
                           className="font-medium text-pm-primary truncate max-w-[200px]"
                           title={filename}
@@ -312,12 +337,15 @@ export function ProjectsPage() {
                     {/* Actions */}
                     <td className="px-5 py-3.5">
                       {c.status === 'done' && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <Link
                             to={`/editor/${c.id}`}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary transition-colors"
+                            title="Edit presentation"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary transition-colors"
                           >
-                            Edit
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                              <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                           </Link>
                           <ExportButton conversionId={c.id} name={c.original_filename?.replace(/\.[^.]+$/, '') ?? 'presentation'} />
                           <DeleteButton conversionId={c.id} />
@@ -326,9 +354,13 @@ export function ProjectsPage() {
                       {c.status === 'generating' && (
                         <Link
                           to={`/generating/${c.id}`}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors"
+                          title="View generation progress"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors"
                         >
-                          View
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4" />
+                            <path d="M7 4v3l2 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                         </Link>
                       )}
                       {(c.status === 'failed' || c.status === 'pending' || c.status === 'cancelled') && (
