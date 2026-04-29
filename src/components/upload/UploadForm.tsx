@@ -120,7 +120,12 @@ export function UploadForm() {
       return data as { id: string }
     },
     onSuccess: (data) => navigate(`/generating/${data.id}`),
-    onError: () => toast.error('Failed to start generation. Please try again.'),
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { detail?: string | { message?: string } } } })
+        ?.response?.data?.detail
+      const detail = typeof msg === 'string' ? msg : msg?.message
+      toast.error(detail || 'Failed to start generation. Please try again.')
+    },
   })
 
   const fileReady = !!file && !!uploadId && !presignMutation.isPending
