@@ -1,22 +1,6 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
-
-const STEPS = [
-  { label: 'Upload' },
-  { label: 'Theme' },
-  { label: 'Settings' },
-  { label: 'Generate' },
-  { label: 'Export' },
-]
-
-function getActiveStep(pathname: string) {
-  if (pathname.startsWith('/generating')) return 3
-  if (pathname.startsWith('/export')) return 4
-  if (pathname.startsWith('/editor')) return 2
-  if (pathname.startsWith('/upload')) return 0
-  return -1
-}
 
 function BellIcon() {
   return (
@@ -52,10 +36,6 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
   const user = useAuthStore((s) => s.user)
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const navigate = useNavigate()
-  const { pathname } = useLocation()
-
-  const activeStep = getActiveStep(pathname)
-  const inFlow = activeStep >= 0
 
   const handleLogout = async () => {
     try { await api.post('/auth/logout') } catch { /* ignore */ }
@@ -69,7 +49,6 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
 
   return (
     <header className="h-14 bg-white border-b border-pm-border flex items-center justify-between px-5 flex-shrink-0">
-      {/* Left: hamburger + step nav */}
       <div className="flex items-center gap-6">
         <button
           onClick={onToggleSidebar}
@@ -78,40 +57,6 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
         >
           <MenuIcon />
         </button>
-
-        {inFlow && (
-          <nav className="flex items-center gap-1">
-            {STEPS.map((step, i) => {
-              const done = i < activeStep
-              const active = i === activeStep
-              return (
-                <div key={step.label} className="flex items-center gap-1">
-                  <span
-                    className={[
-                      'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors',
-                      active
-                        ? 'text-pm-primary border-b-2 border-pm-teal pb-[13px]'
-                        : done
-                        ? 'text-pm-teal'
-                        : 'text-pm-muted',
-                    ].join(' ')}
-                  >
-                    {done && (
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <circle cx="7" cy="7" r="6" fill="#1D9E75" />
-                        <path d="M4.5 7l2 2 3-3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    {step.label}
-                  </span>
-                  {i < STEPS.length - 1 && (
-                    <span className="text-white/20 text-xs select-none px-0.5">—</span>
-                  )}
-                </div>
-              )
-            })}
-          </nav>
-        )}
       </div>
 
       {/* Right: icons + avatar */}

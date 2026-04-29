@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 import { useEditorStore } from '@/stores/editorStore'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { SlideList } from '@/components/editor/SlideList'
@@ -100,6 +101,34 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError }: {
 }) {
   const isDirty = useEditorStore((s) => s.isDirty)
   const name = conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation'
+  const [isExporting, setIsExporting] = useState(false)
+
+  const handleExport = async () => {
+    setIsExporting(true)
+    try {
+      const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export`)
+      const url = data.download_url
+      const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+      const isLocalUrl = apiBase && url.startsWith(apiBase)
+      if (isLocalUrl) {
+        const path = url.slice(`${apiBase}/api/v1`.length)
+        const res = await api.get(path, { responseType: 'blob' })
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' })
+        const blobUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = `${name}.pptx`
+        a.click()
+        URL.revokeObjectURL(blobUrl)
+      } else {
+        window.open(url, '_blank')
+      }
+    } catch {
+      toast.error('Export failed. Please try again.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   return (
     <header className="flex-shrink-0 bg-white border-b border-pm-border flex items-center justify-between px-5" style={{ minHeight: '52px' }}>
@@ -142,14 +171,12 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError }: {
             <><span className="w-1.5 h-1.5 rounded-full bg-pm-teal inline-block" />Saved</>
           )}
         </span>
-        <Link to={`/export/${conversionId}`}>
-          <Button size="sm">
-            <svg className="w-3.5 h-3.5 mr-1.5 inline-block -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Export &amp; Download
-          </Button>
-        </Link>
+        <Button size="sm" loading={isExporting} onClick={handleExport}>
+          <svg className="w-3.5 h-3.5 mr-1.5 inline-block -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Export &amp; Download
+        </Button>
       </div>
     </header>
   )

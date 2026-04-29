@@ -5,7 +5,6 @@ import toast from 'react-hot-toast'
 import axios from 'axios'
 import { DropZone } from './DropZone'
 import { ThemePicker } from './ThemePicker'
-import { PreviewPanel } from './PreviewPanel'
 import { Button } from '@/components/ui/Button'
 import api from '@/services/api'
 import { cn } from '@/utils/cn'
@@ -79,7 +78,6 @@ export function UploadForm() {
   const [style, setStyle] = useState('professional')
   const [audienceLevel, setAudienceLevel] = useState('general')
   const [speakerNotes, setSpeakerNotes] = useState(true)
-  const [preview, setPreview] = useState<string | null>(null)
   const [uploadId, setUploadId] = useState<string | null>(null)
 
   const presignMutation = useMutation({
@@ -95,14 +93,11 @@ export function UploadForm() {
 
   const handleFile = async (f: File) => {
     setFile(f)
-    setPreview(null)
     setUploadId(null)
     try {
       const { upload_url, upload_id } = await presignMutation.mutateAsync(f)
       await axios.put(upload_url, f, { headers: { 'Content-Type': f.type || 'application/octet-stream' } })
       setUploadId(upload_id)
-      const text = await f.text().catch(() => '')
-      if (text) setPreview(text.slice(0, 800))
     } catch {
       toast.error('Upload failed. Please try again.')
     }
@@ -149,13 +144,6 @@ export function UploadForm() {
               </svg>
               Uploading…
             </div>
-          )}
-
-          {preview && (
-            <PreviewPanel
-              text={preview}
-              wordCount={preview.split(/\s+/).filter(Boolean).length}
-            />
           )}
 
           {!file && (
