@@ -75,6 +75,9 @@ export function UploadForm() {
   const [file, setFile] = useState<File | null>(null)
   const [theme, setTheme] = useState('clean_slate')
   const [slideCount, setSlideCount] = useState(8)
+  const [customCount, setCustomCount] = useState('')
+  const [customError, setCustomError] = useState('')
+  const [slideCountSelected, setSlideCountSelected] = useState(true)
   const [style, setStyle] = useState('professional')
   const [audienceLevel, setAudienceLevel] = useState('general')
   const [speakerNotes, setSpeakerNotes] = useState(true)
@@ -165,15 +168,16 @@ export function UploadForm() {
       >
         <div className="flex flex-col gap-5">
           <Field label="Slide Count">
-            <div className="grid grid-cols-5 gap-1.5">
+            {/* Preset chips + custom input in one row */}
+            <div className="flex items-center gap-1.5 flex-wrap">
               {SLIDE_COUNTS.map((n) => (
                 <button
                   key={n}
                   type="button"
-                  onClick={() => setSlideCount(n)}
+                  onClick={() => { setSlideCount(n); setCustomCount(''); setCustomError(''); setSlideCountSelected(true) }}
                   className={cn(
-                    'py-2 rounded-lg text-sm font-medium border transition-all',
-                    slideCount === n
+                    'w-10 h-9 rounded-lg text-sm font-medium border transition-all flex-shrink-0',
+                    slideCount === n && !customCount
                       ? 'bg-pm-teal text-white border-pm-teal shadow-sm'
                       : 'bg-white text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
                   )}
@@ -181,8 +185,57 @@ export function UploadForm() {
                   {n}
                 </button>
               ))}
+
+              {/* Divider */}
+              <div className="w-px h-6 bg-pm-border mx-0.5 flex-shrink-0" />
+
+              {/* Custom input */}
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Custom"
+                value={customCount}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '')
+                  const n = parseInt(val)
+                  if (val === '') { setCustomCount(''); setCustomError(''); setSlideCountSelected(false); return }
+                  if (SLIDE_COUNTS.includes(n)) {
+                    setSlideCount(n)
+                    setCustomCount('')
+                    setCustomError('')
+                    setSlideCountSelected(true)
+                    return
+                  }
+                  setCustomCount(val)
+                  if (n <= 3) { setCustomError('Must be greater than 3') }
+                  else if (n > 50) { setCustomError('Maximum is 50') }
+                  else { setCustomError(''); setSlideCount(n); setSlideCountSelected(true) }
+                }}
+                className={cn(
+                  'flex-1 min-w-[90px] h-9 border rounded-lg px-3 text-sm text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition',
+                  customError ? 'border-red-400 focus:ring-red-300' :
+                  customCount && !customError ? 'border-pm-teal bg-[#F0FBF7]' : 'border-pm-border'
+                )}
+              />
             </div>
-            <p className="text-xs text-pm-muted mt-1.5">{slideCount} slides will be generated</p>
+
+            {/* Status line */}
+            <div className="flex items-center justify-between mt-2">
+              {slideCountSelected && !customError && (
+                <p className="text-xs text-pm-muted">
+                  <span className="font-semibold text-pm-primary">{slideCount}</span> slides will be generated
+                </p>
+              )}
+              {(!slideCountSelected || customError) && <span />}
+              {customError && (
+                <span className="text-xs text-red-500 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {customError}
+                </span>
+              )}
+            </div>
           </Field>
 
           <Field label="Target Audience">

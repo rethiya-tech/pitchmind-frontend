@@ -17,30 +17,215 @@ import { THEMES } from '@/types'
  * Percentages derived directly from pptx_builder.py EMU coordinates:
  * Slide: 9144000 W × 5143500 H
  * Header band  : y=0,       h=685800  → 0%   – 13.33%
- * Slide number : x=8229600, y=100000  → x=90%, y=1.94%
+ * Slide number : x=8686800, y=0       → x=95%, y=0
  * Title box    : x=457200,  y=800000  → x=5%,  y=15.56%
  * Divider      : x=457200,  y=1943400 → x=5%,  y=37.78%,  w=20%
  * Bullets box  : x=457200,  y=2057400 → x=5%,  y=40%
  * Footer       : y=5006700, h=136800  → 97.34% – 100%
  */
-function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; index: number }) {
-  const bullets: string[] = slide.bullets ?? []
 
+/** Lighten (positive amount) or darken (negative amount) a hex color. */
+function lighterHex(hex: string, amount: number): string {
+  const h = hex.replace('#', '')
+  const clamp = (v: number) => Math.min(255, Math.max(0, v))
+  const r = clamp(parseInt(h.slice(0, 2), 16) + amount)
+  const g = clamp(parseInt(h.slice(2, 4), 16) + amount)
+  const b = clamp(parseInt(h.slice(4, 6), 16) + amount)
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+}
+
+/** Shared footer bar rendered by all layouts. */
+function SlideFooter({ theme }: { theme: Theme }) {
   return (
     <div
-      className="w-full rounded-xl overflow-hidden shadow-2xl"
-      style={{ aspectRatio: '16/9', position: 'relative', backgroundColor: theme.bg, fontFamily: '"Plus Jakarta Sans", sans-serif' }}
+      className="absolute left-0 right-0 flex items-center"
+      style={{ top: '97.34%', height: '2.66%', backgroundColor: theme.accent, paddingLeft: '5%' }}
     >
-      {/* Header band (0 – 13.33%) */}
-      <div className="absolute left-0 right-0" style={{ top: 0, height: '13.33%', backgroundColor: theme.accent }} />
+      <span className="text-white font-semibold" style={{ fontSize: 'clamp(5px, 0.7vw, 8px)', opacity: 0.9 }}>PitchMind</span>
+    </div>
+  )
+}
 
-      {/* Slide number chip */}
+/** Shared header band + slide number chip rendered by bullets / two_column / data_table. */
+function SlideHeader({ theme, index }: { theme: Theme; index: number }) {
+  return (
+    <>
+      <div className="absolute left-0 right-0" style={{ top: 0, height: '13.33%', backgroundColor: theme.accent }} />
       <div
         className="absolute flex items-center justify-center text-white font-bold"
-        style={{ right: 0, top: 0, width: '5%', height: '13.33%', backgroundColor: theme.accent, fontSize: 'clamp(7px, 1vw, 11px)', borderLeft: `1px solid rgba(255,255,255,0.2)` }}
+        style={{ right: 0, top: 0, width: '5%', height: '13.33%', backgroundColor: theme.accent, fontSize: 'clamp(7px, 1vw, 11px)', borderLeft: '1px solid rgba(255,255,255,0.2)' }}
       >
         {index + 1}
       </div>
+    </>
+  )
+}
+
+function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; index: number }) {
+  const bullets: string[] = slide.bullets ?? []
+  const layout = slide.layout || 'bullets'
+
+  const containerStyle: React.CSSProperties = {
+    aspectRatio: '16/9',
+    position: 'relative',
+    backgroundColor: theme.bg,
+    backgroundImage: `url(/themes/${theme.id}.png)`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    fontFamily: '"Plus Jakarta Sans", sans-serif',
+  }
+
+  // ── hero ──────────────────────────────────────────────────────────────────
+  if (layout === 'hero') {
+    const subtitle = bullets[0] ?? ''
+    return (
+      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+        {/* Large title */}
+        <div
+          className="absolute font-extrabold leading-tight"
+          style={{ top: '30%', left: '5%', right: '5%', color: '#FFFFFF', fontSize: 'clamp(18px, 3.5vw, 42px)' }}
+        >
+          {slide.title || 'Untitled Slide'}
+        </div>
+
+        {/* Accent line */}
+        <div
+          className="absolute rounded-full"
+          style={{ top: '62%', left: '5%', width: '22%', height: '0.7%', backgroundColor: theme.accent }}
+        />
+
+        {/* Subtitle */}
+        {subtitle && (
+          <div
+            className="absolute"
+            style={{ top: '67%', left: '5%', right: '5%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85 }}
+          >
+            {subtitle}
+          </div>
+        )}
+
+        <SlideFooter theme={theme} />
+      </div>
+    )
+  }
+
+  // ── two_column ────────────────────────────────────────────────────────────
+  if (layout === 'two_column') {
+    const mid = Math.ceil(bullets.length / 2)
+    const leftBullets = bullets.slice(0, mid)
+    const rightBullets = bullets.slice(mid)
+    const colHdrBg = theme.accent
+    const colHdrBgRight = lighterHex(theme.accent, 20)
+
+    return (
+      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+        <SlideHeader theme={theme} index={index} />
+
+        {/* Title */}
+        <div
+          className="absolute font-extrabold leading-tight"
+          style={{ top: '15.56%', left: '5%', right: '5%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)' }}
+        >
+          {slide.title || 'Untitled Slide'}
+        </div>
+
+        {/* Divider */}
+        <div
+          className="absolute rounded-full"
+          style={{ top: '37.78%', left: '5%', width: '20%', height: '0.9%', backgroundColor: theme.accent }}
+        />
+
+        {/* Column headers at ~40% */}
+        <div className="absolute" style={{ top: '40%', left: '5%', width: '47%' }}>
+          <div
+            className="flex items-center"
+            style={{ height: '6%', backgroundColor: colHdrBg, paddingLeft: '4%' }}
+          >
+            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>Key Points</span>
+          </div>
+          <div style={{ paddingTop: '2%' }}>
+            {leftBullets.map((b, i) => (
+              <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
+                <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
+                <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="absolute" style={{ top: '40%', left: '53%', right: '5%' }}>
+          <div
+            className="flex items-center"
+            style={{ height: '6%', backgroundColor: colHdrBgRight, paddingLeft: '4%' }}
+          >
+            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>Details</span>
+          </div>
+          <div style={{ paddingTop: '2%' }}>
+            {rightBullets.map((b, i) => (
+              <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
+                <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
+                <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <SlideFooter theme={theme} />
+      </div>
+    )
+  }
+
+  // ── data_table ────────────────────────────────────────────────────────────
+  if (layout === 'data_table') {
+    const valueBg = lighterHex(theme.bg, 35)
+
+    return (
+      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+        <SlideHeader theme={theme} index={index} />
+
+        {/* Title — smaller to leave room for table */}
+        <div
+          className="absolute font-extrabold leading-tight"
+          style={{ top: '15.56%', left: '5%', right: '5%', color: theme.text, fontSize: 'clamp(10px, 1.7vw, 20px)' }}
+        >
+          {slide.title || 'Untitled Slide'}
+        </div>
+
+        {/* Table rows starting at 38% */}
+        <div className="absolute overflow-hidden" style={{ top: '38%', left: '5%', right: '5%', bottom: '5.4%' }}>
+          {bullets.map((b, i) => {
+            const sepIdx = b.indexOf(': ')
+            const label = sepIdx !== -1 ? b.slice(0, sepIdx) : b
+            const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : ''
+            const labelBg = i % 2 === 0 ? theme.accent : lighterHex(theme.accent, 25)
+            return (
+              <div key={i} className="flex" style={{ height: '8%', marginBottom: '0.8%' }}>
+                <div
+                  className="flex items-center flex-shrink-0"
+                  style={{ width: '38%', backgroundColor: labelBg, paddingLeft: '3%', paddingRight: '2%' }}
+                >
+                  <span className="font-bold truncate" style={{ color: '#FFFFFF', fontSize: 'clamp(6px, 0.9vw, 11px)' }}>{label}</span>
+                </div>
+                <div
+                  className="flex items-center flex-1"
+                  style={{ backgroundColor: valueBg, paddingLeft: '3%', paddingRight: '2%' }}
+                >
+                  <span className="truncate" style={{ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)' }}>{value || '—'}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <SlideFooter theme={theme} />
+      </div>
+    )
+  }
+
+  // ── bullets (default) ─────────────────────────────────────────────────────
+  return (
+    <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideHeader theme={theme} index={index} />
 
       {/* Title */}
       <div
@@ -71,13 +256,7 @@ function SlidePreview({ slide, theme, index }: { slide: Slide; theme: Theme; ind
         ))}
       </div>
 
-      {/* Footer bar */}
-      <div
-        className="absolute left-0 right-0 flex items-center"
-        style={{ top: '97.34%', height: '2.66%', backgroundColor: theme.accent, paddingLeft: '5%' }}
-      >
-        <span className="text-white font-semibold" style={{ fontSize: 'clamp(5px, 0.7vw, 8px)', opacity: 0.9 }}>PitchMind</span>
-      </div>
+      <SlideFooter theme={theme} />
     </div>
   )
 }
