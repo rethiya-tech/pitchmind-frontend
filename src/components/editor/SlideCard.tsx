@@ -61,6 +61,16 @@ export function SlideCard({ slide, index, isActive, theme, onSelect, onDelete, o
           ))}
         </div>
         <div className="absolute bottom-0 left-0 right-0" style={{ height: '8%', backgroundColor: theme.accent }} />
+
+        {/* Layout badge */}
+        {slide.layout && slide.layout !== 'bullets' && (
+          <div
+            className="absolute bottom-1 right-1 text-white rounded"
+            style={{ fontSize: 3, padding: '1px 2px', backgroundColor: theme.accent, opacity: 0.9 }}
+          >
+            {slide.layout === 'hero' ? 'HERO' : slide.layout === 'two_column' ? '2-COL' : 'TABLE'}
+          </div>
+        )}
       </div>
 
       {/* ── Info ── */}
