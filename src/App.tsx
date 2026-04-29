@@ -16,6 +16,7 @@ import { ProjectsPage } from '@/pages/ProjectsPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 import { AdminAuditLogPage } from '@/pages/admin/AdminAuditLogPage'
+import { AdminProjectsPage } from '@/pages/admin/AdminProjectsPage'
 
 import { AppShell } from '@/components/layout/AppShell'
 import { RequireAuth } from '@/components/layout/RequireAuth'
@@ -74,6 +75,7 @@ export default function App() {
               <Route path="/admin" element={<RequireAdmin><AdminDashboardPage /></RequireAdmin>} />
               <Route path="/admin/users" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
               <Route path="/admin/audit-log" element={<RequireAdmin><AdminAuditLogPage /></RequireAdmin>} />
+              <Route path="/admin/projects" element={<RequireAdmin><AdminProjectsPage /></RequireAdmin>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -73,6 +73,7 @@ const NAV = [
 const ADMIN_NAV = [
   { to: '/admin', label: 'Overview', Icon: GridIcon },
   { to: '/admin/users', label: 'Users', Icon: FolderIcon },
+  { to: '/admin/projects', label: 'All Projects', Icon: FolderIcon },
   { to: '/admin/audit-log', label: 'Audit Log', Icon: LibraryIcon },
 ]
 
