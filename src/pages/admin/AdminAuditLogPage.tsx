@@ -13,7 +13,7 @@ export function AdminAuditLogPage() {
   const { data, isLoading } = useQuery<AuditLogListResponse>({
     queryKey: ['admin-audit-log', page],
     queryFn: async () => {
-      const res = await api.get('/admin/audit-log', { params: { page, per_page: PAGE_SIZE } })
+      const res = await api.get('/admin/audit-log', { params: { page, page_size: PAGE_SIZE } })
       return res.data
     },
   })

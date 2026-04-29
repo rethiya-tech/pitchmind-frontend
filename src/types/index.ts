@@ -65,10 +65,16 @@ export interface RegisterResponse {
 
 export interface AdminMetrics {
   total_users: number
+  active_users_today: number
   total_conversions: number
+  done_conversions: number
   conversions_today: number
   failed_today: number
+  total_slides: number
+  success_rate: number
   ai_cost_today_usd: number
+  ai_cost_total_usd: number
+  total_tokens: number
 }
 
 export interface AdminUser {
