@@ -1,9 +1,53 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
 import api from '@/services/api'
 import type { ConversionListResponse } from '@/types'
+
+async function downloadPptx(conversionId: string, name: string) {
+  const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export`)
+  const url = data.download_url
+  const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+  const isLocalUrl = apiBase && url.startsWith(apiBase)
+  if (isLocalUrl) {
+    const path = url.slice(`${apiBase}/api/v1`.length)
+    const res = await api.get(path, { responseType: 'blob' })
+    const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' })
+    const blobUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = `${name}.pptx`
+    a.click()
+    URL.revokeObjectURL(blobUrl)
+  } else {
+    window.open(url, '_blank')
+  }
+}
+
+function ExportButton({ conversionId, name }: { conversionId: string; name: string }) {
+  const [loading, setLoading] = useState(false)
+  const handleClick = async () => {
+    setLoading(true)
+    try {
+      await downloadPptx(conversionId, name)
+    } catch {
+      toast.error('Export failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors disabled:opacity-60"
+    >
+      {loading ? 'Exporting…' : 'Export'}
+    </button>
+  )
+}
 
 const PAGE_SIZE = 10
 
@@ -246,12 +290,7 @@ export function ProjectsPage() {
                           >
                             Edit
                           </Link>
-                          <Link
-                            to={`/export/${c.id}`}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors"
-                          >
-                            Export
-                          </Link>
+                          <ExportButton conversionId={c.id} name={c.original_filename?.replace(/\.[^.]+$/, '') ?? 'presentation'} />
                         </div>
                       )}
                       {c.status === 'generating' && (
