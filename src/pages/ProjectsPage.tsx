@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
 import api from '@/services/api'
@@ -45,6 +45,35 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
       className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors disabled:opacity-60"
     >
       {loading ? 'Exporting…' : 'Export'}
+    </button>
+  )
+}
+
+function DeleteButton({ conversionId }: { conversionId: string }) {
+  const [loading, setLoading] = useState(false)
+  const queryClient = useQueryClient()
+
+  const handleClick = async () => {
+    if (!window.confirm('Delete this project? This cannot be undone.')) return
+    setLoading(true)
+    try {
+      await api.delete(`/conversions/${conversionId}`)
+      await queryClient.invalidateQueries({ queryKey: ['conversions'] })
+      toast.success('Project deleted.')
+    } catch {
+      toast.error('Failed to delete project.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-colors disabled:opacity-60"
+    >
+      {loading ? 'Deleting…' : 'Delete'}
     </button>
   )
 }
@@ -291,6 +320,7 @@ export function ProjectsPage() {
                             Edit
                           </Link>
                           <ExportButton conversionId={c.id} name={c.original_filename?.replace(/\.[^.]+$/, '') ?? 'presentation'} />
+                          <DeleteButton conversionId={c.id} />
                         </div>
                       )}
                       {c.status === 'generating' && (

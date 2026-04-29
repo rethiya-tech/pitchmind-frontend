@@ -87,6 +87,25 @@ export interface AdminUserListResponse {
   page: number
 }
 
+export interface AdminConversion {
+  id: string
+  user_id: string | null
+  user_email: string | null
+  user_name: string | null
+  original_filename: string | null
+  status: string
+  theme: string | null
+  slide_count: number | null
+  tokens_used: number | null
+  created_at: string
+}
+
+export interface AdminConversionListResponse {
+  items: AdminConversion[]
+  total: number
+  page: number
+}
+
 export interface AuditLogEntry {
   id: string
   actor_email: string | null
