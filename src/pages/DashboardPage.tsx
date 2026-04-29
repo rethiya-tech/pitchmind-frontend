@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
+import { THEMES } from '@/types'
 import type { ConversionListResponse } from '@/types'
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
@@ -89,6 +90,121 @@ function StatusPill({ status }: { status: string }) {
   )
 }
 
+// ── Donut chart ───────────────────────────────────────────────────────────────
+function DonutChart({ segments }: { segments: { value: number; color: string; label: string }[] }) {
+  const total = segments.reduce((s, seg) => s + seg.value, 0)
+  if (total === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-2">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="44" fill="none" stroke="#E5E7EB" strokeWidth="16" />
+        </svg>
+        <p className="text-xs text-pm-muted">No data</p>
+      </div>
+    )
+  }
+  const r = 44
+  const cx = 60
+  const cy = 60
+  const circ = 2 * Math.PI * r
+
+  let offset = 0
+  const arcs = segments
+    .filter(s => s.value > 0)
+    .map(seg => {
+      const pct = seg.value / total
+      const dash = pct * circ
+      const gap = circ - dash
+      const arc = { ...seg, dash, gap, offset }
+      offset += dash
+      return arc
+    })
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative">
+        <svg width="140" height="140" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#F3F4F6" strokeWidth="16" />
+          {arcs.map((arc, i) => (
+            <circle
+              key={i}
+              cx={cx} cy={cy} r={r}
+              fill="none"
+              stroke={arc.color}
+              strokeWidth="16"
+              strokeDasharray={`${arc.dash} ${arc.gap}`}
+              strokeDashoffset={-arc.offset}
+              strokeLinecap="butt"
+            />
+          ))}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-2xl font-extrabold text-pm-primary leading-none">{total}</span>
+          <span className="text-[10px] text-pm-muted font-medium mt-0.5">total</span>
+        </div>
+      </div>
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+        {segments.filter(s => s.value > 0).map((s, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
+            <span className="text-xs text-pm-muted">{s.label}</span>
+            <span className="text-xs font-bold text-pm-primary">{s.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Horizontal bar chart ───────────────────────────────────────────────────────
+function BarChart({ bars }: { bars: { label: string; value: number; color: string }[] }) {
+  const max = Math.max(...bars.map(b => b.value), 1)
+  return (
+    <div className="flex flex-col gap-3 w-full">
+      {bars.map((bar, i) => (
+        <div key={i} className="flex items-center gap-3">
+          <span className="text-xs text-pm-muted truncate w-28 text-right flex-shrink-0">{bar.label}</span>
+          <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${(bar.value / max) * 100}%`, backgroundColor: bar.color }}
+            />
+          </div>
+          <span className="text-xs font-bold text-pm-primary w-6 text-right flex-shrink-0">{bar.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Sparkline (7-day project activity) ────────────────────────────────────────
+function Sparkline({ points }: { points: number[] }) {
+  const max = Math.max(...points, 1)
+  const w = 200
+  const h = 50
+  const step = w / (points.length - 1)
+
+  const pts = points.map((v, i) => ({ x: i * step, y: h - (v / max) * (h - 4) }))
+  const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  const area = `${path} L ${pts[pts.length - 1].x} ${h} L 0 ${h} Z`
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 50 }} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#0F6E56" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#0F6E56" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#spark-grad)" />
+      <path d={path} fill="none" stroke="#0F6E56" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {pts.map((p, i) => points[i] > 0 && (
+        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#0F6E56" />
+      ))}
+    </svg>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user)
@@ -111,6 +227,36 @@ export function DashboardPage() {
   const firstName = user?.name?.split(' ')[0] ?? 'there'
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+
+  const failedCount = items.filter(c => c.status === 'failed').length
+  const pendingCount = items.filter(c => c.status === 'pending' || c.status === 'cancelled').length
+
+  const donutSegments = [
+    { label: 'Done',       value: doneCount,       color: '#10B981' },
+    { label: 'Generating', value: generatingCount,  color: '#3B82F6' },
+    { label: 'Failed',     value: failedCount,      color: '#EF4444' },
+    { label: 'Pending',    value: pendingCount,      color: '#9CA3AF' },
+  ]
+
+  const barData = items
+    .filter(c => c.slide_count != null && c.slide_count > 0)
+    .slice(0, 6)
+    .map(c => ({
+      label: (c.original_filename ?? 'Untitled').replace(/\.[^.]+$/, '').slice(0, 18),
+      value: c.slide_count ?? 0,
+      color: '#0F6E56',
+    }))
+
+  // 7-day sparkline — count projects created each day
+  const today = new Date()
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - (6 - i))
+    return d.toDateString()
+  })
+  const spark7 = last7.map(day =>
+    items.filter(c => c.created_at && new Date(c.created_at).toDateString() === day).length
+  )
 
   if (isLoading) {
     return (
@@ -184,6 +330,49 @@ export function DashboardPage() {
           }
         />
       </div>
+
+      {/* ── Charts ── */}
+      {items.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+          {/* Status donut */}
+          <div className="bg-white rounded-2xl border border-pm-border p-5 flex flex-col gap-3">
+            <p className="text-sm font-bold text-pm-primary">Project Status</p>
+            <div className="flex-1 flex items-center justify-center py-2">
+              <DonutChart segments={donutSegments} />
+            </div>
+          </div>
+
+          {/* Slides per project */}
+          <div className="bg-white rounded-2xl border border-pm-border p-5 flex flex-col gap-4">
+            <p className="text-sm font-bold text-pm-primary">Slides per Project</p>
+            {barData.length > 0 ? (
+              <div className="flex-1 flex items-center">
+                <BarChart bars={barData} />
+              </div>
+            ) : (
+              <p className="text-xs text-pm-muted text-center py-8">No slide data yet</p>
+            )}
+          </div>
+
+          {/* 7-day activity sparkline */}
+          <div className="bg-white rounded-2xl border border-pm-border p-5 flex flex-col gap-4">
+            <div className="flex items-start justify-between">
+              <p className="text-sm font-bold text-pm-primary">Activity (7 days)</p>
+              <span className="text-xs text-pm-muted">{spark7.reduce((a, b) => a + b, 0)} projects</span>
+            </div>
+            <div className="flex-1 flex flex-col justify-end gap-2">
+              <Sparkline points={spark7} />
+              <div className="flex justify-between">
+                {['6d', '5d', '4d', '3d', '2d', '1d', 'Today'].map(d => (
+                  <span key={d} className="text-[10px] text-pm-muted">{d}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      )}
 
       {/* ── Quick actions + Recent activity ── */}
       <div className="grid grid-cols-3 gap-5">
@@ -259,10 +448,19 @@ export function DashboardPage() {
                 >
                   {/* Name */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-9 h-6 rounded flex-shrink-0"
-                      style={{ background: `linear-gradient(135deg, hsl(${((c.original_filename ?? 'U').charCodeAt(0) * 37) % 360},40%,35%) 0%, hsl(${((c.original_filename ?? 'U').charCodeAt(0) * 37) % 360},50%,50%) 100%)` }}
-                    />
+                    {(() => {
+                      const t = THEMES.find(th => th.id === c.theme) ?? THEMES[0]
+                      return (
+                        <div
+                          className="w-9 h-6 flex-shrink-0 rounded-sm overflow-hidden flex flex-col justify-between p-0.5"
+                          style={{ backgroundColor: t.bg }}
+                        >
+                          <div className="h-0.5 rounded-full w-5" style={{ backgroundColor: t.accent }} />
+                          <div className="h-0.5 rounded-full w-4 opacity-60" style={{ backgroundColor: t.text }} />
+                          <div className="h-0.5 rounded-full w-4 opacity-60" style={{ backgroundColor: t.text }} />
+                        </div>
+                      )
+                    })()}
                     <span className="text-sm text-pm-primary font-medium truncate">
                       {c.original_filename ?? 'Untitled'}
                     </span>

@@ -2,7 +2,7 @@ import { NavLink, Link } from 'react-router-dom'
 import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/stores/authStore'
 
-function GridIcon() {
+function DashboardIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
       <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
@@ -13,7 +13,7 @@ function GridIcon() {
   )
 }
 
-function FolderIcon() {
+function ProjectsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
       <path d="M2 5.5A1.5 1.5 0 013.5 4h3.586a1 1 0 01.707.293L9.5 6H16.5A1.5 1.5 0 0118 7.5v7A1.5 1.5 0 0116.5 16h-13A1.5 1.5 0 012 14.5v-9z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
@@ -21,30 +21,50 @@ function FolderIcon() {
   )
 }
 
-function LibraryIcon() {
+function SettingsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-      <path d="M4 4h3v12H4zM9 4h3v12H9zM14 4l3 1v10l-3 1V4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M8.325 2.317a1.75 1.75 0 013.35 0l.14.493a1.25 1.25 0 001.756.74l.458-.228a1.75 1.75 0 012.372 2.372l-.228.458a1.25 1.25 0 00.74 1.756l.493.14a1.75 1.75 0 010 3.35l-.493.14a1.25 1.25 0 00-.74 1.756l.228.458a1.75 1.75 0 01-2.372 2.372l-.458-.228a1.25 1.25 0 00-1.756.74l-.14.493a1.75 1.75 0 01-3.35 0l-.14-.493a1.25 1.25 0 00-1.756-.74l-.458.228a1.75 1.75 0 01-2.372-2.372l.228-.458a1.25 1.25 0 00-.74-1.756l-.493-.14a1.75 1.75 0 010-3.35l.493-.14a1.25 1.25 0 00.74-1.756l-.228-.458a1.75 1.75 0 012.372-2.372l.458.228a1.25 1.25 0 001.756-.74l.14-.493z" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.4" />
     </svg>
   )
 }
 
-function SupportIcon() {
+function OverviewIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-      <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M10 13v-1a3 3 0 001.5-5.598A3 3 0 007 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="10" cy="15" r="0.75" fill="currentColor" />
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <path d="M2 14l4-5 3 3 4-6 5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   )
 }
 
-function ArchiveIcon() {
+function UsersIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-      <rect x="2" y="3" width="16" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M3 7v8a2 2 0 002 2h10a2 2 0 002-2V7" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M8 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <circle cx="7.5" cy="6" r="3" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M1 17c0-3.314 2.91-6 6.5-6s6.5 2.686 6.5 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M13 3.5a3 3 0 010 5M15.5 17c0-2.2-1.012-4.15-2.5-5.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function AllProjectsIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <rect x="2" y="6" width="16" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 6V4.5A1.5 1.5 0 017.5 3h5A1.5 1.5 0 0114 4.5V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M2 10h16" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="10" cy="13" r="1" fill="currentColor" />
+    </svg>
+  )
+}
+
+function AuditLogIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -65,16 +85,16 @@ function LogoMark() {
 }
 
 const NAV = [
-  { to: '/dashboard', label: 'Dashboard', Icon: GridIcon },
-  { to: '/projects', label: 'Projects', Icon: FolderIcon },
-  { to: '/settings', label: 'Settings', Icon: LibraryIcon },
+  { to: '/dashboard', label: 'Dashboard', Icon: DashboardIcon },
+  { to: '/projects',  label: 'Projects',  Icon: ProjectsIcon  },
+  { to: '/settings',  label: 'Settings',  Icon: SettingsIcon  },
 ]
 
 const ADMIN_NAV = [
-  { to: '/admin', label: 'Overview', Icon: GridIcon },
-  { to: '/admin/users', label: 'Users', Icon: FolderIcon },
-  { to: '/admin/projects', label: 'All Projects', Icon: FolderIcon },
-  { to: '/admin/audit-log', label: 'Audit Log', Icon: LibraryIcon },
+  { to: '/admin',             label: 'Overview',     Icon: OverviewIcon    },
+  { to: '/admin/users',       label: 'Users',        Icon: UsersIcon       },
+  { to: '/admin/projects',    label: 'All Projects', Icon: AllProjectsIcon },
+  { to: '/admin/audit-log',   label: 'Audit Log',    Icon: AuditLogIcon    },
 ]
 
 interface SidebarProps {
@@ -164,28 +184,16 @@ export function Sidebar({ open = true }: SidebarProps) {
       </nav>
 
       {/* Bottom */}
-      <div className="px-3 pb-5 pt-3 border-t border-pm-border space-y-1">
+      <div className="px-3 pb-5 pt-3 border-t border-pm-border">
         <Link
           to="/upload"
-          className="flex items-center justify-center gap-2 w-full bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm py-2.5 rounded-xl transition-colors mb-2"
+          className="flex items-center justify-center gap-2 w-full bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm py-2.5 rounded-xl transition-colors"
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
           Create Presentation
         </Link>
-
-        <NavLink
-          to="/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-pm-muted hover:bg-gray-100 hover:text-pm-primary transition-colors"
-        >
-          <SupportIcon />
-          Support
-        </NavLink>
-        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-pm-muted hover:bg-gray-100 hover:text-pm-primary transition-colors w-full text-left">
-          <ArchiveIcon />
-          Archive
-        </button>
       </div>
     </aside>
   )

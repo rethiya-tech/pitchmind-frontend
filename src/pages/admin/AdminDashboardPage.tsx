@@ -1,53 +1,201 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { Spinner } from '@/components/ui/Spinner'
 import api from '@/services/api'
-import type { AdminMetrics } from '@/types'
+import type { AdminMetrics, AuditLogListResponse, AdminConversionListResponse } from '@/types'
 
-interface MetricCardProps {
+function StatCard({
+  label, value, sub, icon, accent = false,
+}: {
   label: string
   value: string | number
-}
-
-function MetricCard({ label, value }: MetricCardProps) {
+  sub?: string
+  icon: React.ReactNode
+  accent?: boolean
+}) {
   return (
-    <div className="bg-pm-surface rounded-2xl border border-pm-border p-6 space-y-1">
-      <p className="text-sm text-pm-muted">{label}</p>
-      <p className="text-3xl font-bold text-pm-primary">{value}</p>
+    <div className={`rounded-2xl border p-5 flex items-start gap-4 ${accent ? 'bg-pm-teal border-pm-teal' : 'bg-pm-surface border-pm-border'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? 'bg-white/20' : 'bg-[#E1F5EE]'}`}>
+        <span className={accent ? 'text-white' : 'text-pm-teal'}>{icon}</span>
+      </div>
+      <div>
+        <p className={`text-xs font-semibold uppercase tracking-wider ${accent ? 'text-white/70' : 'text-pm-muted'}`}>{label}</p>
+        <p className={`text-2xl font-extrabold mt-0.5 ${accent ? 'text-white' : 'text-pm-primary'}`}>{value}</p>
+        {sub && <p className={`text-xs mt-0.5 ${accent ? 'text-white/60' : 'text-pm-muted'}`}>{sub}</p>}
+      </div>
     </div>
   )
 }
 
+function UsersIcon() {
+  return <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="7.5" cy="6" r="3" stroke="currentColor" strokeWidth="1.5"/><path d="M1 17c0-3.314 2.91-6 6.5-6s6.5 2.686 6.5 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M13 3.5a3 3 0 010 5M15.5 17c0-2.2-1.012-4.15-2.5-5.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+}
+function SlideIcon() {
+  return <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M7 17h6M10 15v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+}
+function CheckIcon() {
+  return <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M6.5 10.5l2.5 2.5 4-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function LayersIcon() {
+  return <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2L2 6l8 4 8-4-8-4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/><path d="M2 10l8 4 8-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M2 14l8 4 8-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+}
+function CostIcon() {
+  return <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v1.5M10 12.5V14M7.5 11a2.5 2.5 0 005 0c0-1.38-2.5-2-2.5-2s-2.5-.62-2.5-2a2.5 2.5 0 015 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+}
+function ActivityIcon() {
+  return <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M2 10h3l2-6 3 12 2-8 2 4 2-2h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+
+function statusDot(status: string) {
+  const map: Record<string, string> = { done: 'bg-green-500', generating: 'bg-blue-500', failed: 'bg-red-500', pending: 'bg-gray-400', cancelled: 'bg-gray-300' }
+  return map[status] ?? 'bg-gray-400'
+}
+
+function statusText(status: string) {
+  const map: Record<string, string> = { done: 'text-green-700 bg-green-50', generating: 'text-blue-700 bg-blue-50', failed: 'text-red-700 bg-red-50', pending: 'text-gray-600 bg-gray-100', cancelled: 'text-gray-500 bg-gray-100' }
+  return map[status] ?? 'text-gray-600 bg-gray-100'
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
+}
+
+function actionLabel(action: string) {
+  const map: Record<string, string> = {
+    'user.login': 'User logged in',
+    'user.logout': 'User logged out',
+    'user.register': 'New user registered',
+    'user.password_change': 'Password changed',
+    'conversion.created': 'Presentation created',
+    'conversion.failed': 'Presentation failed',
+    'conversion.deleted': 'Presentation deleted',
+  }
+  return map[action] ?? action
+}
+
+function actionColor(action: string) {
+  if (action.includes('login') || action.includes('register')) return 'bg-blue-100 text-blue-700'
+  if (action.includes('created')) return 'bg-green-100 text-green-700'
+  if (action.includes('failed') || action.includes('deleted')) return 'bg-red-100 text-red-700'
+  if (action.includes('password')) return 'bg-orange-100 text-orange-700'
+  return 'bg-gray-100 text-gray-700'
+}
+
 export function AdminDashboardPage() {
-  const { data, isLoading } = useQuery<AdminMetrics>({
+  const { data: metrics, isLoading } = useQuery<AdminMetrics>({
     queryKey: ['admin-metrics'],
-    queryFn: async () => {
-      const res = await api.get('/admin/metrics')
-      return res.data
-    },
+    queryFn: async () => (await api.get('/admin/metrics')).data,
+    refetchInterval: 30_000,
+  })
+
+  const { data: auditData } = useQuery<AuditLogListResponse>({
+    queryKey: ['admin-audit-log', 1],
+    queryFn: async () => (await api.get('/admin/audit-log', { params: { page: 1, page_size: 8 } })).data,
+  })
+
+  const { data: convData } = useQuery<AdminConversionListResponse>({
+    queryKey: ['admin-conversions', 1],
+    queryFn: async () => (await api.get('/admin/conversions', { params: { page: 1, page_size: 5 } })).data,
   })
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" className="text-pm-teal" />
-      </div>
-    )
+    return <div className="flex justify-center py-20"><Spinner size="lg" className="text-pm-teal" /></div>
   }
+
+  const m = metrics!
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-pm-primary">Admin Overview</h1>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <MetricCard label="Total Users" value={data?.total_users ?? 0} />
-        <MetricCard label="Slide Conversions" value={data?.total_conversions ?? 0} />
-        <MetricCard label="Conversions Today" value={data?.conversions_today ?? 0} />
-        <MetricCard label="Failed Today" value={data?.failed_today ?? 0} />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Admin Overview</h1>
+          <p className="text-sm text-pm-muted mt-0.5">Platform health and activity at a glance</p>
+        </div>
+        <span className="text-xs text-pm-muted border border-pm-border rounded-lg px-3 py-1.5 bg-white">
+          Auto-refreshes every 30s
+        </span>
       </div>
-      <div className="bg-pm-surface rounded-2xl border border-pm-border p-6">
-        <p className="text-sm text-pm-muted">AI Cost Today</p>
-        <p className="text-2xl font-bold text-pm-primary">
-          ${data?.ai_cost_today_usd?.toFixed(4) ?? '0.0000'}
-        </p>
+
+      {/* Primary KPIs */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Total Users" value={m.total_users} sub={`${m.active_users_today} active today`} icon={<UsersIcon />} />
+        <StatCard label="Total Presentations" value={m.total_conversions} sub={`${m.done_conversions} completed`} icon={<SlideIcon />} />
+        <StatCard label="Success Rate" value={`${m.success_rate}%`} sub={`${m.done_conversions} of ${m.total_conversions}`} icon={<CheckIcon />} accent />
+        <StatCard label="Slides Generated" value={m.total_slides.toLocaleString()} sub="all time" icon={<LayersIcon />} />
+      </div>
+
+      {/* Secondary KPIs */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Conversions Today" value={m.conversions_today} icon={<ActivityIcon />} />
+        <StatCard label="Failed Today" value={m.failed_today} sub={m.failed_today > 0 ? 'needs attention' : 'all good'} icon={<CheckIcon />} />
+        <StatCard label="AI Cost Today" value={`$${m.ai_cost_today_usd.toFixed(4)}`} sub={`${(m.total_tokens).toLocaleString()} total tokens`} icon={<CostIcon />} />
+        <StatCard label="Total AI Spend" value={`$${m.ai_cost_total_usd.toFixed(3)}`} sub="all time" icon={<CostIcon />} />
+      </div>
+
+      {/* Bottom panels */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+        {/* Recent Presentations */}
+        <div className="bg-pm-surface border border-pm-border rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border">
+            <h2 className="text-sm font-bold text-pm-primary">Recent Presentations</h2>
+            <Link to="/admin/projects" className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover">View all →</Link>
+          </div>
+          <div className="divide-y divide-pm-border">
+            {!convData?.items.length ? (
+              <p className="px-5 py-8 text-sm text-pm-muted text-center">No presentations yet</p>
+            ) : convData.items.map((c) => (
+              <div key={c.id} className="flex items-center gap-3 px-5 py-3">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusDot(c.status)}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-pm-primary truncate">{c.original_filename ?? 'Untitled'}</p>
+                  <p className="text-xs text-pm-muted">{c.user_email ?? c.user_name ?? '—'}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusText(c.status)}`}>
+                    {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
+                  </span>
+                  {c.slide_count != null && (
+                    <span className="text-xs text-pm-muted">{c.slide_count} slides</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Audit Log */}
+        <div className="bg-pm-surface border border-pm-border rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border">
+            <h2 className="text-sm font-bold text-pm-primary">Recent Activity</h2>
+            <Link to="/admin/audit-log" className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover">View all →</Link>
+          </div>
+          <div className="divide-y divide-pm-border">
+            {!auditData?.items.length ? (
+              <p className="px-5 py-8 text-sm text-pm-muted text-center">No activity logged yet</p>
+            ) : auditData.items.map((entry) => (
+              <div key={entry.id} className="flex items-start gap-3 px-5 py-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${actionColor(entry.action)}`}>
+                      {actionLabel(entry.action)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-pm-muted mt-0.5">{entry.actor_email ?? 'system'}</p>
+                </div>
+                <span className="text-xs text-pm-muted flex-shrink-0 mt-0.5">{timeAgo(entry.created_at)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   )
