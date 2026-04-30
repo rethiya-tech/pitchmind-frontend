@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
@@ -135,6 +135,7 @@ function DeleteButton({ conversionId }: { conversionId: string }) {
 
 export function AdminProjectsPage() {
   const [page, setPage] = useState(1)
+  const navigate = useNavigate()
 
   const { data, isLoading } = useQuery<AdminConversionListResponse>({
     queryKey: ['admin-conversions', page],
@@ -153,9 +154,20 @@ export function AdminProjectsPage() {
           <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">All Projects</h1>
           <p className="text-sm text-pm-muted mt-0.5">All user presentations across the platform</p>
         </div>
-        {data && (
-          <span className="text-sm text-pm-muted">{data.total} total</span>
-        )}
+        <div className="flex items-center gap-3">
+          {data && (
+            <span className="text-sm text-pm-muted">{data.total} total</span>
+          )}
+          <button
+            onClick={() => navigate('/upload')}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Create Presentation
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
