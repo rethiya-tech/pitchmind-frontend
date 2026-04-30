@@ -8,6 +8,7 @@ import { ThemePicker } from './ThemePicker'
 import { Button } from '@/components/ui/Button'
 import api from '@/services/api'
 import { cn } from '@/utils/cn'
+import { THEMES } from '@/types'
 
 const SLIDE_COUNTS = [5, 8, 10, 12, 15]
 const PROMPT_MIN = 20
@@ -399,7 +400,11 @@ export function UploadForm() {
         done={false}
       >
         <div className="flex flex-col gap-5 h-full">
-          <ThemePicker value={theme} onChange={setTheme} />
+          <ThemePicker value={theme} onChange={(id) => {
+            setTheme(id)
+            const category = THEMES.find(t => t.id === id)?.category
+            if (category) setStyle(category)
+          }} />
 
           <div className="mt-auto space-y-2 pt-4 border-t border-pm-border">
             {inputMode === 'file' ? (
@@ -410,8 +415,8 @@ export function UploadForm() {
                 label={promptReady ? `Prompt ready (${promptText.trim().length} chars)` : 'No prompt entered'}
               />
             )}
-            <StatusRow done label={`${slideCount} slides · ${style} · ${audienceLevel}`} />
-            <StatusRow done={!!theme} label="Theme selected" />
+            <StatusRow done label={`${slideCount} slides · ${style}`} />
+            <StatusRow done={!!theme} label={theme ? `Theme: ${THEMES.find(t => t.id === theme)?.name ?? theme}` : 'Theme selected'} />
           </div>
 
           <Button

@@ -13,6 +13,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 const inputCls = 'w-full border border-pm-border rounded-lg px-3 py-2 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-gray-300'
 
+const MAX_BULLETS: Record<string, number> = {
+  hero: 2,
+  bullets: 6,
+  two_column: 8,
+  data_table: 7,
+  timeline: 6,
+  big_stat: 3,
+  process: 5,
+  quote: 2,
+}
+
 const AI_EXAMPLES = [
   'Make shapes rounded',
   'Change color to blue',
@@ -172,15 +183,17 @@ export function SlideDetailPanel() {
               </div>
             ))}
 
-            <button
-              onClick={handleAddBullet}
-              className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-lg border border-dashed border-pm-border text-[11px] font-medium text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-[#E1F5EE] transition-all"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add bullet point
-            </button>
+            {slide.bullets.length < (MAX_BULLETS[slide.layout] ?? 6) && (
+              <button
+                onClick={handleAddBullet}
+                className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-lg border border-dashed border-pm-border text-[11px] font-medium text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-[#E1F5EE] transition-all"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add bullet point
+              </button>
+            )}
           </div>
 
           {/* Speaker Notes */}

@@ -69,6 +69,7 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
   // ── hero ──────────────────────────────────────────────────────────────────
   if (layout === 'hero') {
     const subtitle = bullets[0] ?? ''
+    const tagline = bullets[1] ?? ''
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
@@ -87,6 +88,14 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
             style={{ top: '65%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85 }}
           >
             {subtitle}
+          </div>
+        )}
+        {tagline && (
+          <div
+            className="absolute"
+            style={{ top: '75%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1.2vw, 14px)', opacity: 0.65 }}
+          >
+            {tagline}
           </div>
         )}
       </div>
@@ -385,7 +394,8 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
   backTo?: { path: string; label: string }
 }) {
   const isDirty = useEditorStore((s) => s.isDirty)
-  const name = conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation'
+  const name = (conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation')
+    .replace(/[^a-zA-Z0-9\s-]/g, '').trim().slice(0, 40).trimEnd()
   const [isExporting, setIsExporting] = useState(false)
 
   const handleExport = async () => {
@@ -553,7 +563,7 @@ export function EditorPage() {
       {/* Top toolbar */}
       <EditorBar
         conversionId={id ?? ''}
-        conversionName={conversion?.original_filename}
+        conversionName={conversion?.name ?? conversion?.original_filename}
         isSaving={isSaving}
         hasError={hasError}
         backTo={backTo}

@@ -27,6 +27,7 @@ export interface Conversion {
   user_id?: string
   upload_id?: string
   original_filename?: string
+  name?: string
   status: 'pending' | 'generating' | 'done' | 'failed' | 'cancelled'
   style?: string
   slide_count?: number
