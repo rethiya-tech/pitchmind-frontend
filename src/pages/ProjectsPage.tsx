@@ -295,7 +295,7 @@ export function ProjectsPage() {
             </thead>
             <tbody>
               {pageItems.map((c) => {
-                const filename = c.original_filename ?? 'Untitled'
+                const filename = c.name ?? c.original_filename ?? 'Untitled'
                 return (
                   <tr
                     key={c.id}
@@ -347,7 +347,7 @@ export function ProjectsPage() {
                               <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </Link>
-                          <ExportButton conversionId={c.id} name={c.original_filename?.replace(/\.[^.]+$/, '') ?? 'presentation'} />
+                          <ExportButton conversionId={c.id} name={(c.name ?? c.original_filename ?? 'presentation').replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9\s-]/g, '').trim().slice(0, 40).trimEnd()} />
                           <DeleteButton conversionId={c.id} />
                         </div>
                       )}

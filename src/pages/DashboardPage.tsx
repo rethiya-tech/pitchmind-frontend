@@ -242,7 +242,7 @@ export function DashboardPage() {
     .filter(c => c.slide_count != null && c.slide_count > 0)
     .slice(0, 6)
     .map(c => ({
-      label: (c.original_filename ?? 'Untitled').replace(/\.[^.]+$/, '').slice(0, 18),
+      label: (c.name ?? c.original_filename ?? 'Untitled').replace(/\.[^.]+$/, '').slice(0, 18),
       value: c.slide_count ?? 0,
       color: '#0F6E56',
     }))
@@ -462,7 +462,7 @@ export function DashboardPage() {
                       )
                     })()}
                     <span className="text-sm text-pm-primary font-medium truncate">
-                      {c.original_filename ?? 'Untitled'}
+                      {c.name ?? c.original_filename ?? 'Untitled'}
                     </span>
                   </div>
                   {/* Status */}
