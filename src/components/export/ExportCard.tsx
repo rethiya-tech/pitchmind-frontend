@@ -69,7 +69,7 @@ export function ExportCard({ conversion }: ExportCardProps) {
       ) : (
         <div
           className="w-full h-24 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: theme.primary }}
+          style={{ backgroundColor: theme.bg }}
         >
           <div className="text-center">
             <div className="text-white font-bold text-lg opacity-90">{theme.name}</div>
