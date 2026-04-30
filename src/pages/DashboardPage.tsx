@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Spinner } from '@/components/ui/Spinner'
@@ -5,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
 import { THEMES } from '@/types'
 import type { ConversionListResponse } from '@/types'
+import { TemplatePicker } from '@/components/templates/TemplatePicker'
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({
@@ -208,6 +210,7 @@ function Sparkline({ points }: { points: number[] }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user)
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
 
   const { data, isLoading } = useQuery<ConversionListResponse>({
     queryKey: ['conversions'],
@@ -374,6 +377,9 @@ export function DashboardPage() {
         </div>
       )}
 
+      {/* Template picker modal */}
+      {showTemplatePicker && <TemplatePicker onClose={() => setShowTemplatePicker(false)} />}
+
       {/* ── Quick actions + Recent activity ── */}
       <div className="grid grid-cols-3 gap-5">
 
@@ -391,6 +397,30 @@ export function DashboardPage() {
               </svg>
             }
           />
+          {/* Use Template button — triggers picker modal */}
+          <button
+            onClick={() => setShowTemplatePicker(true)}
+            className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal hover:shadow-md transition-all overflow-hidden text-left"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#E1F5EE] flex items-center justify-center text-pm-teal">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x="2" y="3" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+                <path d="M6 16h6M9 13v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                <path d="M5 7h4M5 10h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-pm-primary group-hover:text-pm-teal transition-colors">Use a Template</p>
+              <p className="text-xs text-pm-muted mt-0.5 leading-relaxed">Start from a pre-built slide template</p>
+            </div>
+            <span className="flex items-center gap-1 text-xs font-semibold text-pm-teal mt-auto">
+              Browse templates
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="translate-x-0 group-hover:translate-x-1 transition-transform">
+                <path d="M2.5 6h7m-3-3 3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <div className="absolute top-0 left-0 w-0 h-0.5 bg-pm-teal group-hover:w-full transition-all duration-300" />
+          </button>
           <ActionCard
             to="/projects"
             title="My Projects"
