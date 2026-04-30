@@ -29,7 +29,6 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [theme, setTheme] = useState('clean_slate')
   const [dragging, setDragging] = useState(false)
 
   const { mutate: upload, isPending } = useMutation({
@@ -39,7 +38,6 @@ function UploadModal({ onClose }: { onClose: () => void }) {
       form.append('file', file)
       form.append('name', name)
       form.append('description', description)
-      form.append('theme', theme)
       return api.post('/templates', form)
     },
     onSuccess: (data) => {
@@ -134,19 +132,6 @@ function UploadModal({ onClose }: { onClose: () => void }) {
             />
           </div>
 
-          {/* Theme */}
-          <div>
-            <label className="text-xs font-semibold text-pm-muted uppercase tracking-wider">Theme</label>
-            <select
-              value={theme}
-              onChange={e => setTheme(e.target.value)}
-              className="mt-1 w-full border border-pm-border rounded-xl px-4 py-2.5 text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-white"
-            >
-              {THEMES.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Footer */}

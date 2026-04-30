@@ -1,14 +1,21 @@
-import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useRef, useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
 import api from '@/services/api'
 import { THEMES } from '@/types'
+import { useAuthStore } from '@/stores/authStore'
 import type { TemplateListResponse, Template, TemplateDetail, TemplateCopyResponse } from '@/types'
 
+const CUSTOM_DESIGN = { bg: '#1E2A3A', accent: '#4A9EBF', text: '#E0E8F0', name: 'Custom Design' }
+
+function resolveTheme(theme: string | null | undefined) {
+  return theme ? (THEMES.find(th => th.id === theme) ?? THEMES[0]) : CUSTOM_DESIGN
+}
+
 function SlideThumbCard({ slide, index, theme }: { slide: any; index: number; theme: string | null }) {
-  const t = THEMES.find(th => th.id === theme) ?? THEMES[0]
+  const t = resolveTheme(theme)
   const hasTitle = slide.title && !slide.title.match(/^Slide \d+$/)
   const hasBullets = (slide.bullets as string[])?.length > 0
 
@@ -87,7 +94,7 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
     queryKey: ['template-detail', template.id],
     queryFn: async () => (await api.get(`/templates/${template.id}`)).data,
   })
-  const t = THEMES.find(th => th.id === template.theme) ?? THEMES[0]
+  const t = resolveTheme(template.theme)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -153,11 +160,150 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
   )
 }
 
-function TemplateRow({ template }: { template: Template }) {
+// ── Upload modal ──────────────────────────────────────────────────────────────
+
+function UploadModal({ onClose }: { onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [dragOver, setDragOver] = useState(false)
+
+  const { mutate: upload, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!file) throw new Error('No file selected')
+      const form = new FormData()
+      form.append('name', name.trim())
+      form.append('description', description.trim())
+      form.append('file', file)
+      return (await api.post('/templates', form, { headers: { 'Content-Type': 'multipart/form-data' } })).data
+    },
+    onSuccess: () => {
+      toast.success('Template uploaded successfully')
+      queryClient.invalidateQueries({ queryKey: ['templates'] })
+      onClose()
+    },
+    onError: () => toast.error('Upload failed. Please try again.'),
+  })
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    const f = e.dataTransfer.files[0]
+    if (f && f.name.endsWith('.pptx')) setFile(f)
+    else toast.error('Only .pptx files are accepted')
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (f) setFile(f)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-pm-border">
+          <h2 className="text-lg font-bold text-pm-primary">Upload Your Template</h2>
+          <button onClick={onClose} className="text-pm-muted hover:text-pm-primary transition-colors">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-xs font-semibold text-pm-primary mb-1.5">Template Name <span className="text-pm-danger">*</span></label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Sales Deck Q2"
+              className="w-full px-3 py-2 rounded-lg border border-pm-border text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-xs font-semibold text-pm-primary mb-1.5">Description <span className="text-pm-muted font-normal">(optional)</span></label>
+            <input
+              type="text"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Brief description of this template"
+              className="w-full px-3 py-2 rounded-lg border border-pm-border text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal"
+            />
+          </div>
+
+          {/* File drop zone */}
+          <div>
+            <label className="block text-xs font-semibold text-pm-primary mb-1.5">PPTX File <span className="text-pm-danger">*</span></label>
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+                dragOver ? 'border-pm-teal bg-[#E1F5EE]' : 'border-pm-border hover:border-pm-teal hover:bg-gray-50'
+              }`}
+            >
+              <input ref={fileRef} type="file" accept=".pptx" className="hidden" onChange={handleFileChange} />
+              {file ? (
+                <div className="space-y-1">
+                  <div className="text-2xl">📊</div>
+                  <p className="font-medium text-pm-primary text-sm">{file.name}</p>
+                  <p className="text-xs text-pm-muted">{(file.size / 1024).toFixed(1)} KB · Click to replace</p>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="text-3xl">☁️</div>
+                  <p className="font-medium text-pm-primary text-sm">Drag & drop or click to upload</p>
+                  <p className="text-xs text-pm-muted">PPTX files only · up to 50MB</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <p className="text-xs text-pm-muted">
+            Your uploaded template will only be visible to you. Admins can upload public templates available to all users.
+          </p>
+        </div>
+
+        <div className="px-6 py-4 border-t border-pm-border bg-[#F9FAFB] flex items-center justify-between">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-pm-muted hover:text-pm-primary transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={() => upload()}
+            disabled={isPending || !name.trim() || !file}
+            className="flex items-center gap-2 px-5 py-2.5 bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPending ? <Spinner size="sm" /> : (
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1v8M4 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1 10v1.5A1.5 1.5 0 002.5 13h9a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+            )}
+            {isPending ? 'Uploading…' : 'Upload Template'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Template row ──────────────────────────────────────────────────────────────
+
+function TemplateRow({ template, currentUserId }: { template: Template; currentUserId: string | undefined }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [showView, setShowView] = useState(false)
   const [copying, setCopying] = useState(false)
-  const t = THEMES.find(th => th.id === template.theme) ?? THEMES[0]
+  const t = resolveTheme(template.theme)
+
+  const isOwn = !template.is_public && template.created_by === currentUserId
 
   const { mutate: copyTemplate } = useMutation({
     mutationFn: async () => {
@@ -173,6 +319,15 @@ function TemplateRow({ template }: { template: Template }) {
       setCopying(false)
       toast.error('Failed to use template. Please try again.')
     },
+  })
+
+  const { mutate: deleteTemplate, isPending: isDeleting } = useMutation({
+    mutationFn: async () => api.delete(`/templates/${template.id}`),
+    onSuccess: () => {
+      toast.success('Template deleted')
+      queryClient.invalidateQueries({ queryKey: ['templates'] })
+    },
+    onError: () => toast.error('Failed to delete template'),
   })
 
   return (
@@ -204,9 +359,16 @@ function TemplateRow({ template }: { template: Template }) {
           </div>
         </td>
 
-        {/* Name + description */}
+        {/* Name + description + badge */}
         <td className="px-5 py-3">
-          <p className="text-sm font-semibold text-pm-primary">{template.name}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-semibold text-pm-primary">{template.name}</p>
+            {isOwn && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-100">
+                My Template
+              </span>
+            )}
+          </div>
           {template.description && (
             <p className="text-xs text-pm-muted mt-0.5 line-clamp-1">{template.description}</p>
           )}
@@ -236,6 +398,22 @@ function TemplateRow({ template }: { template: Template }) {
         {/* Actions */}
         <td className="px-5 py-3">
           <div className="flex items-center justify-end gap-2">
+            {isOwn && (
+              <button
+                onClick={() => {
+                  if (confirm('Delete this template?')) deleteTemplate()
+                }}
+                disabled={isDeleting}
+                title="Delete template"
+                className="flex items-center justify-center w-7 h-7 rounded-lg border border-pm-border text-pm-muted hover:text-pm-danger hover:border-pm-danger/40 transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? <Spinner size="sm" /> : (
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 3.5h10M5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M5.5 6v4M8.5 6v4M3 3.5l.7 7.5a1 1 0 001 .9h4.6a1 1 0 001-.9L11 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                  </svg>
+                )}
+              </button>
+            )}
             <button
               onClick={() => setShowView(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 border border-pm-border rounded-lg text-xs font-medium text-pm-primary hover:bg-[#F3F4F6] transition-colors"
@@ -266,17 +444,35 @@ function TemplateRow({ template }: { template: Template }) {
   )
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export function TemplatesPage() {
+  const [showUpload, setShowUpload] = useState(false)
   const { data, isLoading } = useQuery<TemplateListResponse>({
     queryKey: ['templates'],
     queryFn: async () => (await api.get('/templates')).data,
   })
+  const currentUser = useAuthStore(s => s.user)
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Templates</h1>
-        <p className="text-sm text-pm-muted mt-0.5">Choose a template to start your presentation</p>
+      {showUpload && <UploadModal onClose={() => setShowUpload(false)} />}
+
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Templates</h1>
+          <p className="text-sm text-pm-muted mt-0.5">Choose a template to start your presentation</p>
+        </div>
+        <button
+          onClick={() => setShowUpload(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold rounded-xl transition-colors flex-shrink-0"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 1v8M4 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M1 10v1.5A1.5 1.5 0 002.5 13h9a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+          Upload Template
+        </button>
       </div>
 
       {isLoading ? (
@@ -293,7 +489,7 @@ export function TemplatesPage() {
           </div>
           <div>
             <p className="text-pm-primary font-bold text-lg">No templates yet</p>
-            <p className="text-pm-muted text-sm mt-1">The admin hasn't uploaded any templates yet. Check back soon!</p>
+            <p className="text-pm-muted text-sm mt-1">Upload your own PPTX template to get started.</p>
           </div>
         </div>
       ) : (
@@ -310,7 +506,7 @@ export function TemplatesPage() {
             </thead>
             <tbody className="divide-y divide-pm-border">
               {data.items.map(template => (
-                <TemplateRow key={template.id} template={template} />
+                <TemplateRow key={template.id} template={template} currentUserId={currentUser?.id} />
               ))}
             </tbody>
           </table>
