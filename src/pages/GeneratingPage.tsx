@@ -48,7 +48,7 @@ export function GeneratingPage() {
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      await api.post(`/conversions/${id}/cancel`)
+      await api.post(`/conversions/${validId}/cancel`)
     },
     onSuccess: () => {
       toast.success('Generation cancelled.')
