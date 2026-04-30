@@ -12,7 +12,14 @@ import type { Conversion } from '@/types'
 export function GeneratingPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { slides, progress, total, isDone, error } = useSlideStream(id ?? null)
+
+  // Guard: if ID is missing or literally "undefined", redirect to upload
+  const validId = id && id !== 'undefined' ? id : null
+  useEffect(() => {
+    if (!validId) navigate('/upload', { replace: true })
+  }, [validId, navigate])
+
+  const { slides, progress, total, isDone, error } = useSlideStream(validId)
 
   // Fallback: poll conversion status when stream fails — auto-redirect if already done
   const { data: conversion } = useQuery<Conversion>({
@@ -82,6 +89,7 @@ export function GeneratingPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center space-y-2">
             <p className="text-pm-danger font-medium">{error}</p>
+            <p className="text-xs text-pm-muted">The AI service may be starting up — wait a moment and try again.</p>
             <Link to="/upload" className="text-sm text-pm-teal hover:underline block">
               Try again
             </Link>
