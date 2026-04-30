@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
-import axios from 'axios'
 import { DropZone } from './DropZone'
 import { ThemePicker } from './ThemePicker'
 import { Button } from '@/components/ui/Button'
@@ -112,7 +111,10 @@ export function UploadForm() {
     setUploadId(null)
     try {
       const { upload_url, upload_id } = await presignMutation.mutateAsync(f)
-      await axios.put(upload_url, f, { headers: { 'Content-Type': f.type || 'application/octet-stream' } })
+      // upload_url is always a backend URL now (server proxies to GCS if needed).
+      // Strip origin + /api/v1 prefix so the path is relative to the api baseURL.
+      const uploadPath = upload_url.replace(/^.*\/api\/v1/, '')
+      await api.put(uploadPath, f, { headers: { 'Content-Type': f.type || 'application/octet-stream' } })
       setUploadId(upload_id)
     } catch {
       toast.error('Upload failed. Please try again.')
