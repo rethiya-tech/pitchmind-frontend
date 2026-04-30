@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import api from '@/services/api'
 import { THEMES } from '@/types'
 import type { ConversionListResponse } from '@/types'
@@ -62,10 +63,11 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
 
 function DeleteButton({ conversionId }: { conversionId: string }) {
   const [loading, setLoading] = useState(false)
+  const [confirm, setConfirm] = useState(false)
   const queryClient = useQueryClient()
 
-  const handleClick = async () => {
-    if (!window.confirm('Delete this project? This cannot be undone.')) return
+  const handleConfirm = useCallback(async () => {
+    setConfirm(false)
     setLoading(true)
     try {
       await api.delete(`/conversions/${conversionId}`)
@@ -76,26 +78,36 @@ function DeleteButton({ conversionId }: { conversionId: string }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [conversionId, queryClient])
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      title="Delete project"
-      className="w-8 h-8 rounded-lg flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 transition-colors disabled:opacity-60"
-    >
-      {loading ? (
-        <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 6" />
-        </svg>
-      ) : (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M2 4h10M5 4V2.5A.5.5 0 015.5 2h3a.5.5 0 01.5.5V4M6 7v3M8 7v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M3 4l.7 7.3A1 1 0 004.7 12h4.6a1 1 0 001-.7L11 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      )}
-    </button>
+    <>
+      <ConfirmDialog
+        open={confirm}
+        title="Delete Project"
+        message="Delete this project? This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirm(false)}
+      />
+      <button
+        onClick={() => setConfirm(true)}
+        disabled={loading}
+        title="Delete project"
+        className="w-8 h-8 rounded-lg flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 transition-colors disabled:opacity-60"
+      >
+        {loading ? (
+          <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 6" />
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 4h10M5 4V2.5A.5.5 0 015.5 2h3a.5.5 0 01.5.5V4M6 7v3M8 7v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3 4l.7 7.3A1 1 0 004.7 12h4.6a1 1 0 001-.7L11 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        )}
+      </button>
+    </>
   )
 }
 

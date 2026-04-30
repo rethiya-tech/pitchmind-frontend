@@ -69,6 +69,17 @@ function AuditLogIcon() {
   )
 }
 
+function TemplatesIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <rect x="2" y="3" width="16" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 17h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M10 14v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M6 8h3M6 11h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function LogoMark() {
   return (
     <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-pm-teal flex-shrink-0">
@@ -94,6 +105,7 @@ const ADMIN_NAV = [
   { to: '/admin',             label: 'Overview',     Icon: OverviewIcon    },
   { to: '/admin/users',       label: 'Users',        Icon: UsersIcon       },
   { to: '/admin/projects',    label: 'All Projects', Icon: AllProjectsIcon },
+  { to: '/admin/templates',   label: 'Templates',    Icon: TemplatesIcon   },
   { to: '/admin/audit-log',   label: 'Audit Log',    Icon: AuditLogIcon    },
 ]
 
