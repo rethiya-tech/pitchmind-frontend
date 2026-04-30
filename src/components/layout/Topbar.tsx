@@ -96,7 +96,7 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
           items.map((c) => (
             <Link
               key={c.id}
-              to={c.status === 'done' ? `/editor/${c.id}` : c.status === 'generating' ? `/generating/${c.id}` : '/projects'}
+              to={c.status === 'done' && c.id ? `/editor/${c.id}` : c.status === 'generating' && c.id ? `/generating/${c.id}` : '/projects'}
               onClick={onClose}
               className="flex items-start gap-3 px-4 py-3 hover:bg-[#FAFAFA] transition-colors"
             >

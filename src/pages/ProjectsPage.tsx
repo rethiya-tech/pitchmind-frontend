@@ -363,7 +363,7 @@ export function ProjectsPage() {
                           <DeleteButton conversionId={c.id} />
                         </div>
                       )}
-                      {c.status === 'generating' && (
+                      {c.status === 'generating' && c.id && (
                         <Link
                           to={`/generating/${c.id}`}
                           title="View generation progress"

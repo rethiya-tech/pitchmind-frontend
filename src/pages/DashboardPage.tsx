@@ -508,7 +508,7 @@ export function DashboardPage() {
                       >
                         Edit →
                       </Link>
-                    ) : c.status === 'generating' ? (
+                    ) : c.status === 'generating' && c.id ? (
                       <Link
                         to={`/generating/${c.id}`}
                         className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
