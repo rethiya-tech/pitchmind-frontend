@@ -170,3 +170,38 @@ export const THEMES: Theme[] = [
 ]
 
 export const THEME_IDS = THEMES.map(t => t.id) as [string, ...string[]]
+
+// ── Template types ─────────────────────────────────────────────────────────────
+
+export interface TemplateSlide {
+  position: number
+  layout: string
+  title: string
+  bullets: string[]
+  speaker_notes: string
+}
+
+export interface Template {
+  id: string
+  name: string
+  description: string | null
+  thumbnail_url: string | null
+  slide_count: number
+  theme: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface TemplateDetail extends Template {
+  slides_json: TemplateSlide[]
+}
+
+export interface TemplateListResponse {
+  items: Template[]
+  total: number
+}
+
+export interface TemplateCopyResponse {
+  conversion_id: string
+  slide_count: number
+}
