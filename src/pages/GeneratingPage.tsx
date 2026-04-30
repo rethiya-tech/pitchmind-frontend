@@ -1,23 +1,43 @@
 import { useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useSlideStream } from '@/hooks/useSlideStream'
 import { ProgressBar } from '@/components/generation/ProgressBar'
 import { SlidePills } from '@/components/generation/SlidePills'
 import { Button } from '@/components/ui/Button'
 import api from '@/services/api'
+import type { Conversion } from '@/types'
 
 export function GeneratingPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { slides, progress, total, isDone, error } = useSlideStream(id ?? null)
 
+  // Fallback: poll conversion status when stream fails — auto-redirect if already done
+  const { data: conversion } = useQuery<Conversion>({
+    queryKey: ['conversion-status', id],
+    queryFn: async () => {
+      const res = await api.get(`/conversions/${id}`)
+      return res.data
+    },
+    enabled: !!id && !!error,
+    refetchInterval: 3000,
+    retry: 2,
+  })
+
   useEffect(() => {
     if (isDone && id) {
       navigate(`/editor/${id}`, { replace: true })
     }
   }, [isDone, id, navigate])
+
+  // When stream errors but conversion is actually done, go straight to editor
+  useEffect(() => {
+    if (error && conversion?.status === 'done' && id) {
+      navigate(`/editor/${id}`, { replace: true })
+    }
+  }, [error, conversion?.status, id, navigate])
 
   const cancelMutation = useMutation({
     mutationFn: async () => {

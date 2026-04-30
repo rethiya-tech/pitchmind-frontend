@@ -16,6 +16,8 @@ export interface Slide {
   bullets: string[]
   speaker_notes: string
   is_deleted: boolean
+  color_scheme: string
+  shape_style: string
   created_at?: string
   updated_at?: string
 }

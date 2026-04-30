@@ -10,6 +10,10 @@ import api from '@/services/api'
 import { cn } from '@/utils/cn'
 
 const SLIDE_COUNTS = [5, 8, 10, 12, 15]
+const PROMPT_MIN = 20
+const PROMPT_MAX = 3000
+
+type InputMode = 'file' | 'prompt'
 
 // ── Section card shell ────────────────────────────────────────────────────────
 function Section({
@@ -27,7 +31,6 @@ function Section({
 }) {
   return (
     <div className="flex flex-col bg-white rounded-2xl border border-pm-border overflow-hidden h-full">
-      {/* Header */}
       <div className="flex items-start gap-3 px-5 py-4 border-b border-pm-border flex-shrink-0">
         <span
           className={cn(
@@ -48,7 +51,6 @@ function Section({
           <p className="text-xs text-pm-muted mt-0.5">{subtitle}</p>
         </div>
       </div>
-      {/* Body */}
       <div className="flex-1 overflow-y-auto p-5">{children}</div>
     </div>
   )
@@ -72,7 +74,18 @@ const selectCls =
 // ── Main form ─────────────────────────────────────────────────────────────────
 export function UploadForm() {
   const navigate = useNavigate()
+
+  // Input mode
+  const [inputMode, setInputMode] = useState<InputMode>('file')
+
+  // File mode state
   const [file, setFile] = useState<File | null>(null)
+  const [uploadId, setUploadId] = useState<string | null>(null)
+
+  // Prompt mode state
+  const [promptText, setPromptText] = useState('')
+
+  // Shared settings
   const [theme, setTheme] = useState('clean_slate')
   const [slideCount, setSlideCount] = useState(8)
   const [customCount, setCustomCount] = useState('')
@@ -81,7 +94,6 @@ export function UploadForm() {
   const [style, setStyle] = useState('professional')
   const [audienceLevel, setAudienceLevel] = useState('general')
   const [speakerNotes, setSpeakerNotes] = useState(true)
-  const [uploadId, setUploadId] = useState<string | null>(null)
 
   const presignMutation = useMutation({
     mutationFn: async (f: File) => {
@@ -108,15 +120,20 @@ export function UploadForm() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!uploadId) throw new Error('No upload ID')
-      const { data } = await api.post('/conversions', {
-        upload_id: uploadId,
+      const payload: Record<string, unknown> = {
         theme,
         style,
         audience_level: audienceLevel,
         slide_count: slideCount,
         speaker_notes: speakerNotes,
-      })
+      }
+      if (inputMode === 'prompt') {
+        payload.prompt_text = promptText
+      } else {
+        if (!uploadId) throw new Error('No upload ID')
+        payload.upload_id = uploadId
+      }
+      const { data } = await api.post('/conversions', payload)
       return data as { id: string }
     },
     onSuccess: (data) => navigate(`/generating/${data.id}`),
@@ -128,39 +145,137 @@ export function UploadForm() {
     },
   })
 
-  const fileReady = !!file && !!uploadId && !presignMutation.isPending
-  const canGenerate = fileReady && !createMutation.isPending
+  const fileReady = inputMode === 'file' && !!file && !!uploadId && !presignMutation.isPending
+  const promptReady = inputMode === 'prompt' && promptText.trim().length >= PROMPT_MIN
+  const inputReady = fileReady || promptReady
+  const canGenerate = inputReady && !createMutation.isPending
+
+  const switchMode = (mode: InputMode) => {
+    setInputMode(mode)
+    // Reset the inactive mode's state
+    if (mode === 'file') {
+      setPromptText('')
+    } else {
+      setFile(null)
+      setUploadId(null)
+    }
+  }
 
   return (
     <div className="grid grid-cols-3 gap-5 h-full" style={{ minHeight: 0 }}>
 
-      {/* ── Panel 1: Upload ── */}
+      {/* ── Panel 1: Input ── */}
       <Section
         step={1}
-        title="Upload Document"
-        subtitle="PDF, DOCX, TXT or MD — up to 10 MB"
-        done={fileReady}
+        title="Add Your Content"
+        subtitle="Upload a document or describe your topic"
+        done={inputReady}
       >
         <div className="flex flex-col gap-4 h-full">
-          <DropZone onFile={handleFile} file={file} disabled={presignMutation.isPending} />
 
-          {presignMutation.isPending && (
-            <div className="flex items-center gap-2 text-sm text-pm-muted">
-              <svg className="w-4 h-4 animate-spin text-pm-teal" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          {/* Mode toggle */}
+          <div className="flex gap-1 bg-pm-app rounded-xl p-1 border border-pm-border flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => switchMode('file')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all',
+                inputMode === 'file'
+                  ? 'bg-white text-pm-teal shadow-sm border border-pm-border'
+                  : 'text-pm-muted hover:text-pm-primary'
+              )}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Uploading…
+              Upload File
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode('prompt')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all',
+                inputMode === 'prompt'
+                  ? 'bg-white text-pm-teal shadow-sm border border-pm-border'
+                  : 'text-pm-muted hover:text-pm-primary'
+              )}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              AI Prompt
+            </button>
+          </div>
+
+          {/* File mode */}
+          {inputMode === 'file' && (
+            <>
+              <DropZone onFile={handleFile} file={file} disabled={presignMutation.isPending} />
+              {presignMutation.isPending && (
+                <div className="flex items-center gap-2 text-sm text-pm-muted">
+                  <svg className="w-4 h-4 animate-spin text-pm-teal" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Uploading…
+                </div>
+              )}
+              {!file && (
+                <div className="mt-auto pt-2">
+                  <p className="text-xs text-pm-muted leading-relaxed">
+                    Your document is analysed by AI to extract key points and structure your slides automatically.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Prompt mode */}
+          {inputMode === 'prompt' && (
+            <div className="flex flex-col gap-2 flex-1">
+              <textarea
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value.slice(0, PROMPT_MAX))}
+                placeholder={`Describe your presentation topic or paste an outline…\n\nExamples:\n• "A 10-slide pitch deck for a SaaS startup targeting HR teams"\n• "Quarterly business review for Q3 2024 with financial highlights"\n• Paste your raw notes or bullet points directly`}
+                className={cn(
+                  'flex-1 w-full resize-none border rounded-xl px-4 py-3 text-sm text-pm-primary bg-white',
+                  'focus:outline-none focus:ring-2 focus:ring-pm-teal transition leading-relaxed',
+                  'placeholder:text-pm-muted/60',
+                  promptText.length > 0 && promptText.trim().length < PROMPT_MIN
+                    ? 'border-amber-300 focus:ring-amber-200'
+                    : promptReady
+                    ? 'border-pm-teal'
+                    : 'border-pm-border'
+                )}
+                style={{ minHeight: '220px' }}
+              />
+              <div className="flex items-center justify-between">
+                {promptText.trim().length > 0 && promptText.trim().length < PROMPT_MIN ? (
+                  <span className="text-xs text-amber-600">
+                    {PROMPT_MIN - promptText.trim().length} more characters needed
+                  </span>
+                ) : promptReady ? (
+                  <span className="text-xs text-pm-teal font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Ready to generate
+                  </span>
+                ) : (
+                  <span className="text-xs text-pm-muted">Min {PROMPT_MIN} characters</span>
+                )}
+                <span className={cn(
+                  'text-xs',
+                  promptText.length > PROMPT_MAX * 0.9 ? 'text-amber-500' : 'text-pm-muted'
+                )}>
+                  {promptText.length}/{PROMPT_MAX}
+                </span>
+              </div>
             </div>
           )}
 
-          {!file && (
-            <div className="mt-auto pt-2">
-              <p className="text-xs text-pm-muted leading-relaxed">
-                Your document is analysed by AI to extract key points and structure your slides automatically.
-              </p>
-            </div>
-          )}
         </div>
       </Section>
 
@@ -169,11 +284,10 @@ export function UploadForm() {
         step={2}
         title="Configure Settings"
         subtitle="Adjust how your presentation is built"
-        done={fileReady}
+        done={inputReady}
       >
         <div className="flex flex-col gap-5">
           <Field label="Slide Count">
-            {/* Preset chips + custom input in one row */}
             <div className="flex items-center gap-1.5 flex-wrap">
               {SLIDE_COUNTS.map((n) => (
                 <button
@@ -190,11 +304,7 @@ export function UploadForm() {
                   {n}
                 </button>
               ))}
-
-              {/* Divider */}
               <div className="w-px h-6 bg-pm-border mx-0.5 flex-shrink-0" />
-
-              {/* Custom input */}
               <input
                 type="text"
                 inputMode="numeric"
@@ -205,11 +315,7 @@ export function UploadForm() {
                   const n = parseInt(val)
                   if (val === '') { setCustomCount(''); setCustomError(''); setSlideCountSelected(false); return }
                   if (SLIDE_COUNTS.includes(n)) {
-                    setSlideCount(n)
-                    setCustomCount('')
-                    setCustomError('')
-                    setSlideCountSelected(true)
-                    return
+                    setSlideCount(n); setCustomCount(''); setCustomError(''); setSlideCountSelected(true); return
                   }
                   setCustomCount(val)
                   if (n <= 3) { setCustomError('Must be greater than 3') }
@@ -223,8 +329,6 @@ export function UploadForm() {
                 )}
               />
             </div>
-
-            {/* Status line */}
             <div className="flex items-center justify-between mt-2">
               {slideCountSelected && !customError && (
                 <p className="text-xs text-pm-muted">
@@ -244,11 +348,7 @@ export function UploadForm() {
           </Field>
 
           <Field label="Target Audience">
-            <select
-              value={audienceLevel}
-              onChange={(e) => setAudienceLevel(e.target.value)}
-              className={selectCls}
-            >
+            <select value={audienceLevel} onChange={(e) => setAudienceLevel(e.target.value)} className={selectCls}>
               <option value="general">General</option>
               <option value="executive">Executive</option>
               <option value="c-suite">C-Suite</option>
@@ -301,9 +401,15 @@ export function UploadForm() {
         <div className="flex flex-col gap-5 h-full">
           <ThemePicker value={theme} onChange={setTheme} />
 
-          {/* Status checklist */}
           <div className="mt-auto space-y-2 pt-4 border-t border-pm-border">
-            <StatusRow done={fileReady} label={fileReady ? `${file?.name} uploaded` : 'No document uploaded'} />
+            {inputMode === 'file' ? (
+              <StatusRow done={fileReady} label={fileReady ? `${file?.name} uploaded` : 'No document uploaded'} />
+            ) : (
+              <StatusRow
+                done={promptReady}
+                label={promptReady ? `Prompt ready (${promptText.trim().length} chars)` : 'No prompt entered'}
+              />
+            )}
             <StatusRow done label={`${slideCount} slides · ${style} · ${audienceLevel}`} />
             <StatusRow done={!!theme} label="Theme selected" />
           </div>
