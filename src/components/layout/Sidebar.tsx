@@ -137,7 +137,7 @@ export function Sidebar({ open = true }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 pt-3 space-y-0.5">
-        {NAV.map(({ to, label, Icon }) => (
+        {NAV.filter(({ to }) => user?.role === 'admin' ? to === '/dashboard' : true).map(({ to, label, Icon }) => (
           <NavLink
             key={to}
             to={to}
