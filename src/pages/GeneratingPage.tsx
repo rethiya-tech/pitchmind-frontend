@@ -23,28 +23,28 @@ export function GeneratingPage() {
 
   // Fallback: poll conversion status when stream fails — auto-redirect if already done
   const { data: conversion } = useQuery<Conversion>({
-    queryKey: ['conversion-status', id],
+    queryKey: ['conversion-status', validId],
     queryFn: async () => {
-      const res = await api.get(`/conversions/${id}`)
+      const res = await api.get(`/conversions/${validId}`)
       return res.data
     },
-    enabled: !!id && !!error,
+    enabled: !!validId && !!error,
     refetchInterval: 3000,
     retry: 2,
   })
 
   useEffect(() => {
-    if (isDone && id) {
-      navigate(`/editor/${id}`, { replace: true })
+    if (isDone && validId) {
+      navigate(`/editor/${validId}`, { replace: true })
     }
-  }, [isDone, id, navigate])
+  }, [isDone, validId, navigate])
 
   // When stream errors but conversion is actually done, go straight to editor
   useEffect(() => {
-    if (error && conversion?.status === 'done' && id) {
-      navigate(`/editor/${id}`, { replace: true })
+    if (error && conversion?.status === 'done' && validId) {
+      navigate(`/editor/${validId}`, { replace: true })
     }
-  }, [error, conversion?.status, id, navigate])
+  }, [error, conversion?.status, validId, navigate])
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
@@ -86,10 +86,19 @@ export function GeneratingPage() {
           />
         </div>
 
-        {error && (
+        {error && !conversion && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center space-y-2">
             <p className="text-pm-danger font-medium">{error}</p>
-            <p className="text-xs text-pm-muted">The AI service may be starting up — wait a moment and try again.</p>
+            <p className="text-xs text-pm-muted">The AI service may be starting up — checking status automatically…</p>
+            <Link to="/upload" className="text-sm text-pm-teal hover:underline block">
+              Start over
+            </Link>
+          </div>
+        )}
+        {error && conversion && conversion.status !== 'done' && conversion.status !== 'generating' && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center space-y-2">
+            <p className="text-pm-danger font-medium">Generation failed</p>
+            <p className="text-xs text-pm-muted">{conversion.status === 'failed' ? 'Something went wrong with the AI service.' : 'Presentation was cancelled.'}</p>
             <Link to="/upload" className="text-sm text-pm-teal hover:underline block">
               Try again
             </Link>
