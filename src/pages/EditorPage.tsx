@@ -24,6 +24,22 @@ import { THEMES } from '@/types'
  * Footer       : y=5006700, h=136800  → 97.34% – 100%
  */
 
+const COLOR_SCHEME_MAP: Record<string, string> = {
+  teal: '#0F6E56',
+  blue: '#3B82F6',
+  purple: '#8B5CF6',
+  amber: '#F59E0B',
+  rose: '#F43F5E',
+  green: '#10B981',
+  orange: '#F97316',
+}
+
+const SHAPE_RADIUS: Record<string, string> = {
+  square: '0px',
+  rounded: '12px',
+  pill: '50%',
+}
+
 /** Lighten (positive amount) or darken (negative amount) a hex color. */
 function lighterHex(hex: string, amount: number): string {
   const h = hex.replace('#', '')
@@ -37,6 +53,8 @@ function lighterHex(hex: string, amount: number): string {
 function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
   const bullets: string[] = slide.bullets ?? []
   const layout = slide.layout || 'bullets'
+  const accentColor = COLOR_SCHEME_MAP[slide.color_scheme] ?? theme.accent
+  const radius = SHAPE_RADIUS[slide.shape_style] ?? '0px'
 
   const containerStyle: React.CSSProperties = {
     aspectRatio: '16/9',
@@ -61,7 +79,7 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
         </div>
         <div
           className="absolute rounded-full"
-          style={{ top: '60%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
+          style={{ top: '60%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }}
         />
         {subtitle && (
           <div
@@ -77,47 +95,55 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
 
   // ── two_column ────────────────────────────────────────────────────────────
   if (layout === 'two_column') {
-    const mid = Math.ceil(bullets.length / 2)
-    const leftBullets = bullets.slice(0, mid)
-    const rightBullets = bullets.slice(mid)
+    // Parse "## Header" bullets as column headers; rest are content
+    const sections: { header: string; items: string[] }[] = []
+    let cur: { header: string; items: string[] } | null = null
+    for (const b of bullets) {
+      if (b.startsWith('## ')) {
+        if (cur) sections.push(cur)
+        cur = { header: b.slice(3), items: [] }
+      } else {
+        if (!cur) cur = { header: 'Key Points', items: [] }
+        cur.items.push(b)
+      }
+    }
+    if (cur) sections.push(cur)
+    // Fallback: split evenly if no ## markers
+    const leftSection = sections[0] ?? { header: 'Key Points', items: bullets.slice(0, Math.ceil(bullets.length / 2)) }
+    const rightSection = sections[1] ?? { header: 'Details', items: bullets.slice(Math.ceil(bullets.length / 2)) }
 
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
-        {/* Title */}
         <div
           className="absolute font-extrabold leading-tight"
           style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)' }}
         >
           {slide.title || 'Untitled Slide'}
         </div>
-
-        {/* Divider */}
         <div
           className="absolute rounded-full"
-          style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
+          style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }}
         />
-
         {/* Left column */}
         <div className="absolute" style={{ top: '29%', left: '7%', width: '43%' }}>
-          <div className="flex items-center px-2 py-1 mb-2 rounded" style={{ backgroundColor: theme.accent }}>
-            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>Key Points</span>
+          <div className="flex items-center px-2 py-1 mb-2" style={{ backgroundColor: accentColor, borderRadius: radius }}>
+            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>{leftSection.header}</span>
           </div>
-          {leftBullets.map((b, i) => (
+          {leftSection.items.map((b, i) => (
             <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
-              <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
+              <span style={{ color: accentColor, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
               <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
             </div>
           ))}
         </div>
-
         {/* Right column */}
         <div className="absolute" style={{ top: '29%', left: '53%', right: '7%' }}>
-          <div className="flex items-center px-2 py-1 mb-2 rounded" style={{ backgroundColor: lighterHex(theme.accent, 20) }}>
-            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>Details</span>
+          <div className="flex items-center px-2 py-1 mb-2" style={{ backgroundColor: lighterHex(accentColor, 20), borderRadius: radius }}>
+            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>{rightSection.header}</span>
           </div>
-          {rightBullets.map((b, i) => (
+          {rightSection.items.map((b, i) => (
             <div key={i} className="flex items-start" style={{ marginBottom: '1.5%' }}>
-              <span style={{ color: theme.accent, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
+              <span style={{ color: accentColor, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
               <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
             </div>
           ))}
@@ -146,7 +172,7 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
             const sepIdx = b.indexOf(': ')
             const label = sepIdx !== -1 ? b.slice(0, sepIdx) : b
             const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : ''
-            const labelBg = i % 2 === 0 ? theme.accent : lighterHex(theme.accent, 25)
+            const labelBg = i % 2 === 0 ? accentColor : lighterHex(accentColor, 25)
             return (
               <div key={i} className="flex" style={{ height: '9%', marginBottom: '1%' }}>
                 <div
@@ -180,15 +206,15 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
           {slide.title || 'Untitled Slide'}
         </div>
         <div className="absolute" style={{ top: '29%', left: '7%', right: '7%', bottom: '4%', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ position: 'absolute', left: '1.4%', top: 0, bottom: 0, width: 2, backgroundColor: theme.accent, opacity: 0.45 }} />
+          <div style={{ position: 'absolute', left: '1.4%', top: 0, bottom: 0, width: 2, backgroundColor: accentColor, opacity: 0.45 }} />
           {bullets.map((b, i) => {
             const sepIdx = b.indexOf(': ')
             const label = sepIdx !== -1 ? b.slice(0, sepIdx) : `Phase ${i + 1}`
             const desc = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', flex: 1, minHeight: 0 }}>
-                <div style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: theme.accent, flexShrink: 0, marginRight: '2.5%', zIndex: 1 }} />
-                <span style={{ color: theme.accent, fontWeight: 700, fontSize: 'clamp(7px, 1vw, 11px)' }}>{label}</span>
+                <div style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: accentColor, flexShrink: 0, marginRight: '2.5%', zIndex: 1 }} />
+                <span style={{ color: accentColor, fontWeight: 700, fontSize: 'clamp(7px, 1vw, 11px)' }}>{label}</span>
                 {desc && <span style={{ color: theme.text, fontSize: 'clamp(6px, 0.85vw, 10px)', opacity: 0.8, marginLeft: '1.5%' }}>{desc}</span>}
               </div>
             )
@@ -215,10 +241,10 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
             const label = sepIdx !== -1 ? b.slice(0, sepIdx) : 'Metric'
             const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
             return (
-              <div key={i} className="relative flex flex-col overflow-hidden rounded flex-1" style={{ backgroundColor: lighterHex(theme.bg, 30) }}>
-                <div style={{ height: 4, backgroundColor: theme.accent, flexShrink: 0 }} />
+              <div key={i} className="relative flex flex-col overflow-hidden flex-1" style={{ backgroundColor: lighterHex(theme.bg, 30), borderRadius: radius }}>
+                <div style={{ height: 4, backgroundColor: accentColor, flexShrink: 0 }} />
                 <div style={{ padding: '8% 10%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ color: theme.accent, fontWeight: 800, fontSize: 'clamp(14px, 2.4vw, 30px)', lineHeight: 1.1 }}>{value}</div>
+                  <div style={{ color: accentColor, fontWeight: 800, fontSize: 'clamp(14px, 2.4vw, 30px)', lineHeight: 1.1 }}>{value}</div>
                   <div style={{ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)', opacity: 0.75, marginTop: '6%' }}>{label}</div>
                 </div>
               </div>
@@ -242,19 +268,19 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
         </div>
         <div
           className="absolute rounded-full"
-          style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
+          style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }}
         />
         <div className="absolute flex items-stretch gap-[1.5%]" style={{ top: '31%', left: '7%', right: '7%', bottom: '8%' }}>
           {steps.map((b, i) => (
             <div key={i} className="flex items-center" style={{ flex: i < steps.length - 1 ? '1 1 0' : '1 1 0' }}>
-              <div className="flex flex-col overflow-hidden rounded flex-1 h-full" style={{ backgroundColor: i % 2 === 0 ? theme.accent : lighterHex(theme.accent, 30) }}>
-                <div className="flex items-center justify-center font-bold text-white flex-shrink-0" style={{ height: '30%', fontSize: 'clamp(8px, 1.3vw, 16px)', backgroundColor: lighterHex(theme.accent, -20) }}>
+              <div className="flex flex-col overflow-hidden flex-1 h-full" style={{ backgroundColor: i % 2 === 0 ? accentColor : lighterHex(accentColor, 30), borderRadius: radius }}>
+                <div className="flex items-center justify-center font-bold text-white flex-shrink-0" style={{ height: '30%', fontSize: 'clamp(8px, 1.3vw, 16px)', backgroundColor: lighterHex(accentColor, -20), borderRadius: `${radius} ${radius} 0 0` }}>
                   {i + 1}
                 </div>
                 <div style={{ padding: '5% 8%', color: '#fff', fontSize: 'clamp(5px, 0.8vw, 9px)', lineHeight: 1.4, overflow: 'hidden' }}>{b}</div>
               </div>
               {i < steps.length - 1 && (
-                <span style={{ color: theme.accent, fontSize: 'clamp(8px, 1.2vw, 14px)', flexShrink: 0, padding: '0 2%' }}>→</span>
+                <span style={{ color: accentColor, fontSize: 'clamp(8px, 1.2vw, 14px)', flexShrink: 0, padding: '0 2%' }}>→</span>
               )}
             </div>
           ))}
@@ -277,7 +303,7 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
         </div>
         <div
           className="absolute font-extrabold leading-none"
-          style={{ top: '18%', left: '7%', color: theme.accent, fontSize: 'clamp(24px, 5vw, 60px)', lineHeight: 1 }}
+          style={{ top: '18%', left: '7%', color: accentColor, fontSize: 'clamp(24px, 5vw, 60px)', lineHeight: 1 }}
         >
           &ldquo;
         </div>
@@ -291,7 +317,7 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
         )}
         <div
           className="absolute rounded-full"
-          style={{ top: '74%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
+          style={{ top: '74%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }}
         />
         {attribution && (
           <div
@@ -319,7 +345,7 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
       {/* Accent divider */}
       <div
         className="absolute rounded-full"
-        style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: theme.accent }}
+        style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }}
       />
 
       {/* Bullets */}
@@ -328,7 +354,7 @@ function SlidePreview({ slide, theme }: { slide: Slide; theme: Theme }) {
           <div key={i} className="flex items-start" style={{ marginBottom: '2%' }}>
             <span
               className="flex-shrink-0 rounded-full"
-              style={{ backgroundColor: theme.accent, width: '0.6em', height: '0.6em', minWidth: '0.6em', marginTop: '0.35em', marginRight: '0.6em', fontSize: 'clamp(9px, 1.3vw, 14px)' }}
+              style={{ backgroundColor: accentColor, width: '0.6em', height: '0.6em', minWidth: '0.6em', marginTop: '0.35em', marginRight: '0.6em', fontSize: 'clamp(9px, 1.3vw, 14px)' }}
             />
             <span style={{ color: theme.text, fontSize: 'clamp(9px, 1.3vw, 14px)', lineHeight: 1.45, opacity: 0.92 }}>
               {b}
@@ -485,7 +511,7 @@ export function EditorPage() {
   const { isSaving, hasError } = useAutoSave({
     slideId: activeSlide?.id ?? '',
     content: activeSlide
-      ? JSON.stringify({ title: activeSlide.title, bullets: activeSlide.bullets, speaker_notes: activeSlide.speaker_notes })
+      ? JSON.stringify({ title: activeSlide.title, bullets: activeSlide.bullets, speaker_notes: activeSlide.speaker_notes, layout: activeSlide.layout, color_scheme: activeSlide.color_scheme, shape_style: activeSlide.shape_style })
       : '',
     onSave: async () => {
       if (!activeSlide) return
@@ -494,6 +520,8 @@ export function EditorPage() {
         bullets: activeSlide.bullets,
         speaker_notes: activeSlide.speaker_notes,
         layout: activeSlide.layout,
+        color_scheme: activeSlide.color_scheme,
+        shape_style: activeSlide.shape_style,
       })
       markSaved()
     },
