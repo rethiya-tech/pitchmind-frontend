@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 const ACCEPTED = {
   'application/pdf': ['.pdf'],
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
   'text/plain': ['.txt'],
   'text/markdown': ['.md'],
 }
@@ -29,7 +30,7 @@ export function DropZone({ onFile, file, disabled }: DropZoneProps) {
     accept: ACCEPTED,
     maxFiles: 1,
     disabled,
-    onDropRejected: () => toast.error('Unsupported file type. Please upload PDF, DOCX, TXT, or MD.'),
+    onDropRejected: () => toast.error('Unsupported file type. Please upload PDF, DOCX, PPTX, TXT, or MD.'),
   })
 
   return (
@@ -58,7 +59,7 @@ export function DropZone({ onFile, file, disabled }: DropZoneProps) {
           <p className="font-medium text-pm-primary">
             {isDragActive ? 'Drop your file here' : 'Drag & drop or click to upload'}
           </p>
-          <p className="text-sm text-pm-muted">PDF, DOCX, TXT, or MD — up to 10MB</p>
+          <p className="text-sm text-pm-muted">PDF, DOCX, PPTX, TXT, or MD — up to 10MB</p>
         </div>
       )}
     </div>

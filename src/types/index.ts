@@ -34,6 +34,7 @@ export interface Conversion {
   audience_level?: string
   speaker_notes?: boolean
   tokens_used?: number
+  source_pptx_key?: string | null
   created_at?: string
   updated_at?: string
   slides?: Slide[]
@@ -189,6 +190,8 @@ export interface Template {
   slide_count: number
   theme: string | null
   is_active: boolean
+  is_public: boolean
+  created_by: string | null
   created_at: string
 }
 

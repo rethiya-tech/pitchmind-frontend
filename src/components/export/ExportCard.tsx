@@ -15,6 +15,7 @@ export function ExportCard({ conversion }: ExportCardProps) {
   const [loadingText, setLoadingText] = useState<string | null>(null)
   const theme = THEMES.find((t) => t.id === conversion.theme) ?? THEMES[0]
   const slideCount = conversion.slides?.filter((s) => !s.is_deleted).length ?? conversion.slide_count ?? 0
+  const usesOriginalDesign = !!conversion.source_pptx_key || conversion.upload_id != null
 
   const handleDownload = async () => {
     flushSync(() => setLoadingText('Preparing download...'))
@@ -58,17 +59,26 @@ export function ExportCard({ conversion }: ExportCardProps) {
         </p>
       </div>
 
-      <div
-        className="w-full h-24 rounded-xl flex items-center justify-center"
-        style={{ backgroundColor: theme.primary }}
-      >
-        <div className="text-center">
-          <div className="text-white font-bold text-lg opacity-90">{theme.name}</div>
-          <div className="text-xs opacity-60 mt-1" style={{ color: theme.accent }}>
-            PitchMind
+      {usesOriginalDesign ? (
+        <div className="w-full h-24 rounded-xl flex items-center justify-center bg-gradient-to-r from-slate-700 to-slate-900">
+          <div className="text-center">
+            <div className="text-white font-bold text-lg opacity-90">Original Design</div>
+            <div className="text-xs text-slate-300 opacity-80 mt-1">Your uploaded template design will be preserved</div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div
+          className="w-full h-24 rounded-xl flex items-center justify-center"
+          style={{ backgroundColor: theme.primary }}
+        >
+          <div className="text-center">
+            <div className="text-white font-bold text-lg opacity-90">{theme.name}</div>
+            <div className="text-xs opacity-60 mt-1" style={{ color: theme.accent }}>
+              PitchMind
+            </div>
+          </div>
+        </div>
+      )}
 
       {loadingText && (
         <p className="text-sm text-center text-pm-teal font-medium">{loadingText}</p>
