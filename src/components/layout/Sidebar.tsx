@@ -98,6 +98,7 @@ function LogoMark() {
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', Icon: DashboardIcon },
   { to: '/projects',  label: 'Projects',  Icon: ProjectsIcon  },
+  { to: '/templates', label: 'Templates', Icon: TemplatesIcon },
   { to: '/settings',  label: 'Settings',  Icon: SettingsIcon  },
 ]
 

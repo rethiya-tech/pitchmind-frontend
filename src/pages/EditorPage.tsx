@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useEditorStore } from '@/stores/editorStore'
@@ -377,11 +377,12 @@ function PanelHeader({ title, action }: { title: string; action?: React.ReactNod
 }
 
 // ── Editor toolbar ─────────────────────────────────────────────────────────────
-function EditorBar({ conversionId, conversionName, isSaving, hasError }: {
+function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }: {
   conversionId: string
   conversionName?: string
   isSaving?: boolean
   hasError?: boolean
+  backTo?: { path: string; label: string }
 }) {
   const isDirty = useEditorStore((s) => s.isDirty)
   const name = conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation'
@@ -419,13 +420,13 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError }: {
       {/* Left: nav */}
       <div className="flex items-center gap-3 min-w-0">
         <Link
-          to="/dashboard"
+          to={backTo?.path ?? '/projects'}
           className="flex items-center gap-1.5 text-pm-muted hover:text-pm-primary text-sm transition-colors flex-shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Dashboard
+          {backTo?.label ?? 'Projects'}
         </Link>
         <div className="w-px h-4 bg-pm-border flex-shrink-0" />
         <div className="flex items-center gap-2 min-w-0">
@@ -470,6 +471,10 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError }: {
 export function EditorPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const backTo = (location.state as { from?: string } | null)?.from === 'templates'
+    ? { path: '/templates', label: 'Templates' }
+    : { path: '/projects', label: 'Projects' }
   const { setSlides, setConversionId, setActiveSlide, slides, activeSlideId, markSaved } = useEditorStore()
   const initialActiveSet = useRef(false)
 
@@ -551,6 +556,7 @@ export function EditorPage() {
         conversionName={conversion?.original_filename}
         isSaving={isSaving}
         hasError={hasError}
+        backTo={backTo}
       />
 
       {/* Three-panel body */}
