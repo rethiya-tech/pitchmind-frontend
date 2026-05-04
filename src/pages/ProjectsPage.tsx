@@ -212,8 +212,19 @@ function PaginationChips({
   )
 }
 
+const STATUS_TABS = [
+  { id: 'all', label: 'All' },
+  { id: 'done', label: 'Done' },
+  { id: 'generating', label: 'Generating' },
+  { id: 'failed', label: 'Failed' },
+] as const
+
+type StatusTab = typeof STATUS_TABS[number]['id']
+
 export function ProjectsPage() {
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [statusTab, setStatusTab] = useState<StatusTab>('all')
 
   const { data, isLoading } = useQuery<ConversionListResponse>({
     queryKey: ['conversions'],
@@ -223,7 +234,15 @@ export function ProjectsPage() {
     },
   })
 
-  const allItems = data?.items ?? []
+  const rawItems = data?.items ?? []
+
+  const allItems = rawItems.filter((c) => {
+    const name = (c.name ?? c.original_filename ?? '').toLowerCase()
+    const matchesSearch = search.trim() === '' || name.includes(search.trim().toLowerCase())
+    const matchesStatus = statusTab === 'all' || c.status === statusTab
+    return matchesSearch && matchesStatus
+  })
+
   const total = allItems.length
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
@@ -233,6 +252,16 @@ export function ProjectsPage() {
 
   function handlePage(p: number) {
     setPage(Math.min(Math.max(1, p), totalPages))
+  }
+
+  function handleSearch(val: string) {
+    setSearch(val)
+    setPage(1)
+  }
+
+  function handleTab(tab: StatusTab) {
+    setStatusTab(tab)
+    setPage(1)
   }
 
   return (
@@ -254,13 +283,75 @@ export function ProjectsPage() {
         </Link>
       </div>
 
+      {/* Search + filter bar */}
+      {!isLoading && rawItems.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search input */}
+          <div className="relative flex-1 max-w-sm">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-pm-muted pointer-events-none"
+              width="15" height="15" viewBox="0 0 15 15" fill="none"
+            >
+              <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10.5 10.5l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Search projects…"
+              className="w-full pl-9 pr-9 py-2 text-sm border border-pm-border rounded-xl bg-white text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors"
+            />
+            {search && (
+              <button
+                onClick={() => handleSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-pm-muted hover:text-pm-primary transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M3 3l8 8M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Status tabs */}
+          <div className="flex items-center gap-1 p-1 bg-[#F3F4F6] rounded-xl">
+            {STATUS_TABS.map((tab) => {
+              const count = tab.id === 'all'
+                ? rawItems.length
+                : rawItems.filter((c) => c.status === tab.id).length
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTab(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                    statusTab === tab.id
+                      ? 'bg-white text-pm-primary shadow-sm'
+                      : 'text-pm-muted hover:text-pm-primary'
+                  }`}
+                >
+                  {tab.label}
+                  {count > 0 && (
+                    <span className={`text-[10px] rounded-full px-1.5 py-0.5 font-bold leading-none ${
+                      statusTab === tab.id ? 'bg-[#F3F4F6] text-pm-muted' : 'bg-white/0 text-pm-muted'
+                    }`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Loading state */}
       {isLoading ? (
         <div className="flex justify-center py-20">
           <Spinner size="lg" className="text-pm-teal" />
         </div>
-      ) : !allItems.length ? (
-        /* Empty state */
+      ) : rawItems.length === 0 ? (
+        /* Empty state — no projects at all */
         <div className="bg-pm-surface rounded-2xl border border-pm-border py-20 text-center space-y-5">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -278,6 +369,26 @@ export function ProjectsPage() {
           >
             Create your first presentation
           </Link>
+        </div>
+      ) : allItems.length === 0 ? (
+        /* No results matching current search/filter */
+        <div className="bg-pm-surface rounded-2xl border border-pm-border py-16 text-center space-y-3">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#F3F4F6] flex items-center justify-center">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <circle cx="9.5" cy="9.5" r="7" stroke="#6B7280" strokeWidth="1.6" />
+              <path d="M15.5 15.5l4 4" stroke="#6B7280" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-pm-primary font-semibold">No projects found</p>
+          <p className="text-pm-muted text-sm">
+            {search ? `No results for "${search}"` : `No ${statusTab} projects`}
+          </p>
+          <button
+            onClick={() => { handleSearch(''); handleTab('all') }}
+            className="text-pm-teal text-sm font-semibold hover:underline"
+          >
+            Clear filters
+          </button>
         </div>
       ) : (
         /* Table */
