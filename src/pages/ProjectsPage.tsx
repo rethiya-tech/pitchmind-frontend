@@ -12,9 +12,10 @@ async function downloadPptx(conversionId: string, name: string) {
   const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export`)
   const url = data.download_url
   const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-  const isLocalUrl = apiBase && url.startsWith(apiBase)
+  const stripScheme = (u: string) => u.replace(/^https?:\/\//, '')
+  const isLocalUrl = apiBase && stripScheme(url).startsWith(stripScheme(apiBase))
   if (isLocalUrl) {
-    const path = url.slice(`${apiBase}/api/v1`.length)
+    const path = url.replace(/^https?:\/\/[^/]+\/api\/v1/, '')
     const res = await api.get(path, { responseType: 'blob' })
     const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' })
     const blobUrl = URL.createObjectURL(blob)

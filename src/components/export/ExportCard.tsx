@@ -25,11 +25,11 @@ export function ExportCard({ conversion }: ExportCardProps) {
 
       // If the download URL points to our own backend, fetch with auth and trigger blob download
       const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-      const apiV1Prefix = `${apiBase}/api/v1`
-      const isLocalUrl = apiBase && url.startsWith(apiBase)
+      const stripScheme = (u: string) => u.replace(/^https?:\/\//, '')
+      const isLocalUrl = apiBase && stripScheme(url).startsWith(stripScheme(apiBase))
 
       if (isLocalUrl) {
-        const path = url.startsWith(apiV1Prefix) ? url.slice(apiV1Prefix.length) : url.slice(apiBase.length)
+        const path = url.replace(/^https?:\/\/[^/]+\/api\/v1/, '')
         const res = await api.get(path, { responseType: 'blob' })
         const blob = new Blob([res.data], {
           type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
