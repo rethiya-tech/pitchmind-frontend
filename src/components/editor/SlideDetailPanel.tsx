@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useEditorStore } from '@/stores/editorStore'
 import api from '@/services/api'
@@ -31,7 +31,12 @@ const AI_EXAMPLES = [
   'Make it concise',
 ]
 
-export function SlideDetailPanel() {
+interface SlideDetailPanelProps {
+  selectionText?: string
+  onSelectionConsumed?: () => void
+}
+
+export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDetailPanelProps) {
   const { slides, activeSlideId, updateSlide } = useEditorStore()
   const slide = slides.find((s) => s.id === activeSlideId && !s.is_deleted)
 
@@ -39,6 +44,20 @@ export function SlideDetailPanel() {
   const [instruction, setInstruction] = useState('')
   const [applying, setApplying] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (!selectionText) return
+    setActiveTab('ai')
+    setInstruction(`"${selectionText}" — `)
+    onSelectionConsumed?.()
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        inputRef.current.focus()
+        const len = inputRef.current.value.length
+        inputRef.current.setSelectionRange(len, len)
+      }
+    })
+  }, [selectionText, onSelectionConsumed])
 
   if (!slide) {
     return (
