@@ -9,11 +9,51 @@ import api from '@/services/api'
 import { cn } from '@/utils/cn'
 import { THEMES } from '@/types'
 
+type Step = 'form' | 'questionnaire'
+
 const SLIDE_COUNTS = [5, 8, 10, 12, 15]
 const PROMPT_MIN = 20
 const PROMPT_MAX = 3000
+const FALLBACK_QUESTION_OPTIONS = ['Keep it concise', 'Make it practical', 'Use examples', 'Emphasize outcomes']
 
 type InputMode = 'file' | 'prompt'
+
+function getQuestionOptions(question: string) {
+  const q = question.toLowerCase()
+
+  if (q.includes('audience')) {
+    return ['Executives', 'Team leaders', 'Technical teams', 'General audience']
+  }
+  if (q.includes('objective') || q.includes('outcome') || q.includes('desired')) {
+    return ['Inform the audience', 'Persuade decision-makers', 'Teach practical steps', 'Inspire action']
+  }
+  if (q.includes('tone') || q.includes('feeling')) {
+    return ['Motivational', 'Practical', 'Executive', 'Urgent']
+  }
+  if (q.includes('data') || q.includes('statistics') || q.includes('research')) {
+    return ['Industry statistics', 'Internal metrics', 'Research findings', 'No data needed']
+  }
+  if (q.includes('stories') || q.includes('examples') || q.includes('case studies')) {
+    return ['Personal stories', 'Business examples', 'Case studies', 'Skip stories']
+  }
+  if (q.includes('action') || q.includes('next step')) {
+    return ['Adopt the recommendations', 'Start a pilot', 'Book a follow-up', 'Share with the team']
+  }
+  if (q.includes('message') || q.includes('remember')) {
+    return ['Clear main takeaway', 'Why it matters now', 'Practical next steps', 'Measurable impact']
+  }
+  if (q.includes('challenge') || q.includes('struggle') || q.includes('problem')) {
+    return ['Time pressure', 'Competing priorities', 'Low engagement', 'Lack of clarity']
+  }
+  if (q.includes('strategy') || q.includes('tool') || q.includes('tip')) {
+    return ['Simple habits', 'Team processes', 'Decision frameworks', 'Measurement tips']
+  }
+  if (q.includes('avoid') || q.includes('constraint') || q.includes('requirement')) {
+    return ['Avoid jargon', 'Keep it brief', 'Follow brand rules', 'No constraints']
+  }
+
+  return FALLBACK_QUESTION_OPTIONS
+}
 
 // ── Section card shell ────────────────────────────────────────────────────────
 function Section({
@@ -75,6 +115,9 @@ const selectCls =
 export function UploadForm() {
   const navigate = useNavigate()
 
+  // Wizard step
+  const [step, setStep] = useState<Step>('form')
+
   // Input mode
   const [inputMode, setInputMode] = useState<InputMode>('file')
 
@@ -85,6 +128,12 @@ export function UploadForm() {
   // Prompt mode state
   const [promptText, setPromptText] = useState('')
 
+  // Questionnaire state
+  const [questions, setQuestions] = useState<string[]>([])
+  const [answers, setAnswers] = useState<string[]>([])
+  const [skippedQuestions, setSkippedQuestions] = useState<boolean[]>([])
+  const [loadingQuestions, setLoadingQuestions] = useState(false)
+
   // Shared settings
   const [theme, setTheme] = useState('clean_slate')
   const [slideCount, setSlideCount] = useState(8)
@@ -94,6 +143,16 @@ export function UploadForm() {
   const [style, setStyle] = useState('professional')
   const [audienceLevel, setAudienceLevel] = useState('general')
   const [speakerNotes, setSpeakerNotes] = useState(true)
+  const [presentationFlags, setPresentationFlags] = useState<Set<string>>(new Set())
+
+  const toggleFlag = (flag: string) => {
+    setPresentationFlags(prev => {
+      const next = new Set(prev)
+      if (next.has(flag)) next.delete(flag)
+      else next.add(flag)
+      return next
+    })
+  }
 
   const presignMutation = useMutation({
     mutationFn: async (f: File) => {
@@ -129,12 +188,19 @@ export function UploadForm() {
         audience_level: audienceLevel,
         slide_count: slideCount,
         speaker_notes: speakerNotes,
+        presentation_flags: Array.from(presentationFlags),
       }
       if (inputMode === 'prompt') {
         payload.prompt_text = promptText
       } else {
         if (!uploadId) throw new Error('No upload ID')
         payload.upload_id = uploadId
+      }
+      if (questions.length > 0) {
+        payload.questionnaire_answers = questions.map((q, i) => ({
+          question: q,
+          answer: answers[i] ?? '',
+        }))
       }
       const { data } = await api.post('/conversions', payload)
       return data as { id: string }
@@ -147,6 +213,25 @@ export function UploadForm() {
       toast.error(detail || 'Failed to start generation. Please try again.')
     },
   })
+
+  const handleGenerateClick = async () => {
+    if (inputMode === 'prompt' && promptReady) {
+      setLoadingQuestions(true)
+      try {
+        const { data } = await api.post<{ questions: string[] }>('/ai/generate-questions', { prompt: promptText })
+        setQuestions(data.questions)
+        setAnswers(new Array(data.questions.length).fill(''))
+        setSkippedQuestions(new Array(data.questions.length).fill(false))
+        setStep('questionnaire')
+      } catch {
+        createMutation.mutate()
+      } finally {
+        setLoadingQuestions(false)
+      }
+    } else {
+      createMutation.mutate()
+    }
+  }
 
   const fileReady = inputMode === 'file' && !!file && !!uploadId && !presignMutation.isPending
   const promptReady = inputMode === 'prompt' && promptText.trim().length >= PROMPT_MIN
@@ -162,6 +247,140 @@ export function UploadForm() {
       setFile(null)
       setUploadId(null)
     }
+  }
+
+  const setQuestionAnswer = (index: number, answer: string) => {
+    const nextAnswers = [...answers]
+    nextAnswers[index] = answer
+    setAnswers(nextAnswers)
+
+    const nextSkipped = [...skippedQuestions]
+    nextSkipped[index] = false
+    setSkippedQuestions(nextSkipped)
+  }
+
+  const skipQuestion = (index: number) => {
+    const nextAnswers = [...answers]
+    nextAnswers[index] = ''
+    setAnswers(nextAnswers)
+
+    const nextSkipped = [...skippedQuestions]
+    nextSkipped[index] = true
+    setSkippedQuestions(nextSkipped)
+  }
+
+  if (step === 'questionnaire') {
+    return (
+      <div className="flex flex-col h-full bg-white rounded-2xl border border-pm-border overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-pm-border flex-shrink-0">
+          <button
+            onClick={() => setStep('form')}
+            className="flex items-center gap-1.5 text-xs font-medium text-pm-muted hover:text-pm-primary transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+          <div className="w-px h-4 bg-pm-border" />
+          <div>
+            <p className="text-sm font-semibold text-pm-primary leading-tight">Clarifying Questions</p>
+            <p className="text-xs text-pm-muted mt-0.5">Answer to help AI generate a more targeted presentation — all fields are optional</p>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5 bg-[#E1F5EE] text-pm-teal rounded-full px-3 py-1 text-xs font-semibold">
+            <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" />
+            </svg>
+            AI-generated questions
+          </div>
+        </div>
+
+        {/* Questions grid */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {questions.map((q, i) => {
+              const options = getQuestionOptions(q)
+              const isSkipped = skippedQuestions[i]
+              const currentAnswer = answers[i] ?? ''
+
+              return (
+                <div key={i} className="flex flex-col gap-2 rounded-xl border border-pm-border bg-white p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <label className="text-xs font-semibold text-pm-primary leading-snug">
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#E1F5EE] text-pm-teal text-[9px] font-bold mr-1.5 flex-shrink-0" style={{ verticalAlign: 'middle' }}>
+                        {i + 1}
+                      </span>
+                      {q}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => skipQuestion(i)}
+                      className={cn(
+                        'h-7 px-3 rounded-lg border text-xs font-semibold transition-colors flex-shrink-0',
+                        isSkipped
+                          ? 'bg-pm-teal text-white border-pm-teal'
+                          : 'bg-white text-pm-muted border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                      )}
+                    >
+                      Skip
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {options.map((option) => {
+                      const selected = currentAnswer === option && !isSkipped
+
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setQuestionAnswer(i, option)}
+                          className={cn(
+                            'px-3 py-1.5 rounded-full border text-xs font-medium transition-colors',
+                            selected
+                              ? 'bg-pm-teal text-white border-pm-teal'
+                              : 'bg-[#F7FAFA] text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                          )}
+                        >
+                          {option}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  <textarea
+                    rows={3}
+                    value={currentAnswer}
+                    disabled={isSkipped}
+                    onChange={(e) => setQuestionAnswer(i, e.target.value)}
+                    placeholder={isSkipped ? 'This question will be skipped' : 'Type your own answer or edit the selected option…'}
+                    className={cn(
+                      'w-full border rounded-lg px-3 py-2 text-xs text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-gray-300 resize-none',
+                      isSkipped ? 'bg-gray-50 border-pm-border text-pm-muted' : 'bg-white border-pm-border'
+                    )}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-pm-border flex-shrink-0 flex items-center gap-4">
+          <p className="text-xs text-pm-muted flex-1">
+            Unanswered questions are skipped — the AI will use your original prompt as the foundation.
+          </p>
+          <Button
+            size="lg"
+            loading={createMutation.isPending}
+            onClick={() => createMutation.mutate()}
+          >
+            Generate Presentation
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -391,6 +610,34 @@ export function UploadForm() {
               </button>
             </div>
           </Field>
+
+          {inputMode === 'file' && (
+            <Field label="PRESENTATION FORMAT">
+              <p className="text-xs text-pm-muted mb-2">Especially useful for large or complex documents.</p>
+              <div className="flex gap-2 flex-wrap">
+                {([
+                  { flag: 'minimal',    label: '⬛ Minimal',    tip: 'Clean slides, max 3 bullets per slide' },
+                  { flag: 'roadmap',    label: '📍 Roadmap',    tip: 'Includes a timeline/phases slide' },
+                  { flag: 'data_focus', label: '📊 Data Focus', tip: 'Prioritizes stats and metrics slides' },
+                ] as const).map(({ flag, label, tip }) => (
+                  <button
+                    key={flag}
+                    type="button"
+                    title={tip}
+                    onClick={() => toggleFlag(flag)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-lg border text-xs font-medium transition-all',
+                      presentationFlags.has(flag)
+                        ? 'bg-pm-teal text-white border-pm-teal'
+                        : 'bg-white text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </Field>
+          )}
         </div>
       </Section>
 
@@ -424,11 +671,11 @@ export function UploadForm() {
           <Button
             className="w-full"
             size="lg"
-            loading={createMutation.isPending || presignMutation.isPending}
-            disabled={!canGenerate}
-            onClick={() => createMutation.mutate()}
+            loading={createMutation.isPending || presignMutation.isPending || loadingQuestions}
+            disabled={!canGenerate || loadingQuestions}
+            onClick={handleGenerateClick}
           >
-            Generate Presentation
+            {loadingQuestions ? 'Generating questions…' : inputMode === 'prompt' ? 'Continue →' : 'Generate Presentation'}
           </Button>
         </div>
       </Section>
