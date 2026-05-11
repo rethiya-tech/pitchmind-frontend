@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import api from '@/services/api'
-import type { Conversion, Slide, Theme } from '@/types' // eslint-disable-line @typescript-eslint/no-unused-vars
+import type { Conversion, Slide, SlideTextStyle, Theme } from '@/types' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { THEMES } from '@/types'
 
 /*
@@ -40,6 +40,45 @@ const SHAPE_RADIUS: Record<string, string> = {
   pill: '50%',
 }
 
+const FONT_OPTIONS = [
+  'Plus Jakarta Sans',
+  'Arial',
+  'Georgia',
+  'Times New Roman',
+  'Verdana',
+]
+
+const FONT_WEIGHTS = [
+  { label: 'Regular', value: 400 },
+  { label: 'Medium', value: 500 },
+  { label: 'Semi Bold', value: 600 },
+  { label: 'Bold', value: 700 },
+  { label: 'Extra Bold', value: 800 },
+]
+
+const COLOR_SWATCHES = ['#FFFFFF', '#111827', '#0F6E56', '#2563EB', '#7C3AED', '#F59E0B', '#EF4444']
+
+type TextEditTarget = {
+  field: 'title' | 'bullet'
+  bulletIndex?: number
+  fullText: string
+  selectedText: string
+  selectedStart?: number
+  rect: DOMRect
+}
+
+type TextEditState = {
+  field: 'title' | 'bullet'
+  bulletIndex?: number
+  fullText: string
+  selectedText: string
+  selectedStart?: number
+  value: string
+  style: SlideTextStyle
+  top: number
+  left: number
+}
+
 /** Lighten (positive amount) or darken (negative amount) a hex color. */
 function lighterHex(hex: string, amount: number): string {
   const h = hex.replace('#', '')
@@ -50,16 +89,116 @@ function lighterHex(hex: string, amount: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
-function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Theme; onTextClick?: (text: string) => void }) {
+function SlidePreview({
+  slide,
+  theme,
+  onTextEdit,
+  onUpdateText,
+}: {
+  slide: Slide
+  theme: Theme
+  onTextEdit?: (target: TextEditTarget) => void
+  onUpdateText?: (field: 'title' | 'bullet', value: string, bulletIndex?: number) => void
+}) {
   const bullets: string[] = slide.bullets ?? []
   const layout = slide.layout || 'bullets'
   const accentColor = COLOR_SCHEME_MAP[slide.color_scheme] ?? theme.accent
   const radius = SHAPE_RADIUS[slide.shape_style] ?? '0px'
+  const mergeTextStyle = (
+    base: React.CSSProperties,
+    field: 'title' | 'bullet',
+    bulletIndex?: number
+  ): React.CSSProperties => {
+    const saved = field === 'title'
+      ? slide.text_styles?.title
+      : bulletIndex !== undefined
+        ? slide.text_styles?.bullets?.[String(bulletIndex)]
+        : undefined
 
-  const clickable = !!onTextClick
-  const tx = (text: string): React.HTMLAttributes<HTMLElement> => !clickable || !text ? {} : {
-    onClick: (e) => { e.stopPropagation(); onTextClick!(text) },
-    title: 'Click to edit with AI',
+    if (!saved) return base
+    return {
+      ...base,
+      ...(saved.fontFamily && { fontFamily: `"${saved.fontFamily}", sans-serif` }),
+      ...(saved.fontWeight && { fontWeight: saved.fontWeight }),
+      ...(saved.fontSize && { fontSize: `${saved.fontSize}px` }),
+      ...(saved.color && { color: saved.color }),
+      ...(saved.italic !== undefined && { fontStyle: saved.italic ? 'italic' : 'normal' }),
+    }
+  }
+
+  const clickable = !!onTextEdit
+  const openEditor = (
+    e: React.MouseEvent<HTMLElement>,
+    field: 'title' | 'bullet',
+    fullText: string,
+    bulletIndex?: number
+  ) => {
+    if (!onTextEdit || !fullText) return
+    const selection = window.getSelection()
+    const hasSelection = !!selection?.toString().trim() && selection.rangeCount > 0
+    const range = hasSelection && selection ? selection.getRangeAt(0) : null
+    const selectedFromThisElement = !!range && e.currentTarget.contains(range.commonAncestorContainer)
+    const selectedText =
+      selectedFromThisElement
+        ? selection?.toString().trim() ?? fullText
+        : fullText
+    const rect = selectedFromThisElement
+      ? range.getBoundingClientRect()
+      : e.currentTarget.getBoundingClientRect()
+    e.stopPropagation()
+    onTextEdit({ field, bulletIndex, fullText, selectedText, rect })
+  }
+  const isInlineEditable = !!onUpdateText
+
+  const handleInlineTextBlur = (
+    e: React.FocusEvent<HTMLElement>,
+    field: 'title' | 'bullet',
+    text: string,
+    bulletIndex?: number
+  ) => {
+    const rawValue = e.currentTarget.innerText.trim()
+    const placeholder = field === 'title' && !text ? 'Untitled Slide' : ''
+    const nextValue = rawValue === placeholder ? '' : rawValue
+    if (nextValue !== text && onUpdateText) {
+      onUpdateText(field, nextValue, bulletIndex)
+    }
+  }
+
+  const handleInlineTextKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      ;(e.currentTarget as HTMLElement).blur()
+    }
+  }
+
+  const editableProps = (
+    field: 'title' | 'bullet',
+    text: string,
+    bulletIndex?: number
+  ): React.HTMLAttributes<HTMLElement> => {
+    if (!isInlineEditable) return tx(field, text, bulletIndex)
+    return {
+      contentEditable: true,
+      suppressContentEditableWarning: true,
+      spellCheck: false,
+      onBlur: (e) => handleInlineTextBlur(e, field, text, bulletIndex),
+      onKeyDown: handleInlineTextKeyDown,
+    }
+  }
+
+  const tx = (
+    field: 'title' | 'bullet',
+    text: string,
+    bulletIndex?: number
+  ): React.HTMLAttributes<HTMLElement> => !clickable || !text ? {} : {
+    onMouseUp: (e) => {
+      if (window.getSelection()?.toString().trim()) openEditor(e, field, text, bulletIndex)
+    },
+    onClick: (e) => {
+      if (window.getSelection()?.toString().trim()) return
+      openEditor(e, field, text, bulletIndex)
+    },
+    title: 'Click or select text to edit',
   }
 
   const containerStyle: React.CSSProperties = {
@@ -79,9 +218,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
-          {...tx(slide.title)}
+          {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
-          style={{ top: '28%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(18px, 3.5vw, 42px)', cursor: clickable && slide.title ? 'pointer' : undefined }}
+          style={mergeTextStyle({ top: '28%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(18px, 3.5vw, 42px)', cursor: isInlineEditable ? 'text' : (clickable && slide.title ? 'pointer' : undefined) }, 'title')}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -91,18 +230,18 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
         />
         {subtitle && (
           <div
-            {...tx(subtitle)}
+            {...editableProps('bullet', subtitle, 0)}
             className="absolute"
-            style={{ top: '65%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85, cursor: clickable ? 'pointer' : undefined }}
+            style={mergeTextStyle({ top: '65%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85, cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
           >
             {subtitle}
           </div>
         )}
         {tagline && (
           <div
-            {...tx(tagline)}
+            {...editableProps('bullet', tagline, 1)}
             className="absolute"
-            style={{ top: '75%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1.2vw, 14px)', opacity: 0.65, cursor: clickable ? 'pointer' : undefined }}
+            style={mergeTextStyle({ top: '75%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1.2vw, 14px)', opacity: 0.65, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
           >
             {tagline}
           </div>
@@ -113,27 +252,36 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
 
   // ── two_column ────────────────────────────────────────────────────────────
   if (layout === 'two_column') {
-    const sections: { header: string; items: string[] }[] = []
-    let cur: { header: string; items: string[] } | null = null
-    for (const b of bullets) {
+    const sections: { header: string; items: { text: string; index: number }[] }[] = []
+    let cur: { header: string; items: { text: string; index: number }[] } | null = null
+    bullets.forEach((b, index) => {
       if (b.startsWith('## ')) {
         if (cur) sections.push(cur)
         cur = { header: b.slice(3), items: [] }
       } else {
         if (!cur) cur = { header: 'Key Points', items: [] }
-        cur.items.push(b)
+        cur.items.push({ text: b, index })
       }
-    }
+    })
     if (cur) sections.push(cur)
-    const leftSection = sections[0] ?? { header: 'Key Points', items: bullets.slice(0, Math.ceil(bullets.length / 2)) }
-    const rightSection = sections[1] ?? { header: 'Details', items: bullets.slice(Math.ceil(bullets.length / 2)) }
+    const leftSection = sections[0] ?? {
+      header: 'Key Points',
+      items: bullets.slice(0, Math.ceil(bullets.length / 2)).map((text, index) => ({ text, index })),
+    }
+    const rightSection = sections[1] ?? {
+      header: 'Details',
+      items: bullets.slice(Math.ceil(bullets.length / 2)).map((text, index) => ({
+        text,
+        index: index + Math.ceil(bullets.length / 2),
+      })),
+    }
 
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
-          {...tx(slide.title)}
+          {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
-          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }}
+          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -143,10 +291,10 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
           <div className="flex items-center px-2 py-1 mb-2" style={{ backgroundColor: accentColor, borderRadius: radius }}>
             <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>{leftSection.header}</span>
           </div>
-          {leftSection.items.map((b, i) => (
-            <div key={i} {...tx(b)} className="flex items-start" style={{ marginBottom: '1.5%', cursor: clickable ? 'pointer' : undefined }}>
+          {leftSection.items.map((item) => (
+            <div key={item.index} {...editableProps('bullet', item.text, item.index)} className="flex items-start" style={{ marginBottom: '1.5%', cursor: clickable ? 'pointer' : undefined }}>
               <span style={{ color: accentColor, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
-              <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
+              <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }, 'bullet', item.index)}>{item.text}</span>
             </div>
           ))}
         </div>
@@ -155,10 +303,10 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
           <div className="flex items-center px-2 py-1 mb-2" style={{ backgroundColor: lighterHex(accentColor, 20), borderRadius: radius }}>
             <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>{rightSection.header}</span>
           </div>
-          {rightSection.items.map((b, i) => (
-            <div key={i} {...tx(b)} className="flex items-start" style={{ marginBottom: '1.5%', cursor: clickable ? 'pointer' : undefined }}>
+          {rightSection.items.map((item) => (
+            <div key={item.index} {...editableProps('bullet', item.text, item.index)} className="flex items-start" style={{ marginBottom: '1.5%', cursor: clickable ? 'pointer' : undefined }}>
               <span style={{ color: accentColor, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
-              <span style={{ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }}>{b}</span>
+              <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }, 'bullet', item.index)}>{item.text}</span>
             </div>
           ))}
         </div>
@@ -173,9 +321,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
-          {...tx(slide.title)}
+          {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
-          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.7vw, 20px)', cursor: clickable && slide.title ? 'pointer' : undefined }}
+          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.7vw, 20px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -186,12 +334,12 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
             const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : ''
             const labelBg = i % 2 === 0 ? accentColor : lighterHex(accentColor, 25)
             return (
-              <div key={i} {...tx(b)} className="flex" style={{ height: '9%', marginBottom: '1%', cursor: clickable ? 'pointer' : undefined }}>
+              <div key={i} {...editableProps('bullet', b, i)} className="flex" style={{ height: '9%', marginBottom: '1%', cursor: clickable ? 'pointer' : undefined }}>
                 <div className="flex items-center flex-shrink-0" style={{ width: '38%', backgroundColor: labelBg, paddingLeft: '3%', paddingRight: '2%' }}>
-                  <span className="font-bold truncate" style={{ color: '#FFFFFF', fontSize: 'clamp(6px, 0.9vw, 11px)' }}>{label}</span>
+                  <span className="font-bold truncate" style={mergeTextStyle({ color: '#FFFFFF', fontSize: 'clamp(6px, 0.9vw, 11px)' }, 'bullet', i)}>{label}</span>
                 </div>
                 <div className="flex items-center flex-1" style={{ backgroundColor: valueBg, paddingLeft: '3%', paddingRight: '2%' }}>
-                  <span className="truncate" style={{ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)' }}>{value || '—'}</span>
+                  <span className="truncate" style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)' }, 'bullet', i)}>{value || '—'}</span>
                 </div>
               </div>
             )
@@ -206,9 +354,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
-          {...tx(slide.title)}
+          {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
-          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }}
+          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -219,10 +367,10 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
             const label = sepIdx !== -1 ? b.slice(0, sepIdx) : `Phase ${i + 1}`
             const desc = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
             return (
-              <div key={i} {...tx(b)} style={{ display: 'flex', alignItems: 'center', flex: 1, minHeight: 0, cursor: clickable ? 'pointer' : undefined }}>
+              <div key={i} {...editableProps('bullet', b, i)} style={{ display: 'flex', alignItems: 'center', flex: 1, minHeight: 0, cursor: clickable ? 'pointer' : undefined }}>
                 <div style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: accentColor, flexShrink: 0, marginRight: '2.5%', zIndex: 1 }} />
-                <span style={{ color: accentColor, fontWeight: 700, fontSize: 'clamp(7px, 1vw, 11px)' }}>{label}</span>
-                {desc && <span style={{ color: theme.text, fontSize: 'clamp(6px, 0.85vw, 10px)', opacity: 0.8, marginLeft: '1.5%' }}>{desc}</span>}
+                <span style={mergeTextStyle({ color: accentColor, fontWeight: 700, fontSize: 'clamp(7px, 1vw, 11px)' }, 'bullet', i)}>{label}</span>
+                {desc && <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(6px, 0.85vw, 10px)', opacity: 0.8, marginLeft: '1.5%' }, 'bullet', i)}>{desc}</span>}
               </div>
             )
           })}
@@ -237,9 +385,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
-          {...tx(slide.title)}
+          {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
-          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }}
+          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -249,11 +397,11 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
             const label = sepIdx !== -1 ? b.slice(0, sepIdx) : 'Metric'
             const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
             return (
-              <div key={i} {...tx(b)} className="relative flex flex-col overflow-hidden flex-1" style={{ backgroundColor: lighterHex(theme.bg, 30), borderRadius: radius, cursor: clickable ? 'pointer' : undefined }}>
+              <div key={i} {...editableProps('bullet', b, i)} className="relative flex flex-col overflow-hidden flex-1" style={{ backgroundColor: lighterHex(theme.bg, 30), borderRadius: radius, cursor: clickable ? 'pointer' : undefined }}>
                 <div style={{ height: 4, backgroundColor: accentColor, flexShrink: 0 }} />
                 <div style={{ padding: '8% 10%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ color: accentColor, fontWeight: 800, fontSize: 'clamp(14px, 2.4vw, 30px)', lineHeight: 1.1 }}>{value}</div>
-                  <div style={{ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)', opacity: 0.75, marginTop: '6%' }}>{label}</div>
+                  <div style={mergeTextStyle({ color: accentColor, fontWeight: 800, fontSize: 'clamp(14px, 2.4vw, 30px)', lineHeight: 1.1 }, 'bullet', i)}>{value}</div>
+                  <div style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)', opacity: 0.75, marginTop: '6%' }, 'bullet', i)}>{label}</div>
                 </div>
               </div>
             )
@@ -269,9 +417,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
-          {...tx(slide.title)}
+          {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
-          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }}
+          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -279,11 +427,11 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
         <div className="absolute flex items-stretch gap-[1.5%]" style={{ top: '31%', left: '7%', right: '7%', bottom: '8%' }}>
           {steps.map((b, i) => (
             <div key={i} className="flex items-center" style={{ flex: '1 1 0' }}>
-              <div {...tx(b)} className="flex flex-col overflow-hidden flex-1 h-full" style={{ backgroundColor: i % 2 === 0 ? accentColor : lighterHex(accentColor, 30), borderRadius: radius, cursor: clickable ? 'pointer' : undefined }}>
+              <div {...editableProps('bullet', b, i)} className="flex flex-col overflow-hidden flex-1 h-full" style={{ backgroundColor: i % 2 === 0 ? accentColor : lighterHex(accentColor, 30), borderRadius: radius, cursor: clickable ? 'pointer' : undefined }}>
                 <div className="flex items-center justify-center font-bold text-white flex-shrink-0" style={{ height: '30%', fontSize: 'clamp(8px, 1.3vw, 16px)', backgroundColor: lighterHex(accentColor, -20), borderRadius: `${radius} ${radius} 0 0` }}>
                   {i + 1}
                 </div>
-                <div style={{ padding: '5% 8%', color: '#fff', fontSize: 'clamp(5px, 0.8vw, 9px)', lineHeight: 1.4, overflow: 'hidden' }}>{b}</div>
+                <div style={mergeTextStyle({ padding: '5% 8%', color: '#fff', fontSize: 'clamp(5px, 0.8vw, 9px)', lineHeight: 1.4, overflow: 'hidden' }, 'bullet', i)}>{b}</div>
               </div>
               {i < steps.length - 1 && (
                 <span style={{ color: accentColor, fontSize: 'clamp(8px, 1.2vw, 14px)', flexShrink: 0, padding: '0 2%' }}>→</span>
@@ -302,9 +450,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
     return (
       <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
         <div
-          {...tx(slide.title)}
+          {...editableProps('title', slide.title)}
           className="absolute"
-          style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(8px, 1.3vw, 15px)', opacity: 0.6, cursor: clickable && slide.title ? 'pointer' : undefined }}
+          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(8px, 1.3vw, 15px)', opacity: 0.6, cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
         >
           {slide.title}
         </div>
@@ -313,9 +461,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
         </div>
         {quoteText && (
           <div
-            {...tx(quoteText)}
+            {...editableProps('bullet', quoteText, 0)}
             className="absolute leading-snug"
-            style={{ top: '26%', left: '14%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.5vw, 18px)', fontStyle: 'italic', cursor: clickable ? 'pointer' : undefined }}
+            style={mergeTextStyle({ top: '26%', left: '14%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.5vw, 18px)', fontStyle: 'italic', cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
           >
             {quoteText}
           </div>
@@ -323,9 +471,9 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
         <div className="absolute rounded-full" style={{ top: '74%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }} />
         {attribution && (
           <div
-            {...tx(attribution)}
+            {...editableProps('bullet', attribution, 1)}
             className="absolute text-right"
-            style={{ top: '78%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', opacity: 0.7, cursor: clickable ? 'pointer' : undefined }}
+            style={mergeTextStyle({ top: '78%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', opacity: 0.7, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
           >
             — {attribution}
           </div>
@@ -338,21 +486,21 @@ function SlidePreview({ slide, theme, onTextClick }: { slide: Slide; theme: Them
   return (
     <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
       <div
-        {...tx(slide.title)}
+        {...editableProps('title', slide.title)}
         className="absolute font-extrabold leading-tight"
-        style={{ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(11px, 2vw, 26px)', cursor: clickable && slide.title ? 'pointer' : undefined }}
+        style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(11px, 2vw, 26px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
       >
         {slide.title || 'Untitled Slide'}
       </div>
       <div className="absolute rounded-full" style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }} />
       <div className="absolute overflow-hidden" style={{ top: '29%', left: '7%', right: '7%', bottom: '4%' }}>
         {bullets.map((b, i) => (
-          <div key={i} {...tx(b)} className="flex items-start" style={{ marginBottom: '2%', cursor: clickable ? 'pointer' : undefined }}>
+          <div key={i} {...editableProps('bullet', b, i)} className="flex items-start" style={{ marginBottom: '2%', cursor: clickable ? 'pointer' : undefined }}>
             <span
               className="flex-shrink-0 rounded-full"
               style={{ backgroundColor: accentColor, width: '0.6em', height: '0.6em', minWidth: '0.6em', marginTop: '0.35em', marginRight: '0.6em', fontSize: 'clamp(9px, 1.3vw, 14px)' }}
             />
-            <span style={{ color: theme.text, fontSize: 'clamp(9px, 1.3vw, 14px)', lineHeight: 1.45, opacity: 0.92 }}>
+            <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(9px, 1.3vw, 14px)', lineHeight: 1.45, opacity: 0.92 }, 'bullet', i)}>
               {b}
             </span>
           </div>
@@ -473,8 +621,9 @@ export function EditorPage() {
   const backTo = (location.state as { from?: string } | null)?.from === 'templates'
     ? { path: '/templates', label: 'Templates' }
     : { path: '/projects', label: 'Projects' }
-  const { setSlides, setConversionId, setActiveSlide, slides, activeSlideId, markSaved } = useEditorStore()
+  const { setSlides, setConversionId, setActiveSlide, slides, activeSlideId, updateSlide, markSaved } = useEditorStore()
   const initialActiveSet = useRef(false)
+  const editInputRef = useRef<HTMLTextAreaElement>(null)
 
   const { data: conversion, isLoading, isError } = useQuery<Conversion>({
     queryKey: ['conversion', id],
@@ -511,18 +660,95 @@ export function EditorPage() {
   const activeIndex = visibleSlides.findIndex((s) => s.id === activeSlideId)
   const theme = THEMES.find((t) => t.id === conversion?.theme) ?? THEMES[THEMES.length - 1]
 
-  const [pendingSelection, setPendingSelection] = useState('')
+  const [textEditor, setTextEditor] = useState<TextEditState | null>(null)
+
+  useEffect(() => {
+    if (!textEditor) return
+    requestAnimationFrame(() => {
+      editInputRef.current?.focus()
+      editInputRef.current?.select()
+    })
+  }, [textEditor])
+
+  const openTextEditor = (target: TextEditTarget) => {
+    const savedStyle = target.field === 'title'
+      ? activeSlide?.text_styles?.title
+      : target.bulletIndex !== undefined
+        ? activeSlide?.text_styles?.bullets?.[String(target.bulletIndex)]
+        : undefined
+    setTextEditor({
+      field: target.field,
+      bulletIndex: target.bulletIndex,
+      fullText: target.fullText,
+      selectedText: target.selectedText,
+      selectedStart: target.selectedStart,
+      value: target.selectedText,
+      style: {
+        fontFamily: 'Plus Jakarta Sans',
+        fontWeight: target.field === 'title' ? 800 : 400,
+        fontSize: target.field === 'title' ? 42 : 18,
+        color: theme.text,
+        italic: false,
+        ...savedStyle,
+      },
+      top: Math.max(72, target.rect.top - 10),
+      left: target.rect.left + target.rect.width / 2,
+    })
+  }
+
+  const closeTextEditor = () => {
+    window.getSelection()?.removeAllRanges()
+    setTextEditor(null)
+  }
+
+  const saveTextEditor = () => {
+    if (!activeSlide || !textEditor) return
+    const replacement = textEditor.value.trim()
+    if (!replacement) return
+
+    const selectedIndex = textEditor.selectedStart ?? textEditor.fullText.indexOf(textEditor.selectedText)
+    const nextText =
+      textEditor.selectedText !== textEditor.fullText && selectedIndex >= 0
+        ? `${textEditor.fullText.slice(0, selectedIndex)}${replacement}${textEditor.fullText.slice(selectedIndex + textEditor.selectedText.length)}`
+        : replacement
+
+    if (textEditor.field === 'title') {
+      updateSlide(activeSlide.id, {
+        title: nextText,
+        text_styles: {
+          ...(activeSlide.text_styles ?? {}),
+          title: textEditor.style,
+        },
+      })
+    } else if (textEditor.bulletIndex !== undefined) {
+      const bullets = [...activeSlide.bullets]
+      bullets[textEditor.bulletIndex] = nextText
+      updateSlide(activeSlide.id, {
+        bullets,
+        text_styles: {
+          ...(activeSlide.text_styles ?? {}),
+          bullets: {
+            ...(activeSlide.text_styles?.bullets ?? {}),
+            [String(textEditor.bulletIndex)]: textEditor.style,
+          },
+        },
+      })
+    }
+
+    closeTextEditor()
+  }
 
   const { isSaving, hasError } = useAutoSave({
     slideId: activeSlide?.id ?? '',
     content: activeSlide
-      ? JSON.stringify({ title: activeSlide.title, bullets: activeSlide.bullets, speaker_notes: activeSlide.speaker_notes, layout: activeSlide.layout, color_scheme: activeSlide.color_scheme, shape_style: activeSlide.shape_style })
+      ? JSON.stringify({ title: activeSlide.title, bullets: activeSlide.bullets, text_styles: activeSlide.text_styles, speaker_notes: activeSlide.speaker_notes, layout: activeSlide.layout, color_scheme: activeSlide.color_scheme, shape_style: activeSlide.shape_style })
       : '',
     onSave: async () => {
       if (!activeSlide) return
       await api.patch(`/slides/${activeSlide.id}`, {
         title: activeSlide.title,
         bullets: activeSlide.bullets,
+        text_styles: activeSlide.text_styles ?? {},
         speaker_notes: activeSlide.speaker_notes,
         layout: activeSlide.layout,
         color_scheme: activeSlide.color_scheme,
@@ -617,7 +843,20 @@ export function EditorPage() {
           <div className="flex-1 overflow-auto flex items-center justify-center p-10">
             {activeSlide ? (
               <div className="w-full max-w-4xl drop-shadow-2xl">
-                <SlidePreview slide={activeSlide} theme={theme} onTextClick={(text) => setPendingSelection(text)} />
+                <SlidePreview
+                  slide={activeSlide}
+                  theme={theme}
+                  onTextEdit={openTextEditor}
+                  onUpdateText={(field, value, bulletIndex) => {
+                    if (field === 'title') {
+                      updateSlide(activeSlide.id, { title: value })
+                    } else if (bulletIndex !== undefined) {
+                      const bullets = [...activeSlide.bullets]
+                      bullets[bulletIndex] = value
+                      updateSlide(activeSlide.id, { bullets })
+                    }
+                  }}
+                />
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3 text-gray-400">
@@ -635,13 +874,161 @@ export function EditorPage() {
           <PanelHeader title="Properties" />
           <div className="flex-1 overflow-y-auto">
             <SlideDetailPanel
-              selectionText={pendingSelection}
-              onSelectionConsumed={() => setPendingSelection('')}
             />
           </div>
         </aside>
 
       </div>
+
+      {textEditor && (
+        <div
+          className="fixed z-50 w-[380px] -translate-x-1/2 -translate-y-full rounded-xl border border-pm-border bg-white p-3 shadow-2xl"
+          style={{ top: textEditor.top, left: textEditor.left }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-pm-muted">
+              Text Editor
+            </p>
+            <button
+              type="button"
+              onClick={closeTextEditor}
+              className="h-6 w-6 rounded-md text-pm-muted hover:bg-gray-100 hover:text-pm-primary"
+              aria-label="Close text editor"
+            >
+              ×
+            </button>
+          </div>
+          <textarea
+            ref={editInputRef}
+            rows={2}
+            value={textEditor.value}
+            onChange={(e) => setTextEditor({ ...textEditor, value: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault()
+                closeTextEditor()
+              }
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                saveTextEditor()
+              }
+            }}
+            className="w-full resize-none rounded-lg border border-pm-border bg-white px-3 py-2 text-sm text-pm-primary outline-none transition focus:ring-2 focus:ring-pm-teal"
+          />
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <label className="space-y-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-pm-muted">Font</span>
+              <select
+                value={textEditor.style.fontFamily ?? 'Plus Jakarta Sans'}
+                onChange={(e) => setTextEditor({ ...textEditor, style: { ...textEditor.style, fontFamily: e.target.value } })}
+                className="h-9 w-full rounded-lg border border-pm-border bg-white px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
+              >
+                {FONT_OPTIONS.map((font) => (
+                  <option key={font} value={font}>{font}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-pm-muted">Weight</span>
+              <select
+                value={textEditor.style.fontWeight ?? 400}
+                onChange={(e) => setTextEditor({ ...textEditor, style: { ...textEditor.style, fontWeight: Number(e.target.value) } })}
+                className="h-9 w-full rounded-lg border border-pm-border bg-white px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
+              >
+                {FONT_WEIGHTS.map((weight) => (
+                  <option key={weight.value} value={weight.value}>{weight.label}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-pm-muted">Size</span>
+              <input
+                type="number"
+                min={6}
+                max={96}
+                value={textEditor.style.fontSize ?? 18}
+                onChange={(e) => setTextEditor({ ...textEditor, style: { ...textEditor.style, fontSize: Number(e.target.value) } })}
+                className="h-9 w-full rounded-lg border border-pm-border bg-white px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
+              />
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-pm-muted">Color</span>
+              <div className="flex h-9 items-center gap-2 rounded-lg border border-pm-border px-2">
+                <input
+                  type="color"
+                  value={textEditor.style.color ?? theme.text}
+                  onChange={(e) => setTextEditor({ ...textEditor, style: { ...textEditor.style, color: e.target.value } })}
+                  className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
+                />
+                <span className="text-xs text-pm-primary">{textEditor.style.color ?? theme.text}</span>
+              </div>
+            </label>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5">
+              {COLOR_SWATCHES.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setTextEditor({ ...textEditor, style: { ...textEditor.style, color } })}
+                  className="h-6 w-6 rounded-full border border-pm-border ring-offset-2 transition hover:ring-2 hover:ring-pm-teal"
+                  style={{ backgroundColor: color }}
+                  aria-label={`Set color ${color}`}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setTextEditor({ ...textEditor, style: { ...textEditor.style, italic: !textEditor.style.italic } })}
+              className={cn(
+                'h-8 rounded-lg border px-3 text-xs font-semibold italic transition',
+                textEditor.style.italic
+                  ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                  : 'border-pm-border text-pm-muted hover:text-pm-primary'
+              )}
+            >
+              I
+            </button>
+          </div>
+
+          <div
+            className="mt-3 rounded-lg border border-pm-border bg-[#F9FAFB] px-3 py-2 text-sm"
+            style={{
+              fontFamily: `"${textEditor.style.fontFamily ?? 'Plus Jakarta Sans'}", sans-serif`,
+              fontWeight: textEditor.style.fontWeight ?? 400,
+              fontSize: `${Math.min(32, textEditor.style.fontSize ?? 18)}px`,
+              color: textEditor.style.color ?? theme.text,
+              fontStyle: textEditor.style.italic ? 'italic' : 'normal',
+            }}
+          >
+            {textEditor.value || 'Preview'}
+          </div>
+
+          <div className="mt-3 flex items-center justify-end gap-2 border-t border-pm-border pt-3">
+            <button
+              type="button"
+              onClick={closeTextEditor}
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-pm-muted hover:bg-gray-100 hover:text-pm-primary"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={saveTextEditor}
+              disabled={!textEditor.value.trim()}
+              className="rounded-lg bg-pm-teal px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#0B5F4A] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

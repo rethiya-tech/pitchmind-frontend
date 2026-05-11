@@ -48,7 +48,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
   useEffect(() => {
     if (!selectionText) return
     setActiveTab('ai')
-    setInstruction(`"${selectionText}" — `)
+    setInstruction(`Edit only this selected text: "${selectionText}" — `)
     onSelectionConsumed?.()
     requestAnimationFrame(() => {
       if (inputRef.current) {
