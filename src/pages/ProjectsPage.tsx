@@ -413,6 +413,9 @@ export function ProjectsPage() {
                   Created
                 </th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">
+                  Tokens
+                </th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">
                   Actions
                 </th>
               </tr>
@@ -456,6 +459,19 @@ export function ProjectsPage() {
                     {/* Created */}
                     <td className="px-5 py-3.5 text-pm-muted">
                       {formatDate(c.created_at)}
+                    </td>
+
+                    {/* Tokens */}
+                    <td className="px-5 py-3.5 text-pm-muted text-xs">
+                      {c.tokens_used ? (
+                        <span className="inline-flex items-center gap-1">
+                          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" className="text-pm-teal flex-shrink-0">
+                            <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" strokeWidth="1.2" />
+                            <path d="M5.5 3v2.5l1.5 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                          </svg>
+                          {c.tokens_used.toLocaleString()}
+                        </span>
+                      ) : '—'}
                     </td>
 
                     {/* Actions */}
