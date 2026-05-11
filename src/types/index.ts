@@ -14,12 +14,26 @@ export interface Slide {
   layout: string
   title: string
   bullets: string[]
+  text_styles?: SlideTextStyles
   speaker_notes: string
   is_deleted: boolean
   color_scheme: string
   shape_style: string
   created_at?: string
   updated_at?: string
+}
+
+export interface SlideTextStyle {
+  fontFamily?: string
+  fontWeight?: number
+  fontSize?: number
+  color?: string
+  italic?: boolean
+}
+
+export interface SlideTextStyles {
+  title?: SlideTextStyle
+  bullets?: Record<string, SlideTextStyle>
 }
 
 export interface Conversion {
@@ -79,6 +93,30 @@ export interface AdminMetrics {
   ai_cost_today_usd: number
   ai_cost_total_usd: number
   total_tokens: number
+
+  // Detailed Token Metrics (Today)
+  input_text_tokens_today: number
+  output_text_tokens_today: number
+  input_audio_tokens_today: number
+  output_audio_tokens_today: number
+  summary_input_tokens_today: number
+  summary_output_tokens_today: number
+
+  // Detailed Token Metrics (Total)
+  input_text_tokens_total: number
+  output_text_tokens_total: number
+  input_audio_tokens_total: number
+  output_audio_tokens_total: number
+  summary_input_tokens_total: number
+  summary_output_tokens_total: number
+
+  // Costs (Today)
+  cost_input_text_today: number
+  cost_output_text_today: number
+  cost_input_audio_today: number
+  cost_output_audio_today: number
+  cost_summary_input_today: number
+  cost_summary_output_today: number
 }
 
 export interface AdminUser {

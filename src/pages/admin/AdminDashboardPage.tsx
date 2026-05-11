@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Spinner } from '@/components/ui/Spinner'
 import api from '@/services/api'
 import type { AdminMetrics, AuditLogListResponse, AdminConversionListResponse } from '@/types'
+import { TokenUsageTable } from '@/components/admin/TokenUsageTable'
 
 function StatCard({
   label, value, sub, icon, accent = false,
@@ -138,6 +139,9 @@ export function AdminDashboardPage() {
         <StatCard label="AI Cost Today" value={`$${m.ai_cost_today_usd.toFixed(4)}`} sub={`${(m.total_tokens).toLocaleString()} total tokens`} icon={<CostIcon />} />
         <StatCard label="Total AI Spend" value={`$${m.ai_cost_total_usd.toFixed(3)}`} sub="all time" icon={<CostIcon />} />
       </div>
+
+      {/* Token Usage Table */}
+      <TokenUsageTable metrics={m} />
 
       {/* Bottom panels */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
