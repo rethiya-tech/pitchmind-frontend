@@ -205,7 +205,9 @@ function SlidePreview({
     aspectRatio: '16/9',
     position: 'relative',
     backgroundColor: theme.bg,
-    backgroundImage: `url(/themes/${theme.id}.png)`,
+    backgroundImage: slide.background_image_url
+      ? `url(${slide.background_image_url})`
+      : `url(/themes/${theme.id}.png)`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     fontFamily: '"Plus Jakarta Sans", sans-serif',

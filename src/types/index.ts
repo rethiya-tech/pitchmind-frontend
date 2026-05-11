@@ -16,6 +16,7 @@ export interface Slide {
   bullets: string[]
   text_styles?: SlideTextStyles
   speaker_notes: string
+  background_image_url?: string
   is_deleted: boolean
   color_scheme: string
   shape_style: string

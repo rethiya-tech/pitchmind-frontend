@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useEditorStore } from '@/stores/editorStore'
 import api from '@/services/api'
+import type { SlideTextStyle } from '@/types'
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 const inputCls = 'w-full border border-pm-border rounded-lg px-3 py-2 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-gray-300'
+const selectCls = 'w-full border border-pm-border rounded-lg px-2 py-1.5 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition'
 
 const MAX_BULLETS: Record<string, number> = {
   hero: 2,
@@ -31,6 +33,16 @@ const AI_EXAMPLES = [
   'Make it concise',
 ]
 
+const FONT_OPTIONS = ['Plus Jakarta Sans', 'Arial', 'Georgia', 'Times New Roman', 'Verdana', 'Courier New']
+const FONT_WEIGHTS = [
+  { label: 'Regular', value: 400 },
+  { label: 'Medium', value: 500 },
+  { label: 'Semi Bold', value: 600 },
+  { label: 'Bold', value: 700 },
+  { label: 'Extra Bold', value: 800 },
+]
+const COLOR_SWATCHES = ['#FFFFFF', '#111827', '#0F6E56', '#2563EB', '#7C3AED', '#F59E0B', '#EF4444', '#EC4899']
+
 interface SlideDetailPanelProps {
   selectionText?: string
   onSelectionConsumed?: () => void
@@ -43,7 +55,12 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
   const [activeTab, setActiveTab] = useState<'edit' | 'ai'>('edit')
   const [instruction, setInstruction] = useState('')
   const [applying, setApplying] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+
+  // Typography target: 'title' | 'bullet_0' | 'bullet_1' ...
+  const [typoTarget, setTypoTarget] = useState<string>('title')
 
   useEffect(() => {
     if (!selectionText) return
@@ -73,6 +90,54 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
     )
   }
 
+  // ── Typography helpers ──────────────────────────────────────────────────────
+
+  const currentStyle: SlideTextStyle = (() => {
+    if (typoTarget === 'title') return slide.text_styles?.title ?? {}
+    const idx = typoTarget.replace('bullet_', '')
+    return slide.text_styles?.bullets?.[idx] ?? {}
+  })()
+
+  const setStyle = (patch: Partial<SlideTextStyle>) => {
+    const merged = { ...currentStyle, ...patch }
+    let nextStyles = { ...(slide.text_styles ?? {}) }
+    if (typoTarget === 'title') {
+      nextStyles = { ...nextStyles, title: merged }
+    } else {
+      const idx = typoTarget.replace('bullet_', '')
+      nextStyles = {
+        ...nextStyles,
+        bullets: { ...(nextStyles.bullets ?? {}), [idx]: merged },
+      }
+    }
+    updateSlide(slide.id, { text_styles: nextStyles })
+    void api.patch(`/slides/${slide.id}`, { text_styles: nextStyles })
+  }
+
+  const resetStyle = () => {
+    let nextStyles = { ...(slide.text_styles ?? {}) }
+    if (typoTarget === 'title') {
+      const { title: _, ...rest } = nextStyles
+      nextStyles = rest
+    } else {
+      const idx = typoTarget.replace('bullet_', '')
+      const bullets = { ...(nextStyles.bullets ?? {}) }
+      delete bullets[idx]
+      nextStyles = { ...nextStyles, bullets }
+    }
+    updateSlide(slide.id, { text_styles: nextStyles })
+    void api.patch(`/slides/${slide.id}`, { text_styles: nextStyles })
+  }
+
+  const hasCustomStyle = (() => {
+    if (typoTarget === 'title') return !!slide.text_styles?.title && Object.keys(slide.text_styles.title).length > 0
+    const idx = typoTarget.replace('bullet_', '')
+    const s = slide.text_styles?.bullets?.[idx]
+    return !!s && Object.keys(s).length > 0
+  })()
+
+  // ── Bullet helpers ──────────────────────────────────────────────────────────
+
   const handleBulletChange = (i: number, value: string) => {
     const bullets = [...slide.bullets]
     bullets[i] = value
@@ -83,6 +148,37 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
 
   const handleRemoveBullet = (i: number) =>
     updateSlide(slide.id, { bullets: slide.bullets.filter((_, idx) => idx !== i) })
+
+  // ── Image upload ────────────────────────────────────────────────────────────
+
+  const handleImageFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+    setUploadingImage(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const { data } = await api.post<{ image_url: string }>(`/slides/${slide.id}/upload-image`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      updateSlide(slide.id, { background_image_url: data.image_url })
+      toast.success('Background image updated')
+    } catch {
+      toast.error('Image upload failed')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const handleRemoveImage = async () => {
+    updateSlide(slide.id, { background_image_url: undefined })
+    await api.patch(`/slides/${slide.id}`, { background_image_url: '' })
+    toast.success('Background image removed')
+  }
+
+  // ── AI apply ────────────────────────────────────────────────────────────────
 
   const handleApply = async () => {
     const text = instruction.trim()
@@ -201,7 +297,6 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
                 </button>
               </div>
             ))}
-
             {slide.bullets.length < (MAX_BULLETS[slide.layout] ?? 6) && (
               <button
                 onClick={handleAddBullet}
@@ -213,6 +308,200 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
                 Add bullet point
               </button>
             )}
+          </div>
+
+          {/* Typography */}
+          <SectionLabel>Typography</SectionLabel>
+          <div className="px-3 py-3 space-y-3">
+
+            {/* Target selector */}
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wide text-pm-muted mb-1">Apply to</label>
+              <select
+                className={selectCls}
+                value={typoTarget}
+                onChange={(e) => setTypoTarget(e.target.value)}
+              >
+                <option value="title">Title</option>
+                {slide.bullets.map((_, i) => (
+                  <option key={i} value={`bullet_${i}`}>Bullet {i + 1}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Font family */}
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wide text-pm-muted mb-1">Font</label>
+              <select
+                className={selectCls}
+                value={currentStyle.fontFamily ?? ''}
+                onChange={(e) => setStyle({ fontFamily: e.target.value || undefined })}
+              >
+                <option value="">Default</option>
+                {FONT_OPTIONS.map((f) => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Weight + Size row */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wide text-pm-muted mb-1">Weight</label>
+                <select
+                  className={selectCls}
+                  value={currentStyle.fontWeight ?? ''}
+                  onChange={(e) => setStyle({ fontWeight: e.target.value ? Number(e.target.value) : undefined })}
+                >
+                  <option value="">Default</option>
+                  {FONT_WEIGHTS.map((w) => (
+                    <option key={w.value} value={w.value}>{w.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wide text-pm-muted mb-1">Size (px)</label>
+                <input
+                  type="number"
+                  min={6}
+                  max={96}
+                  placeholder="Auto"
+                  className={selectCls}
+                  value={currentStyle.fontSize ?? ''}
+                  onChange={(e) => setStyle({ fontSize: e.target.value ? Number(e.target.value) : undefined })}
+                />
+              </div>
+            </div>
+
+            {/* Color */}
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wide text-pm-muted mb-1">Color</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={currentStyle.color ?? '#ffffff'}
+                  onChange={(e) => setStyle({ color: e.target.value })}
+                  className="h-8 w-10 cursor-pointer rounded border border-pm-border bg-white p-0.5"
+                />
+                <input
+                  type="text"
+                  value={currentStyle.color ?? ''}
+                  placeholder="Auto"
+                  onChange={(e) => setStyle({ color: e.target.value || undefined })}
+                  className="flex-1 border border-pm-border rounded-lg px-2 py-1.5 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition font-mono"
+                />
+              </div>
+              {/* Swatches */}
+              <div className="flex gap-1.5 mt-2 flex-wrap">
+                {COLOR_SWATCHES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setStyle({ color: c })}
+                    title={c}
+                    className={`h-5 w-5 rounded-full border transition hover:scale-110 ${
+                      currentStyle.color === c ? 'ring-2 ring-offset-1 ring-pm-teal border-transparent' : 'border-pm-border'
+                    }`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Italic toggle + Reset row */}
+            <div className="flex items-center justify-between pt-0.5">
+              <button
+                type="button"
+                onClick={() => setStyle({ italic: !currentStyle.italic })}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold italic transition ${
+                  currentStyle.italic
+                    ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                    : 'border-pm-border text-pm-muted hover:text-pm-primary'
+                }`}
+              >
+                <span className="italic font-serif">I</span>
+                Italic
+              </button>
+              {hasCustomStyle && (
+                <button
+                  type="button"
+                  onClick={resetStyle}
+                  className="text-[10px] text-pm-muted hover:text-pm-danger transition-colors underline"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+
+          </div>
+
+          {/* Background Image */}
+          <SectionLabel>Background Image</SectionLabel>
+          <div className="px-3 py-3 space-y-2">
+            {slide.background_image_url ? (
+              <div className="relative rounded-lg overflow-hidden border border-pm-border group">
+                <img
+                  src={slide.background_image_url}
+                  alt="Slide background"
+                  className="w-full h-24 object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    className="px-2.5 py-1 rounded-lg bg-white text-[10px] font-semibold text-pm-primary hover:bg-gray-100 transition"
+                  >
+                    Replace
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="px-2.5 py-1 rounded-lg bg-pm-danger text-[10px] font-semibold text-white hover:bg-red-700 transition"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="flex flex-col items-center justify-center gap-2 w-full h-20 rounded-lg border-2 border-dashed border-pm-border text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-[#E1F5EE] transition-all disabled:opacity-50"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  const file = e.dataTransfer.files[0]
+                  if (file) void handleImageFile(file)
+                }}
+              >
+                {uploadingImage ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+                <span className="text-[10px] font-medium">
+                  {uploadingImage ? 'Uploading…' : 'Click or drag image'}
+                </span>
+              </button>
+            )}
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) void handleImageFile(file)
+                e.target.value = ''
+              }}
+            />
+            <p className="text-[10px] text-pm-muted">JPEG, PNG, WebP · max 8 MB · replaces theme background</p>
           </div>
 
           {/* Speaker Notes */}
@@ -251,14 +540,12 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
       {activeTab === 'ai' && (
         <div className="flex flex-col flex-1 overflow-hidden">
 
-          {/* Hint */}
           <div className="px-4 pt-4 pb-2">
             <p className="text-[11px] text-pm-muted leading-relaxed">
               Describe what to change. AI will update only the relevant fields.
             </p>
           </div>
 
-          {/* Example chips */}
           <div className="px-3 pb-3 flex flex-wrap gap-1.5">
             {AI_EXAMPLES.map((ex) => (
               <button
@@ -274,7 +561,6 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
             ))}
           </div>
 
-          {/* Prompt input */}
           <div className="flex-1 px-3 pb-3">
             <textarea
               ref={inputRef}
@@ -289,7 +575,6 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
             <p className="text-[10px] text-pm-muted mt-1">Enter to apply · Shift+Enter for new line</p>
           </div>
 
-          {/* Apply button */}
           <div className="px-3 pb-4 flex-shrink-0">
             <button
               onClick={handleApply}
