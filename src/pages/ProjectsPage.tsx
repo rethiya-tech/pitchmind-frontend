@@ -504,7 +504,7 @@ export function ProjectsPage() {
                         </Link>
                       )}
                       {(c.status === 'failed' || c.status === 'pending' || c.status === 'cancelled') && (
-                        <span className="text-pm-muted text-xs">—</span>
+                        <DeleteButton conversionId={c.id} />
                       )}
                     </td>
                   </tr>
