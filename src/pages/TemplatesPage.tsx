@@ -179,8 +179,12 @@ function UploadModal({ onClose }: { onClose: () => void }) {
       form.append('file', file)
       return (await api.post('/templates', form, { headers: { 'Content-Type': 'multipart/form-data' } })).data
     },
-    onSuccess: () => {
-      toast.success('Template uploaded successfully')
+    onSuccess: (data) => {
+      if (data?.data?.parse_warning) {
+        toast('Template saved, but slides could not be extracted from the file.', { icon: '⚠️' })
+      } else {
+        toast.success('Template uploaded successfully')
+      }
       queryClient.invalidateQueries({ queryKey: ['templates'] })
       onClose()
     },
