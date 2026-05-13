@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import api from '@/services/api'
 import { THEMES } from '@/types'
 import { useAuthStore } from '@/stores/authStore'
@@ -305,6 +306,7 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
   const queryClient = useQueryClient()
   const [showView, setShowView] = useState(false)
   const [copying, setCopying] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const t = resolveTheme(template.theme)
 
   const isOwn = !template.is_public && template.created_by === currentUserId
@@ -336,6 +338,14 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
 
   return (
     <>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Template"
+        message="Delete this template? This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { setShowDeleteConfirm(false); deleteTemplate() }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
       {showView && (
         <ViewModal
           template={template}
@@ -404,9 +414,7 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
           <div className="flex items-center justify-end gap-2">
             {isOwn && (
               <button
-                onClick={() => {
-                  if (confirm('Delete this template?')) deleteTemplate()
-                }}
+                onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
                 title="Delete template"
                 className="flex items-center justify-center w-7 h-7 rounded-lg border border-pm-border text-pm-muted hover:text-pm-danger hover:border-pm-danger/40 transition-colors disabled:opacity-50"
