@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
@@ -223,9 +223,13 @@ const STATUS_TABS = [
 type StatusTab = typeof STATUS_TABS[number]['id']
 
 export function ProjectsPage() {
+  const [searchParams] = useSearchParams()
+  const initialStatus = (searchParams.get('status') ?? 'all') as StatusTab
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [statusTab, setStatusTab] = useState<StatusTab>('all')
+  const [statusTab, setStatusTab] = useState<StatusTab>(
+    STATUS_TABS.some(t => t.id === initialStatus) ? initialStatus : 'all'
+  )
 
   const { data, isLoading } = useQuery<ConversionListResponse>({
     queryKey: ['conversions'],

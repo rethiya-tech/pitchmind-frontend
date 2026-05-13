@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAuthStore } from '@/stores/authStore'
@@ -93,7 +93,7 @@ function StatusPill({ status }: { status: string }) {
 }
 
 // ── Donut chart ───────────────────────────────────────────────────────────────
-function DonutChart({ segments }: { segments: { value: number; color: string; label: string }[] }) {
+function DonutChart({ segments, onSegmentClick }: { segments: { value: number; color: string; label: string }[]; onSegmentClick?: (label: string) => void }) {
   const total = segments.reduce((s, seg) => s + seg.value, 0)
   if (total === 0) {
     return (
@@ -137,6 +137,8 @@ function DonutChart({ segments }: { segments: { value: number; color: string; la
               strokeDasharray={`${arc.dash} ${arc.gap}`}
               strokeDashoffset={-arc.offset}
               strokeLinecap="butt"
+              onClick={() => onSegmentClick?.(arc.label)}
+              style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
             />
           ))}
         </svg>
@@ -147,7 +149,12 @@ function DonutChart({ segments }: { segments: { value: number; color: string; la
       </div>
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
         {segments.filter(s => s.value > 0).map((s, i) => (
-          <div key={i} className="flex items-center gap-1.5">
+          <div
+            key={i}
+            className="flex items-center gap-1.5"
+            onClick={() => onSegmentClick?.(s.label)}
+            style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+          >
             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
             <span className="text-xs text-pm-muted">{s.label}</span>
             <span className="text-xs font-bold text-pm-primary">{s.value}</span>
@@ -210,6 +217,7 @@ function Sparkline({ points }: { points: number[] }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user)
+  const navigate = useNavigate()
   const [showTemplatePicker, setShowTemplatePicker] = useState(false)
 
   const { data, isLoading } = useQuery<ConversionListResponse>({
@@ -342,7 +350,10 @@ export function DashboardPage() {
           <div className="bg-white rounded-2xl border border-pm-border p-5 flex flex-col gap-3">
             <p className="text-sm font-bold text-pm-primary">Project Status</p>
             <div className="flex-1 flex items-center justify-center py-2">
-              <DonutChart segments={donutSegments} />
+              <DonutChart
+                segments={donutSegments}
+                onSegmentClick={(label) => navigate(`/projects?status=${label.toLowerCase()}`)}
+              />
             </div>
           </div>
 
