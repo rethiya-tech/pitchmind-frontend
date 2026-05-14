@@ -635,18 +635,17 @@ export function EditorPage() {
     },
     enabled: !!id,
     retry: 1,
+    staleTime: Infinity,
   })
 
   useEffect(() => {
     if (conversion) {
       setConversionId(conversion.id)
-      if (conversion.slides) {
+      if (conversion.slides && !initialActiveSet.current) {
+        initialActiveSet.current = true
         setSlides(conversion.slides)
-        if (!initialActiveSet.current) {
-          initialActiveSet.current = true
-          const first = conversion.slides.find((s) => !s.is_deleted)
-          if (first) setActiveSlide(first.id)
-        }
+        const first = conversion.slides.find((s) => !s.is_deleted)
+        if (first) setActiveSlide(first.id)
       }
     }
   }, [conversion, setSlides, setConversionId, setActiveSlide])
