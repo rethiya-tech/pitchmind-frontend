@@ -50,8 +50,12 @@ function UploadModal({ onClose }: { onClose: () => void }) {
       onClose()
     },
     onError: (err: any) => {
-      const msg = err?.response?.data?.detail?.message ?? 'Upload failed. Please try again.'
-      toast.error(msg)
+      const detail = err?.response?.data?.detail
+      const code = detail?.code
+      const msg = code === 'LEGACY_FORMAT'
+        ? 'Old .ppt format not supported. Convert to .pptx in PowerPoint or Google Slides first.'
+        : (detail?.message ?? 'Upload failed. Please try again.')
+      toast.error(msg, { duration: 6000 })
     },
   })
 
@@ -59,8 +63,13 @@ function UploadModal({ onClose }: { onClose: () => void }) {
     e.preventDefault()
     setDragging(false)
     const f = e.dataTransfer.files[0]
-    if (f?.name.endsWith('.pptx')) setFile(f)
-    else toast.error('Only .pptx files are accepted')
+    if (f?.name.toLowerCase().endsWith('.ppt') && !f.name.toLowerCase().endsWith('.pptx')) {
+      toast.error('Old .ppt format not supported. Convert to .pptx first.', { duration: 6000 })
+    } else if (f?.name.endsWith('.pptx')) {
+      setFile(f)
+    } else {
+      toast.error('Only .pptx files are accepted')
+    }
   }
 
   return (
@@ -87,7 +96,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
               dragging ? 'border-pm-teal bg-[#E1F5EE]' : file ? 'border-green-400 bg-green-50' : 'border-pm-border hover:border-pm-teal hover:bg-[#F7FFFE]'
             }`}
           >
-            <input ref={fileRef} type="file" accept=".pptx" className="hidden" onChange={e => setFile(e.target.files?.[0] ?? null)} />
+            <input ref={fileRef} type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" className="hidden" onChange={e => setFile(e.target.files?.[0] ?? null)} />
             {file ? (
               <div className="flex items-center justify-center gap-3">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-green-600">
@@ -308,6 +317,7 @@ function ViewModal({ template, onClose }: { template: Template; onClose: () => v
 
 function TemplateRow({ template, onDelete }: { template: Template; onDelete: (id: string) => void }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [showView, setShowView] = useState(false)
   const [copying, setCopying] = useState(false)
 
@@ -324,6 +334,23 @@ function TemplateRow({ template, onDelete }: { template: Template; onDelete: (id
     onError: () => {
       setCopying(false)
       toast.error('Failed to copy template.')
+    },
+  })
+
+  const { mutate: reparse, isPending: reparsing } = useMutation({
+    mutationFn: () => api.patch(`/templates/${template.id}/reparse`),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['templates'] })
+      queryClient.invalidateQueries({ queryKey: ['template-detail', template.id] })
+      if (res?.data?.parse_warning) {
+        toast('Re-parsed: slides could not be fully extracted from the file.', { icon: '⚠️' })
+      } else {
+        toast.success(`Re-parsed: ${res?.data?.slide_count ?? 0} slide(s) extracted`)
+      }
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail?.message ?? 'Re-parse failed.'
+      toast.error(msg)
     },
   })
 
@@ -380,6 +407,18 @@ function TemplateRow({ template, onDelete }: { template: Template; onDelete: (id
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <rect x="4" y="4" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
                   <path d="M4 4V3A1.5 1.5 0 012.5 1.5h0A1.5 1.5 0 011 3v7A1.5 1.5 0 002.5 11.5H4" stroke="currentColor" strokeWidth="1.3"/>
+                </svg>
+              )}
+            </button>
+            <button
+              onClick={() => reparse()}
+              disabled={reparsing}
+              title="Re-parse slides from PPTX"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-muted transition-colors disabled:opacity-50"
+            >
+              {reparsing ? <Spinner size="sm" /> : (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7a5 5 0 015-5 5 5 0 013.5 1.5L12 1v4H8l1.5-1.5A3 3 0 007 4a3 3 0 000 6 3 3 0 002.8-2h2.1A5 5 0 017 12 5 5 0 012 7z" fill="currentColor"/>
                 </svg>
               )}
             </button>

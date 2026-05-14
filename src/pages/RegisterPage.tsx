@@ -47,9 +47,12 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [serverError, setServerError] = useState('')
 
+  const [registeredOk, setRegisteredOk] = useState(false)
+
   const registerMutation = useMutation({
     mutationFn: async () => {
-      await api.post('/auth/register', { name, email, password })
+      const regRes = await api.post('/auth/register', { name, email, password })
+      if (regRes.status === 201) setRegisteredOk(true)
       const loginForm = new URLSearchParams()
       loginForm.append('username', email)
       loginForm.append('password', password)
@@ -63,9 +66,25 @@ export function RegisterPage() {
       navigate('/dashboard', { replace: true })
     },
     onError: (err: unknown) => {
-      const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
+      const axiosErr = err as { response?: { status?: number; data?: { detail?: unknown } }; request?: unknown }
+      // No response at all = network/timeout error (e.g. server cold start)
+      if (!axiosErr.response) {
+        if (registeredOk) {
+          setServerError('Account created! The server is warming up — please sign in.')
+          setTimeout(() => navigate('/login'), 2500)
+        } else {
+          setServerError('Cannot reach the server. Please wait a moment and try again.')
+        }
+        return
+      }
+      const detail = axiosErr.response.data?.detail
+      const code = (detail as { code?: string })?.code
       const msg = typeof detail === 'string' ? detail : (detail as { message?: string })?.message
-      setServerError(msg ?? 'Registration failed. Please try again.')
+      if (code === 'EMAIL_EXISTS') {
+        setServerError('This email is already registered. Please sign in instead.')
+      } else {
+        setServerError(msg ?? 'Registration failed. Please try again.')
+      }
     },
   })
 
