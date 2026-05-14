@@ -189,20 +189,39 @@ function UploadModal({ onClose }: { onClose: () => void }) {
       queryClient.invalidateQueries({ queryKey: ['templates'] })
       onClose()
     },
-    onError: () => toast.error('Upload failed. Please try again.'),
+    onError: (err: any) => {
+      const detail = err?.response?.data?.detail
+      const code = detail?.code
+      const msg = code === 'LEGACY_FORMAT'
+        ? 'Old .ppt format is not supported. Please convert to .pptx in PowerPoint or Google Slides and re-upload.'
+        : (typeof detail === 'string' ? detail : detail?.message ?? 'Upload failed. Please try again.')
+      toast.error(msg, { duration: 6000 })
+    },
   })
+
+  const validateAndSetFile = (f: File) => {
+    const name = f.name.toLowerCase()
+    if (name.endsWith('.ppt') && !name.endsWith('.pptx')) {
+      toast.error('Old .ppt format is not supported. Please convert to .pptx in PowerPoint or Google Slides and re-upload.', { duration: 6000 })
+      return
+    }
+    if (!name.endsWith('.pptx')) {
+      toast.error('Only .pptx files are accepted.')
+      return
+    }
+    setFile(f)
+  }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setDragOver(false)
     const f = e.dataTransfer.files[0]
-    if (f && f.name.endsWith('.pptx')) setFile(f)
-    else toast.error('Only .pptx files are accepted')
+    if (f) validateAndSetFile(f)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
-    if (f) setFile(f)
+    if (f) validateAndSetFile(f)
   }
 
   return (
