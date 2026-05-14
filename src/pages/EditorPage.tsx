@@ -617,7 +617,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
         </span>
 
         {/* Split export button with dropdown */}
-        <div className="relative flex items-center">
+        <div className="relative flex">
           <Button
             size="sm"
             loading={exportingFormat === 'pptx'}
@@ -632,7 +632,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
           </Button>
           <button
             disabled={exportingFormat !== null}
-            className="h-full px-2 bg-pm-teal hover:bg-pm-teal-hover text-white rounded-r-md border-l border-l-white/20 transition-colors disabled:opacity-50"
+            className="flex items-center px-2 bg-pm-teal hover:bg-pm-teal-hover text-white rounded-r-md border-l border-l-white/20 transition-colors disabled:opacity-50"
             onClick={() => setDropdownOpen((o) => !o)}
             aria-label="More export formats"
           >
