@@ -61,7 +61,7 @@ export function ExportCard({ conversion }: ExportCardProps) {
       )
       const url = data.download_url
       const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-      const stripScheme = (u: string) => u.replace(/^https?:\/\//, '')
+      const stripScheme = (u: string) => u.replace(/^https?:\/\//, '').replace(/^(127\.0\.0\.1|0\.0\.0\.0)(?=:)/, 'localhost')
       const isLocalUrl = apiBase && stripScheme(url).startsWith(stripScheme(apiBase))
 
       if (isLocalUrl) {

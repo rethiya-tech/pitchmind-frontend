@@ -552,7 +552,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
       const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export?format=${format}`)
       const url = data.download_url
       const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-      const stripScheme = (u: string) => u.replace(/^https?:\/\//, '')
+      const stripScheme = (u: string) => u.replace(/^https?:\/\//, '').replace(/^(127\.0\.0\.1|0\.0\.0\.0)(?=:)/, 'localhost')
       const isLocalUrl = apiBase && stripScheme(url).startsWith(stripScheme(apiBase))
       if (isLocalUrl) {
         const path = url.replace(/^https?:\/\/[^/]+\/api\/v1/, '')
