@@ -94,11 +94,13 @@ function SlidePreview({
   theme,
   onTextEdit,
   onUpdateText,
+  onTypoFocus,
 }: {
   slide: Slide
   theme: Theme
   onTextEdit?: (target: TextEditTarget) => void
   onUpdateText?: (field: 'title' | 'bullet', value: string, bulletIndex?: number) => void
+  onTypoFocus?: (field: 'title' | 'bullet', bulletIndex?: number) => void
 }) {
   const bullets: string[] = slide.bullets ?? []
   const layout = slide.layout || 'bullets'
@@ -181,6 +183,7 @@ function SlidePreview({
       contentEditable: true,
       suppressContentEditableWarning: true,
       spellCheck: false,
+      onFocus: () => onTypoFocus?.(field, bulletIndex),
       onBlur: (e) => handleInlineTextBlur(e, field, text, bulletIndex),
       onKeyDown: handleInlineTextKeyDown,
     }
@@ -195,6 +198,7 @@ function SlidePreview({
       if (window.getSelection()?.toString().trim()) openEditor(e, field, text, bulletIndex)
     },
     onClick: (e) => {
+      onTypoFocus?.(field, bulletIndex)
       if (window.getSelection()?.toString().trim()) return
       openEditor(e, field, text, bulletIndex)
     },
@@ -662,6 +666,10 @@ export function EditorPage() {
   const theme = THEMES.find((t) => t.id === conversion?.theme) ?? THEMES[THEMES.length - 1]
 
   const [textEditor, setTextEditor] = useState<TextEditState | null>(null)
+  const [typoFocus, setTypoFocus] = useState<string>('title')
+
+  // Reset typo focus to title whenever the active slide changes
+  useEffect(() => { setTypoFocus('title') }, [activeSlideId])
 
   useEffect(() => {
     if (!textEditor) return
@@ -848,6 +856,9 @@ export function EditorPage() {
                   slide={activeSlide}
                   theme={theme}
                   onTextEdit={openTextEditor}
+                  onTypoFocus={(field, bulletIndex) =>
+                    setTypoFocus(field === 'title' ? 'title' : `bullet_${bulletIndex ?? 0}`)
+                  }
                   onUpdateText={(field, value, bulletIndex) => {
                     if (field === 'title') {
                       updateSlide(activeSlide.id, { title: value })
@@ -875,6 +886,7 @@ export function EditorPage() {
           <PanelHeader title="Properties" />
           <div className="flex-1 overflow-y-auto">
             <SlideDetailPanel
+              typoFocus={typoFocus}
             />
           </div>
         </aside>
