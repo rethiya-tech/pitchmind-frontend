@@ -537,12 +537,19 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
   const isDirty = useEditorStore((s) => s.isDirty)
   const name = (conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation')
     .replace(/[^a-zA-Z0-9\s-]/g, '').trim().slice(0, 40).trimEnd()
-  const [isExporting, setIsExporting] = useState(false)
+  const [exportingFormat, setExportingFormat] = useState<'pptx' | 'pdf' | 'docx' | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  const handleExport = async () => {
-    setIsExporting(true)
+  const handleExport = async (format: 'pptx' | 'pdf' | 'docx') => {
+    setDropdownOpen(false)
+    setExportingFormat(format)
+    const mimeMap = {
+      pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      pdf: 'application/pdf',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    }
     try {
-      const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export`)
+      const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export?format=${format}`)
       const url = data.download_url
       const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
       const stripScheme = (u: string) => u.replace(/^https?:\/\//, '')
@@ -550,11 +557,11 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
       if (isLocalUrl) {
         const path = url.replace(/^https?:\/\/[^/]+\/api\/v1/, '')
         const res = await api.get(path, { responseType: 'blob' })
-        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' })
+        const blob = new Blob([res.data], { type: mimeMap[format] })
         const blobUrl = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = blobUrl
-        a.download = `${name}.pptx`
+        a.download = `${name}.${format}`
         a.click()
         URL.revokeObjectURL(blobUrl)
       } else {
@@ -563,7 +570,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
     } catch {
       toast.error('Export failed. Please try again.')
     } finally {
-      setIsExporting(false)
+      setExportingFormat(null)
     }
   }
 
@@ -608,12 +615,53 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
             <><span className="w-1.5 h-1.5 rounded-full bg-pm-teal inline-block" />Saved</>
           )}
         </span>
-        <Button size="sm" loading={isExporting} onClick={handleExport}>
-          <svg className="w-3.5 h-3.5 mr-1.5 inline-block -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          Export &amp; Download
-        </Button>
+
+        {/* Split export button with dropdown */}
+        <div className="relative flex items-center">
+          <Button
+            size="sm"
+            loading={exportingFormat === 'pptx'}
+            disabled={exportingFormat !== null}
+            className="rounded-r-none border-r border-r-white/20"
+            onClick={() => handleExport('pptx')}
+          >
+            <svg className="w-3.5 h-3.5 mr-1.5 inline-block -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            {exportingFormat ? `Exporting ${exportingFormat.toUpperCase()}…` : 'Export & Download'}
+          </Button>
+          <button
+            disabled={exportingFormat !== null}
+            className="h-full px-2 bg-pm-teal hover:bg-pm-teal-hover text-white rounded-r-md border-l border-l-white/20 transition-colors disabled:opacity-50"
+            onClick={() => setDropdownOpen((o) => !o)}
+            aria-label="More export formats"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {dropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-pm-border rounded-lg shadow-lg py-1 min-w-[160px]">
+                {([
+                  { fmt: 'pptx', label: 'Download PPTX' },
+                  { fmt: 'pdf',  label: 'Download PDF' },
+                  { fmt: 'docx', label: 'Download Word' },
+                ] as { fmt: 'pptx' | 'pdf' | 'docx'; label: string }[]).map(({ fmt, label }) => (
+                  <button
+                    key={fmt}
+                    className="w-full text-left px-4 py-2 text-sm text-pm-primary hover:bg-gray-50 transition-colors"
+                    onClick={() => handleExport(fmt)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   )
