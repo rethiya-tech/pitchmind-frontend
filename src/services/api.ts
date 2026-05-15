@@ -29,6 +29,14 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.detail?.code === 'PASSWORD_CHANGE_REQUIRED' &&
+      window.location.pathname !== '/change-password'
+    ) {
+      window.location.href = '/change-password'
+      return Promise.reject(error)
+    }
     if (error.response?.status !== 401 || original._retry || original.url?.startsWith('/auth/')) {
       return Promise.reject(error)
     }

@@ -60,12 +60,30 @@ export function LoginPage() {
     },
     onSuccess: (data) => {
       setAuth(data.access_token, data.user)
+      if (data.user.must_change_password) {
+        navigate('/change-password', { replace: true })
+        return
+      }
+      // Admins (the SaaS provider) land on the Admin console, not the
+      // end-user dashboard — unless they followed a specific deep link.
+      if (data.user.role === 'admin' && (!from || from === '/dashboard')) {
+        navigate('/admin', { replace: true })
+        return
+      }
       navigate(from, { replace: true })
     },
     onError: (err: unknown) => {
       const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
+      const code = (detail as { code?: string })?.code
       const msg = typeof detail === 'string' ? detail : (detail as { message?: string })?.message
-      setServerError(msg ?? 'Invalid email or password. Please try again.')
+      const byCode: Record<string, string> = {
+        ACCOUNT_PENDING: 'Your account is awaiting admin approval. Please check back later.',
+        ACCOUNT_REJECTED: 'Your account request was declined. Contact support for help.',
+        ACCOUNT_SUSPENDED: 'Your account has been suspended. Contact support for help.',
+      }
+      setServerError(
+        (code && byCode[code]) || msg || 'Invalid email or password. Please try again.'
+      )
     },
   })
 
