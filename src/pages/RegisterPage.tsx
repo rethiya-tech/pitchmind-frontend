@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
-import type { TokenResponse } from '@/types'
+import type { RegisterResponse } from '@/types'
 import { AuthPanel } from '@/components/auth/AuthPanel'
 
 function LogoIcon() {
@@ -35,9 +34,7 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 export function RegisterPage() {
-  const navigate = useNavigate()
-  const setAuth = useAuthStore((s) => s.setAuth)
-
+  const [submitted, setSubmitted] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,44 +44,23 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [serverError, setServerError] = useState('')
 
-  const [registeredOk, setRegisteredOk] = useState(false)
-
   const registerMutation = useMutation({
     mutationFn: async () => {
-      const regRes = await api.post('/auth/register', { name, email, password })
-      if (regRes.status === 201) setRegisteredOk(true)
-      const loginForm = new URLSearchParams()
-      loginForm.append('username', email)
-      loginForm.append('password', password)
-      const loginRes = await api.post<TokenResponse>('/auth/login', loginForm, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      })
-      return loginRes.data
+      const res = await api.post<RegisterResponse>('/auth/register', { name, email, password })
+      return res.data
     },
-    onSuccess: (data) => {
-      setAuth(data.access_token, data.user)
-      navigate('/dashboard', { replace: true })
+    onSuccess: () => {
+      setSubmitted(true)
     },
     onError: (err: unknown) => {
-      const axiosErr = err as { response?: { status?: number; data?: { detail?: unknown } }; request?: unknown }
-      // No response at all = network/timeout error (e.g. server cold start)
-      if (!axiosErr.response) {
-        if (registeredOk) {
-          setServerError('Account created! The server is warming up — please sign in.')
-          setTimeout(() => navigate('/login'), 2500)
-        } else {
-          setServerError('Cannot reach the server. Please wait a moment and try again.')
-        }
-        return
-      }
-      const detail = axiosErr.response.data?.detail
+      const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
       const code = (detail as { code?: string })?.code
       const msg = typeof detail === 'string' ? detail : (detail as { message?: string })?.message
-      if (code === 'EMAIL_EXISTS') {
-        setServerError('This email is already registered. Please sign in instead.')
-      } else {
-        setServerError(msg ?? 'Registration failed. Please try again.')
-      }
+      setServerError(
+        code === 'EMAIL_EXISTS'
+          ? 'An account with this email already exists.'
+          : msg ?? 'Registration failed. Please try again.'
+      )
     },
   })
 
@@ -157,6 +133,24 @@ export function RegisterPage() {
             </div>
           </div>
 
+          {submitted ? (
+            <div className="space-y-4" role="status">
+              <h1 className="text-3xl font-extrabold text-pm-primary leading-tight">
+                Account created
+              </h1>
+              <p className="text-sm text-pm-muted">
+                Your account is <span className="font-semibold text-pm-primary">pending admin approval</span>.
+                You'll be able to sign in once an administrator reviews and approves your request.
+              </p>
+              <Link
+                to="/login"
+                className="inline-block w-full text-center bg-pm-teal hover:bg-pm-teal-hover text-white font-bold py-3 rounded-lg text-sm transition-colors"
+              >
+                Back to sign in
+              </Link>
+            </div>
+          ) : (
+          <>
           {/* Heading */}
           <div className="space-y-1.5">
             <p className="text-[11px] font-bold tracking-[0.18em] uppercase text-pm-muted">Get started free</p>
@@ -221,6 +215,8 @@ export function RegisterPage() {
               Sign in
             </Link>
           </p>
+          </>
+          )}
         </div>
       </div>
 

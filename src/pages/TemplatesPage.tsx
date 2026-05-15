@@ -8,6 +8,7 @@ import api from '@/services/api'
 import { THEMES } from '@/types'
 import { useAuthStore } from '@/stores/authStore'
 import type { TemplateListResponse, Template, TemplateDetail, TemplateCopyResponse } from '@/types'
+import { templateSlideImageUrl } from '@/utils/slideImage'
 
 const CUSTOM_DESIGN = { bg: '#1E2A3A', accent: '#4A9EBF', text: '#E0E8F0', name: 'Custom Design' }
 
@@ -126,6 +127,18 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
             <div className="flex justify-center py-12"><Spinner size="lg" className="text-pm-teal" /></div>
+          ) : (template.preview_count ?? 0) > 0 ? (
+            <div className="space-y-4">
+              {Array.from({ length: template.preview_count ?? 0 }).map((_, i) => (
+                <img
+                  key={i}
+                  src={templateSlideImageUrl(template.id, i)}
+                  alt={`Slide ${i + 1}`}
+                  loading="lazy"
+                  className="w-full rounded-xl border border-pm-border shadow-sm"
+                />
+              ))}
+            </div>
           ) : !data?.slides_json?.length ? (
             <div className="text-center py-12">
               <div className="w-16 h-10 mx-auto rounded-xl mb-4" style={{ backgroundColor: t.bg }} />
@@ -335,7 +348,6 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
       const res = await api.post<TemplateCopyResponse>(`/templates/${template.id}/copy`)
       return res.data
     },
-    onMutate: () => setCopying(true),
     onSuccess: (data) => {
       toast.success('Opening editor…')
       navigate(`/editor/${data.conversion_id}`, { state: { from: 'templates' } })
@@ -345,6 +357,14 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
       toast.error('Failed to use template. Please try again.')
     },
   })
+
+  // Guard against duplicate projects from repeat / double clicks: ignore any
+  // call while a copy is already in flight.
+  const handleUse = () => {
+    if (copying) return
+    setCopying(true)
+    copyTemplate()
+  }
 
   const { mutate: deleteTemplate, isPending: isDeleting } = useMutation({
     mutationFn: async () => api.delete(`/templates/${template.id}`),
@@ -369,36 +389,52 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
         <ViewModal
           template={template}
           onClose={() => setShowView(false)}
-          onUse={() => { setShowView(false); copyTemplate() }}
+          onUse={() => { setShowView(false); handleUse() }}
         />
       )}
       <tr className="hover:bg-[#F9FAFB] transition-colors">
         {/* Thumbnail */}
         <td className="px-5 py-3">
-          <div
-            className="w-16 h-10 rounded-lg overflow-hidden flex flex-col px-1.5 py-1.5 flex-shrink-0 relative"
-            style={{ backgroundColor: t.bg }}
-          >
-            <div className="h-1 rounded-full w-8 mb-1" style={{ backgroundColor: t.accent, opacity: 0.8 }} />
-            <div className="space-y-0.5">
-              <div className="h-[3px] rounded-full w-full" style={{ backgroundColor: t.text, opacity: 0.2 }} />
-              <div className="h-[3px] rounded-full w-4/5" style={{ backgroundColor: t.text, opacity: 0.15 }} />
-              <div className="h-[3px] rounded-full w-3/5" style={{ backgroundColor: t.text, opacity: 0.15 }} />
-            </div>
-            <div
-              className="absolute bottom-0 right-0 w-6 h-6 rounded-full opacity-10"
-              style={{ backgroundColor: t.accent, transform: 'translate(30%, 30%)' }}
+          {(template.preview_count ?? 0) > 0 ? (
+            <img
+              src={templateSlideImageUrl(template.id, 0)}
+              alt={template.name}
+              loading="lazy"
+              className="w-16 h-10 rounded-lg object-cover border border-pm-border flex-shrink-0"
             />
-          </div>
+          ) : (
+            <div
+              className="w-16 h-10 rounded-lg overflow-hidden flex flex-col px-1.5 py-1.5 flex-shrink-0 relative"
+              style={{ backgroundColor: t.bg }}
+            >
+              <div className="h-1 rounded-full w-8 mb-1" style={{ backgroundColor: t.accent, opacity: 0.8 }} />
+              <div className="space-y-0.5">
+                <div className="h-[3px] rounded-full w-full" style={{ backgroundColor: t.text, opacity: 0.2 }} />
+                <div className="h-[3px] rounded-full w-4/5" style={{ backgroundColor: t.text, opacity: 0.15 }} />
+                <div className="h-[3px] rounded-full w-3/5" style={{ backgroundColor: t.text, opacity: 0.15 }} />
+              </div>
+              <div
+                className="absolute bottom-0 right-0 w-6 h-6 rounded-full opacity-10"
+                style={{ backgroundColor: t.accent, transform: 'translate(30%, 30%)' }}
+              />
+            </div>
+          )}
         </td>
 
         {/* Name + description + badge */}
         <td className="px-5 py-3">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold text-pm-primary">{template.name}</p>
-            {isOwn && (
+            {isOwn ? (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-100">
                 My Template
+              </span>
+            ) : template.is_public && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#E1F5EE] text-pm-teal border border-pm-teal/20">
+                <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Admin provided
               </span>
             )}
           </div>
@@ -456,7 +492,7 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
               Preview
             </button>
             <button
-              onClick={() => copyTemplate()}
+              onClick={handleUse}
               disabled={copying}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-pm-teal hover:bg-pm-teal-hover text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-60"
             >

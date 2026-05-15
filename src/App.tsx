@@ -6,12 +6,14 @@ import { useAuthStore } from '@/stores/authStore'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
+import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { UploadPage } from '@/pages/UploadPage'
 import { GeneratingPage } from '@/pages/GeneratingPage'
 import { EditorPage } from '@/pages/EditorPage'
 import { ExportPage } from '@/pages/ExportPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { ProjectsPage } from '@/pages/ProjectsPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
@@ -61,6 +63,10 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
+            <Route path="/change-password" element={
+              <RequireAuth><ChangePasswordPage /></RequireAuth>
+            } />
+
             <Route path="/generating/:id" element={<GeneratingPage />} />
             <Route path="/editor/:id" element={
               <RequireAuth><EditorPage /></RequireAuth>
@@ -75,6 +81,7 @@ export default function App() {
               <Route path="/templates" element={<TemplatesPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/admin" element={<RequireAdmin><AdminDashboardPage /></RequireAdmin>} />
               <Route path="/admin/users" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
               <Route path="/admin/audit-log" element={<RequireAdmin><AdminAuditLogPage /></RequireAdmin>} />

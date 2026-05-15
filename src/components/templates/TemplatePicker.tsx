@@ -6,6 +6,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import api from '@/services/api'
 import { THEMES } from '@/types'
 import type { TemplateListResponse, TemplateCopyResponse, Template } from '@/types'
+import { templateSlideImageUrl } from '@/utils/slideImage'
 
 function TemplateThumb({ theme }: { theme: string | null }) {
   const t = THEMES.find(th => th.id === theme) ?? THEMES[0]
@@ -106,10 +107,26 @@ export function TemplatePicker({ onClose }: TemplatePickerProps) {
                   }`}
                 >
                   <div className="p-3 bg-[#F9FAFB]">
-                    <TemplateThumb theme={template.theme} />
+                    {(template.preview_count ?? 0) > 0 ? (
+                      <img
+                        src={templateSlideImageUrl(template.id, 0)}
+                        alt={template.name}
+                        loading="lazy"
+                        className="w-full aspect-video object-cover rounded-lg border border-pm-border"
+                      />
+                    ) : (
+                      <TemplateThumb theme={template.theme} />
+                    )}
                   </div>
                   <div className="px-4 py-3">
-                    <p className="text-sm font-bold text-pm-primary truncate">{template.name}</p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="text-sm font-bold text-pm-primary truncate">{template.name}</p>
+                      {template.is_public && (
+                        <span className="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-[#E1F5EE] text-pm-teal border border-pm-teal/20">
+                          Admin
+                        </span>
+                      )}
+                    </div>
                     {template.description && (
                       <p className="text-xs text-pm-muted mt-0.5 line-clamp-2">{template.description}</p>
                     )}

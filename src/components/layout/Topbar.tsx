@@ -129,6 +129,54 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
+function AdminPendingPanel({ onClose }: { onClose: () => void }) {
+  const { data } = useQuery<{ items: { id: string; email: string; name: string | null }[]; total: number }>({
+    queryKey: ['admin-pending-list'],
+    queryFn: async () =>
+      (await api.get('/admin/users', { params: { status: 'pending', page_size: 8 } })).data,
+    staleTime: 15_000,
+  })
+  const items = data?.items ?? []
+
+  return (
+    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-pm-border">
+        <span className="text-sm font-bold text-pm-primary">Pending approvals</span>
+        {items.length > 0 && (
+          <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+            {data?.total}
+          </span>
+        )}
+      </div>
+      <div className="max-h-72 overflow-y-auto divide-y divide-pm-border">
+        {items.length === 0 ? (
+          <div className="py-10 text-center text-sm text-pm-muted">No sign-ups awaiting review</div>
+        ) : (
+          items.map((u) => (
+            <Link
+              key={u.id}
+              to="/admin/users"
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-[#FAFAFA] transition-colors"
+            >
+              <span className="mt-0.5 w-2 h-2 rounded-full flex-shrink-0 bg-amber-500" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-pm-primary truncate">{u.name ?? u.email}</p>
+                <p className="text-xs text-pm-muted truncate">{u.email}</p>
+              </div>
+            </Link>
+          ))
+        )}
+      </div>
+      <div className="px-4 py-2.5 border-t border-pm-border bg-[#F9FAFB]">
+        <Link to="/admin/users" onClick={onClose} className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover transition-colors">
+          Review all users →
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 interface TopbarProps {
   onToggleSidebar?: () => void
 }
@@ -138,19 +186,25 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const navigate = useNavigate()
   const [notifOpen, setNotifOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
+  const accountRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false)
       }
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountOpen(false)
+      }
     }
-    if (notifOpen) document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [notifOpen])
+  }, [])
 
   const handleLogout = async () => {
+    setAccountOpen(false)
     try { await api.post('/auth/logout') } catch { /* ignore */ }
     clearAuth()
     navigate('/login')
@@ -182,7 +236,11 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
           >
             <BellIcon />
           </button>
-          {notifOpen && <NotificationPanel onClose={() => setNotifOpen(false)} />}
+          {notifOpen && (
+            user?.role === 'admin'
+              ? <AdminPendingPanel onClose={() => setNotifOpen(false)} />
+              : <NotificationPanel onClose={() => setNotifOpen(false)} />
+          )}
         </div>
 
         <button
@@ -192,13 +250,50 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
         >
           <GearIcon />
         </button>
-        <button
-          onClick={handleLogout}
-          title="Sign out"
-          className="w-9 h-9 ml-1 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center hover:bg-[#0F6E56] transition-colors"
-        >
-          {initials}
-        </button>
+        <div className="relative ml-1" ref={accountRef}>
+          <button
+            onClick={() => setAccountOpen((o) => !o)}
+            title="Account"
+            aria-haspopup="menu"
+            aria-expanded={accountOpen}
+            className="w-9 h-9 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center hover:bg-[#0F6E56] transition-colors"
+          >
+            {initials}
+          </button>
+          {accountOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden"
+            >
+              <div className="px-4 py-3 border-b border-pm-border">
+                <p className="text-sm font-bold text-pm-primary truncate">{user?.name ?? 'Account'}</p>
+                <p className="text-xs text-pm-muted truncate">{user?.email}</p>
+              </div>
+              <button
+                role="menuitem"
+                onClick={() => { setAccountOpen(false); navigate('/profile') }}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-pm-primary hover:bg-[#FAFAFA] transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                Profile
+              </button>
+              <button
+                role="menuitem"
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-pm-border"
+              >
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M8 5V3.5A1.5 1.5 0 019.5 2h6A1.5 1.5 0 0117 3.5v13a1.5 1.5 0 01-1.5 1.5h-6A1.5 1.5 0 018 16.5V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M11 10H2m0 0l3-3m-3 3l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )

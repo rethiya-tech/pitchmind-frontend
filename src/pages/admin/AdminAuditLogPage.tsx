@@ -9,20 +9,59 @@ const PAGE_SIZE = 25
 
 export function AdminAuditLogPage() {
   const [page, setPage] = useState(1)
+  const [action, setAction] = useState('')
+  const [actor, setActor] = useState('')
+  const [actionInput, setActionInput] = useState('')
+  const [actorInput, setActorInput] = useState('')
 
   const { data, isLoading } = useQuery<AuditLogListResponse>({
-    queryKey: ['admin-audit-log', page],
+    queryKey: ['admin-audit-log', page, action, actor],
     queryFn: async () => {
-      const res = await api.get('/admin/audit-log', { params: { page, page_size: PAGE_SIZE } })
+      const res = await api.get('/admin/audit-log', {
+        params: { page, page_size: PAGE_SIZE, action, actor },
+      })
       return res.data
     },
   })
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1
 
+  const applyFilters = (e: React.FormEvent) => {
+    e.preventDefault()
+    setPage(1)
+    setAction(actionInput.trim())
+    setActor(actorInput.trim())
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-pm-primary">Audit Log</h1>
+
+      <form onSubmit={applyFilters} className="flex flex-wrap gap-2">
+        <input
+          value={actionInput}
+          onChange={(e) => setActionInput(e.target.value)}
+          placeholder="Filter by action (e.g. admin.user)…"
+          className="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-pm-border text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-white"
+        />
+        <input
+          value={actorInput}
+          onChange={(e) => setActorInput(e.target.value)}
+          placeholder="Filter by actor email…"
+          className="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-pm-border text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-white"
+        />
+        <Button type="submit" variant="secondary" size="sm">Filter</Button>
+        {(action || actor) && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => { setActionInput(''); setActorInput(''); setAction(''); setActor(''); setPage(1) }}
+          >
+            Clear
+          </Button>
+        )}
+      </form>
 
       {isLoading ? (
         <div className="flex justify-center py-12">
