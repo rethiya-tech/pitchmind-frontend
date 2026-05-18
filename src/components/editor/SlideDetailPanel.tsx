@@ -46,9 +46,10 @@ const COLOR_SWATCHES = ['#FFFFFF', '#111827', '#0F6E56', '#2563EB', '#7C3AED', '
 interface SlideDetailPanelProps {
   selectionText?: string
   onSelectionConsumed?: () => void
+  typoFocus?: string
 }
 
-export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDetailPanelProps) {
+export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus }: SlideDetailPanelProps) {
   const { slides, activeSlideId, updateSlide } = useEditorStore()
   const slide = slides.find((s) => s.id === activeSlideId && !s.is_deleted)
 
@@ -61,6 +62,13 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed }: SlideDe
 
   // Typography target: 'title' | 'bullet_0' | 'bullet_1' ...
   const [typoTarget, setTypoTarget] = useState<string>('title')
+
+  useEffect(() => {
+    if (typoFocus !== undefined) {
+      setTypoTarget(typoFocus)
+      setActiveTab('edit')
+    }
+  }, [typoFocus])
 
   useEffect(() => {
     if (!selectionText) return

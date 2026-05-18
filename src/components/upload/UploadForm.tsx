@@ -137,10 +137,10 @@ function Section({
 }
 
 // ── Field wrapper ─────────────────────────────────────────────────────────────
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, boldLabel = true }: { label: string; children: React.ReactNode; boldLabel?: boolean }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-pm-muted uppercase tracking-wide mb-1.5">
+      <label className={`block text-xs text-pm-muted uppercase tracking-wide mb-1.5 ${boldLabel ? 'font-semibold' : 'font-normal'}`}>
         {label}
       </label>
       {children}
@@ -181,9 +181,22 @@ export function UploadForm() {
   const [customCount, setCustomCount] = useState('')
   const [customError, setCustomError] = useState('')
   const [slideCountSelected, setSlideCountSelected] = useState(true)
-  const [style, setStyle] = useState('professional')
+  const [styles, setStyles] = useState<Set<string>>(new Set(['professional']))
   const [audienceLevel, setAudienceLevel] = useState('general')
   const [presentationFlags, setPresentationFlags] = useState<Set<string>>(new Set())
+
+  const toggleStyle = (s: string) => {
+    setStyles(prev => {
+      const next = new Set(prev)
+      if (next.has(s)) {
+        if (next.size === 1) return prev // keep at least one selected
+        next.delete(s)
+      } else {
+        next.add(s)
+      }
+      return next
+    })
+  }
 
   const toggleFlag = (flag: string) => {
     setPresentationFlags(prev => {
@@ -224,7 +237,7 @@ export function UploadForm() {
     mutationFn: async () => {
       const payload: Record<string, unknown> = {
         theme,
-        style,
+        style: Array.from(styles).join(','),
         audience_level: audienceLevel,
         slide_count: slideCount,
         speaker_notes: true,
@@ -624,13 +637,25 @@ export function UploadForm() {
             </select>
           </Field>
 
-          <Field label="Presentation Style">
-            <select value={style} onChange={(e) => setStyle(e.target.value)} className={selectCls}>
-              <option value="professional">Professional</option>
-              <option value="creative">Creative</option>
-              <option value="minimal">Minimal</option>
-              <option value="bold">Bold</option>
-            </select>
+          <Field label="Presentation Style" boldLabel={false}>
+            <p className="text-xs text-pm-muted mb-2">Controls the tone and layout of your slides. Select one or combine multiple.</p>
+            <div className="flex gap-2 flex-wrap">
+              {(['professional', 'creative', 'minimal', 'bold'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => toggleStyle(s)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg border text-xs font-medium transition-all capitalize',
+                    styles.has(s)
+                      ? 'bg-pm-teal text-white border-pm-teal'
+                      : 'bg-white text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                  )}
+                >
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              ))}
+            </div>
           </Field>
 
 
@@ -675,7 +700,7 @@ export function UploadForm() {
           <ThemePicker value={theme} onChange={(id) => {
             setTheme(id)
             const category = THEMES.find(t => t.id === id)?.category
-            if (category) setStyle(category)
+            if (category) setStyles(new Set([category]))
           }} />
 
           <div className="mt-auto space-y-2 pt-4 border-t border-pm-border">
@@ -687,7 +712,7 @@ export function UploadForm() {
                 label={promptReady ? `Prompt ready (${promptText.trim().length} chars)` : 'No prompt entered'}
               />
             )}
-            <StatusRow done label={`${slideCount} slides · ${style}`} />
+            <StatusRow done label={`${slideCount} slides · ${Array.from(styles).join(', ')}`} />
             <StatusRow done={!!theme} label={theme ? `Theme: ${THEMES.find(t => t.id === theme)?.name ?? theme}` : 'Theme selected'} />
           </div>
 
