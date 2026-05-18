@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import api from '@/services/api'
+import { conversionSlideImageUrl } from '@/utils/slideImage'
 import type { Conversion, Slide, SlideTextStyle, Theme } from '@/types' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { THEMES } from '@/types'
 
@@ -624,6 +625,8 @@ export function EditorPage() {
     ? { path: '/templates', label: 'Templates' }
     : { path: '/projects', label: 'Projects' }
   const { setSlides, setConversionId, setActiveSlide, slides, activeSlideId, updateSlide, markSaved } = useEditorStore()
+  const [showOriginal, setShowOriginal] = useState(false)
+  const [origError, setOrigError] = useState(false)
   const initialActiveSet = useRef(false)
   const editInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -817,6 +820,18 @@ export function EditorPage() {
             {activeSlide && (
               <div className="flex items-center gap-2">
                 <button
+                  onClick={() => { setOrigError(false); setShowOriginal((v) => !v) }}
+                  title="Toggle the original uploaded design (template decks)"
+                  className={cn(
+                    'px-2.5 h-7 rounded-lg border text-xs font-medium transition-colors mr-1',
+                    showOriginal
+                      ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                      : 'border-pm-border text-pm-muted hover:text-pm-primary'
+                  )}
+                >
+                  {showOriginal ? 'Editing view' : 'Original design'}
+                </button>
+                <button
                   onClick={() => activeIndex > 0 && setActiveSlide(visibleSlides[activeIndex - 1].id)}
                   disabled={activeIndex === 0}
                   className="w-7 h-7 rounded-lg border border-pm-border flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
@@ -844,6 +859,26 @@ export function EditorPage() {
           {/* Slide canvas */}
           <div className="flex-1 overflow-auto flex items-center justify-center p-10">
             {activeSlide ? (
+              showOriginal ? (
+                <div className="w-full max-w-4xl drop-shadow-2xl">
+                  {origError ? (
+                    <div className="bg-white rounded-xl border border-pm-border p-10 text-center text-sm text-pm-muted">
+                      This deck has no original uploaded design (it wasn't created from an
+                      uploaded template). Use “Editing view”.
+                    </div>
+                  ) : (
+                    <img
+                      src={conversionSlideImageUrl(id ?? '', activeIndex)}
+                      alt={`Original slide ${activeIndex + 1}`}
+                      onError={() => setOrigError(true)}
+                      className="w-full rounded-xl border border-pm-border bg-white"
+                    />
+                  )}
+                  <p className="text-center text-xs text-pm-muted mt-2">
+                    Original uploaded design (read-only). Text edits apply on export.
+                  </p>
+                </div>
+              ) : (
               <div className="w-full max-w-4xl drop-shadow-2xl">
                 <SlidePreview
                   slide={activeSlide}
@@ -860,6 +895,7 @@ export function EditorPage() {
                   }}
                 />
               </div>
+              )
             ) : (
               <div className="flex flex-col items-center gap-3 text-gray-400">
                 <svg className="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">

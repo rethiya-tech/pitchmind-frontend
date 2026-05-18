@@ -1,9 +1,13 @@
+export type AccountStatus = 'pending' | 'active' | 'suspended' | 'rejected'
+
 export interface User {
   id: string
   email: string
   name: string | null
   role: 'user' | 'admin'
   is_active?: boolean
+  status?: AccountStatus
+  must_change_password?: boolean
   created_at?: string
 }
 
@@ -76,10 +80,8 @@ export interface TokenResponse {
 export interface RegisterResponse {
   id: string
   email: string
-  name: string | null
-  role: string
-  is_active: boolean
-  created_at: string
+  status: AccountStatus
+  message: string
 }
 
 export interface AdminMetrics {
@@ -126,8 +128,15 @@ export interface AdminUser {
   name: string | null
   role: string
   is_active: boolean
+  status: AccountStatus
+  must_change_password: boolean
   created_at: string
   conversion_count: number
+}
+
+export interface AdminUserCreateResponse {
+  user: AdminUser
+  temporary_password: string
 }
 
 export interface AdminUserListResponse {
@@ -231,6 +240,8 @@ export interface Template {
   theme: string | null
   is_active: boolean
   is_public: boolean
+  sort_order?: number
+  preview_count?: number
   created_by: string | null
   created_at: string
 }

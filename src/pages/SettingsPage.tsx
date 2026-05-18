@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/Button'
-import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
 import { cn } from '@/utils/cn'
 
@@ -65,29 +64,12 @@ function Card({
   )
 }
 
-// ── Info row ──────────────────────────────────────────────────────────────────
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[80px_1fr] items-center gap-4 px-4 py-3 border-b border-pm-border last:border-0">
-      <span className="text-[10px] font-bold text-pm-muted uppercase tracking-widest whitespace-nowrap">{label}</span>
-      <span className="text-sm font-medium text-pm-primary truncate">{value}</span>
-    </div>
-  )
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export function SettingsPage() {
-  const user = useAuthStore((s) => s.user)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNew, setConfirmNew] = useState('')
   const [pwError, setPwError] = useState('')
-
-  const initials = (user?.name ?? user?.email ?? 'U')
-    .split(' ')
-    .map((w) => w[0]?.toUpperCase())
-    .slice(0, 2)
-    .join('')
 
   const changePwMutation = useMutation({
     mutationFn: async () => {
@@ -118,7 +100,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-3xl mx-auto">
 
       {/* ── Header ── */}
       <div>
@@ -126,39 +108,8 @@ export function SettingsPage() {
         <p className="text-sm text-pm-muted mt-0.5">Manage your account and preferences</p>
       </div>
 
-      {/* ── Two-column layout ── */}
-      <div className="grid grid-cols-[2fr_3fr] gap-6 items-start">
-
-        {/* ── Left: Profile ── */}
-        <Card
-          title="Profile"
-          subtitle="Your account identity"
-          icon={
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          }
-        >
-          <div className="flex flex-col items-center gap-3 py-4 mb-5 border-b border-pm-border">
-            <div className="w-16 h-16 rounded-2xl bg-pm-teal flex items-center justify-center text-white text-xl font-bold select-none">
-              {initials}
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-bold text-pm-primary">{user?.name ?? '—'}</p>
-              <p className="text-xs text-pm-muted mt-0.5">{user?.email}</p>
-            </div>
-          </div>
-          <div className="space-y-0 rounded-xl border border-pm-border overflow-hidden">
-            <InfoRow label="Name" value={user?.name ?? '—'} />
-            <InfoRow label="Email" value={user?.email ?? '—'} />
-            <InfoRow label="Role" value={user?.role === 'admin' ? 'Administrator' : 'User'} />
-            <InfoRow label="Status" value="Active" />
-          </div>
-        </Card>
-
-        {/* ── Right: Security + Danger ── */}
-        <div className="space-y-6">
+      {/* ── Security + Danger ── */}
+      <div className="space-y-6 max-w-3xl">
 
       {/* ── Security ── */}
       <Card
@@ -250,8 +201,7 @@ export function SettingsPage() {
         </div>
       </Card>
 
-        </div>{/* end right col */}
-      </div>{/* end grid */}
+      </div>{/* end Security + Danger */}
 
     </div>
   )

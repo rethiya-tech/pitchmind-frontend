@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import api from '@/services/api'
 import { THEMES } from '@/types'
 import type { TemplateListResponse, Template, TemplateDetail, TemplateCopyResponse } from '@/types'
+import { templateSlideImageUrl } from '@/utils/slideImage'
 
 function MiniThumb({ theme }: { theme: string | null }) {
   const t = THEMES.find(th => th.id === theme) ?? THEMES[0]
@@ -281,6 +282,18 @@ function ViewModal({ template, onClose }: { template: Template; onClose: () => v
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
             <div className="flex justify-center py-12"><Spinner size="lg" className="text-pm-teal" /></div>
+          ) : (template.preview_count ?? 0) > 0 ? (
+            <div className="space-y-4">
+              {Array.from({ length: template.preview_count ?? 0 }).map((_, i) => (
+                <img
+                  key={i}
+                  src={templateSlideImageUrl(template.id, i)}
+                  alt={`Slide ${i + 1}`}
+                  loading="lazy"
+                  className="w-full rounded-xl border border-pm-border shadow-sm"
+                />
+              ))}
+            </div>
           ) : !data?.slides_json?.length ? (
             <div className="text-center py-12">
               <div className="w-16 h-10 mx-auto rounded-xl mb-4" style={{ backgroundColor: t.bg }} />
@@ -306,7 +319,23 @@ function ViewModal({ template, onClose }: { template: Template; onClose: () => v
   )
 }
 
-function TemplateRow({ template, onDelete }: { template: Template; onDelete: (id: string) => void }) {
+function TemplateRow({
+  template,
+  isFirst,
+  isLast,
+  onDelete,
+  onPatch,
+  onRename,
+  onMove,
+}: {
+  template: Template
+  isFirst: boolean
+  isLast: boolean
+  onDelete: (id: string) => void
+  onPatch: (id: string, patch: Record<string, unknown>) => void
+  onRename: (t: Template) => void
+  onMove: (id: string, dir: -1 | 1) => void
+}) {
   const navigate = useNavigate()
   const [showView, setShowView] = useState(false)
   const [copying, setCopying] = useState(false)
@@ -342,7 +371,16 @@ function TemplateRow({ template, onDelete }: { template: Template; onDelete: (id
         {/* Name */}
         <td className="px-5 py-3.5">
           <div className="flex items-center gap-3 min-w-0">
-            <MiniThumb theme={template.theme} />
+            {(template.preview_count ?? 0) > 0 ? (
+              <img
+                src={templateSlideImageUrl(template.id, 0)}
+                alt={template.name}
+                loading="lazy"
+                className="w-14 h-9 rounded object-cover border border-pm-border flex-shrink-0"
+              />
+            ) : (
+              <MiniThumb theme={template.theme} />
+            )}
             <div className="min-w-0">
               <p className="font-medium text-pm-primary truncate max-w-[200px]">{template.name}</p>
               {template.description && (
@@ -355,11 +393,62 @@ function TemplateRow({ template, onDelete }: { template: Template; onDelete: (id
         <td className="px-5 py-3.5 text-pm-primary">{template.slide_count ?? '—'}</td>
         {/* Theme */}
         <td className="px-5 py-3.5 text-pm-primary">{themeName}</td>
+        {/* Status */}
+        <td className="px-5 py-3.5">
+          <div className="flex flex-col gap-1">
+            <span className={`inline-block w-fit text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+              template.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
+            }`}>
+              {template.is_active ? 'Active' : 'Inactive'}
+            </span>
+            <span className={`inline-block w-fit text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+              template.is_public ? 'bg-[#E1F5EE] text-pm-teal' : 'bg-amber-50 text-amber-700'
+            }`}>
+              {template.is_public ? 'Public' : 'Private'}
+            </span>
+          </div>
+        </td>
         {/* Uploaded */}
         <td className="px-5 py-3.5 text-pm-muted">{uploadedDate}</td>
         {/* Actions */}
         <td className="px-5 py-3.5">
           <div className="flex items-center gap-1.5">
+            {/* Reorder */}
+            <div className="flex flex-col mr-1">
+              <button
+                onClick={() => onMove(template.id, -1)}
+                disabled={isFirst}
+                title="Move up"
+                className="text-pm-muted hover:text-pm-primary disabled:opacity-30 leading-none"
+              >▲</button>
+              <button
+                onClick={() => onMove(template.id, 1)}
+                disabled={isLast}
+                title="Move down"
+                className="text-pm-muted hover:text-pm-primary disabled:opacity-30 leading-none"
+              >▼</button>
+            </div>
+            <button
+              onClick={() => onRename(template)}
+              title="Rename"
+              className="px-2 h-8 rounded-lg border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary text-xs font-medium transition-colors"
+            >
+              Rename
+            </button>
+            <button
+              onClick={() => onPatch(template.id, { is_public: !template.is_public })}
+              title={template.is_public ? 'Make private' : 'Make public'}
+              className="px-2 h-8 rounded-lg border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary text-xs font-medium transition-colors"
+            >
+              {template.is_public ? 'Make Private' : 'Make Public'}
+            </button>
+            <button
+              onClick={() => onPatch(template.id, { is_active: !template.is_active })}
+              title={template.is_active ? 'Deactivate' : 'Activate'}
+              className="px-2 h-8 rounded-lg border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary text-xs font-medium transition-colors"
+            >
+              {template.is_active ? 'Deactivate' : 'Activate'}
+            </button>
             <button
               onClick={() => setShowView(true)}
               title="View slides"
@@ -406,8 +495,8 @@ export function AdminTemplatesPage() {
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery<TemplateListResponse>({
-    queryKey: ['templates'],
-    queryFn: async () => (await api.get('/templates')).data,
+    queryKey: ['templates', 'admin'],
+    queryFn: async () => (await api.get('/templates?all=true')).data,
   })
 
   const { mutate: deleteTemplate } = useMutation({
@@ -419,7 +508,41 @@ export function AdminTemplatesPage() {
     onError: () => toast.error('Failed to remove template.'),
   })
 
+  const { mutate: patchTemplate } = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Record<string, unknown> }) =>
+      api.patch(`/templates/${id}`, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['templates'] })
+      toast.success('Template updated.')
+    },
+    onError: () => toast.error('Failed to update template.'),
+  })
+
+  const { mutate: reorder } = useMutation({
+    mutationFn: (ordered_ids: string[]) => api.post('/templates/reorder', { ordered_ids }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['templates'] }),
+    onError: () => toast.error('Failed to reorder.'),
+  })
+
   const handleDelete = (id: string) => setConfirmId(id)
+
+  const handlePatch = (id: string, patch: Record<string, unknown>) =>
+    patchTemplate({ id, patch })
+
+  const handleRename = (t: Template) => {
+    const name = window.prompt('Template name', t.name)?.trim()
+    if (name && name !== t.name) patchTemplate({ id: t.id, patch: { name } })
+  }
+
+  const handleMove = (id: string, dir: -1 | 1) => {
+    const items = data?.items ?? []
+    const idx = items.findIndex((x) => x.id === id)
+    const swap = idx + dir
+    if (idx < 0 || swap < 0 || swap >= items.length) return
+    const ids = items.map((x) => x.id)
+    ;[ids[idx], ids[swap]] = [ids[swap], ids[idx]]
+    reorder(ids)
+  }
 
   return (
     <div className="space-y-6">
@@ -480,13 +603,23 @@ export function AdminTemplatesPage() {
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Name</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Slides</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Theme</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Status</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Uploaded</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {data.items.map(t => (
-                <TemplateRow key={t.id} template={t} onDelete={handleDelete} />
+              {data.items.map((t, i) => (
+                <TemplateRow
+                  key={t.id}
+                  template={t}
+                  isFirst={i === 0}
+                  isLast={i === data.items.length - 1}
+                  onDelete={handleDelete}
+                  onPatch={handlePatch}
+                  onRename={handleRename}
+                  onMove={handleMove}
+                />
               ))}
             </tbody>
           </table>

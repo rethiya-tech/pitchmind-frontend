@@ -1,6 +1,8 @@
 import { NavLink, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/stores/authStore'
+import api from '@/services/api'
 
 function DashboardIcon() {
   return (
@@ -116,6 +118,52 @@ interface SidebarProps {
 
 export function Sidebar({ open = true }: SidebarProps) {
   const user = useAuthStore((s) => s.user)
+  const isAdmin = user?.role === 'admin'
+
+  const { data: pending } = useQuery<{ total: number }>({
+    queryKey: ['admin-pending-count'],
+    queryFn: async () =>
+      (await api.get('/admin/users', { params: { status: 'pending', page_size: 1 } })).data,
+    enabled: isAdmin,
+    refetchInterval: 30_000,
+  })
+  const pendingCount = pending?.total ?? 0
+
+  const renderLink = ({ to, label, Icon }: { to: string; label: string; Icon: () => JSX.Element }) => (
+    <NavLink
+      key={to}
+      to={to}
+      end={to === '/admin' || to === '/dashboard'}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
+          isActive
+            ? 'bg-[#E1F5EE] text-pm-teal'
+            : 'text-pm-muted hover:bg-gray-100 hover:text-pm-primary'
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <span className={isActive ? 'text-pm-teal' : 'text-pm-muted'}>
+            <Icon />
+          </span>
+          <span className="flex-1">{label}</span>
+          {to === '/admin/users' && pendingCount > 0 && (
+            <span className="text-[10px] font-bold bg-amber-500 text-white rounded-full px-1.5 py-0.5 leading-none">
+              {pendingCount}
+            </span>
+          )}
+        </>
+      )}
+    </NavLink>
+  )
+
+  const SectionHeading = ({ children }: { children: React.ReactNode }) => (
+    <div className="pt-4 pb-1 px-3 text-[10px] font-bold text-pm-muted uppercase tracking-widest">
+      {children}
+    </div>
+  )
 
   return (
     <aside
@@ -138,61 +186,16 @@ export function Sidebar({ open = true }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 pt-3 space-y-0.5">
-        {NAV.filter(({ to }) => user?.role === 'admin' ? to === '/dashboard' : true).map(({ to, label, Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/dashboard'}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-[#E1F5EE] text-pm-teal'
-                  : 'text-pm-muted hover:bg-gray-100 hover:text-pm-primary'
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <span className={isActive ? 'text-pm-teal' : 'text-pm-muted'}>
-                  <Icon />
-                </span>
-                {label}
-              </>
-            )}
-          </NavLink>
-        ))}
-
-        {user?.role === 'admin' && (
+        {isAdmin ? (
           <>
-            <div className="pt-4 pb-1 px-3 text-[10px] font-bold text-pm-muted uppercase tracking-widest">
-              Admin
-            </div>
-            {ADMIN_NAV.map(({ to, label, Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === '/admin'}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-[#E1F5EE] text-pm-teal'
-                      : 'text-pm-muted hover:bg-gray-100 hover:text-pm-primary'
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <span className={isActive ? 'text-pm-teal' : 'text-pm-muted'}>
-                      <Icon />
-                    </span>
-                    {label}
-                  </>
-                )}
-              </NavLink>
-            ))}
+            <SectionHeading>Admin</SectionHeading>
+            {ADMIN_NAV.map(renderLink)}
+
+            <SectionHeading>User</SectionHeading>
+            {NAV.map(renderLink)}
           </>
+        ) : (
+          NAV.map(renderLink)
         )}
       </nav>
 
