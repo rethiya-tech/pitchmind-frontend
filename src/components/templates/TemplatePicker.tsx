@@ -52,7 +52,7 @@ export function TemplatePicker({ onClose }: TemplatePickerProps) {
     onSuccess: (data) => {
       toast.success('Template copied! Opening editor…')
       onClose()
-      navigate(`/editor/${data.conversion_id}`)
+      navigate(`/editor/${data.conversion_id}`, { replace: true })
     },
     onError: () => {
       setCopying(false)

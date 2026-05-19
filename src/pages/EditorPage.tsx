@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useEditorStore } from '@/stores/editorStore'
 import { useAutoSave } from '@/hooks/useAutoSave'
@@ -90,15 +90,72 @@ function lighterHex(hex: string, amount: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
+function bgIsDark(hex: string): boolean {
+  const h = hex.replace('#', '')
+  const r = parseInt(h.slice(0, 2), 16) || 0
+  const g = parseInt(h.slice(2, 4), 16) || 0
+  const b = parseInt(h.slice(4, 6), 16) || 0
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
+}
+
+function SlideContainer({ style, showWatermark, logoUrl, hasUserBg, children }: {
+  style: React.CSSProperties
+  showWatermark?: boolean
+  logoUrl?: string | null
+  hasUserBg?: boolean
+  children: React.ReactNode
+}) {
+  const dark = bgIsDark((style.backgroundColor as string) ?? '#1e2a3a')
+  const watermarkColor = hasUserBg
+    ? 'rgba(255,255,255,0.55)'
+    : dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'
+  const watermarkShadow = hasUserBg ? '0 1px 4px rgba(0,0,0,0.65)' : undefined
+  return (
+    <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={style}>
+      {children}
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          alt="Client logo"
+          style={{
+            position: 'absolute', bottom: '3.5%', left: '3.5%',
+            maxHeight: '10%', maxWidth: '18%', objectFit: 'contain',
+            pointerEvents: 'none', userSelect: 'none', zIndex: 20,
+            opacity: 0.85,
+          }}
+        />
+      )}
+      {showWatermark && (
+        <span
+          style={{
+            position: 'absolute', bottom: '3.5%', right: '3.5%',
+            pointerEvents: 'none', userSelect: 'none', zIndex: 20,
+            fontSize: 'clamp(7px, 1vw, 13px)', fontWeight: 900, letterSpacing: '0.28em',
+            color: watermarkColor,
+            textShadow: watermarkShadow,
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
+          }}
+        >
+          WAC
+        </span>
+      )}
+    </div>
+  )
+}
+
 function SlidePreview({
   slide,
   theme,
+  showWatermark,
+  logoUrl,
   onTextEdit,
   onUpdateText,
   onTypoFocus,
 }: {
   slide: Slide
   theme: Theme
+  showWatermark?: boolean
+  logoUrl?: string | null
   onTextEdit?: (target: TextEditTarget) => void
   onUpdateText?: (field: 'title' | 'bullet', value: string, bulletIndex?: number) => void
   onTypoFocus?: (field: 'title' | 'bullet', bulletIndex?: number) => void
@@ -223,7 +280,7 @@ function SlidePreview({
     const subtitle = bullets[0] ?? ''
     const tagline = bullets[1] ?? ''
     return (
-      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -253,7 +310,7 @@ function SlidePreview({
             {tagline}
           </div>
         )}
-      </div>
+      </SlideContainer>
     )
   }
 
@@ -284,7 +341,7 @@ function SlidePreview({
     }
 
     return (
-      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -317,7 +374,7 @@ function SlidePreview({
             </div>
           ))}
         </div>
-      </div>
+      </SlideContainer>
     )
   }
 
@@ -326,7 +383,7 @@ function SlidePreview({
     const valueBg = lighterHex(theme.bg, 35)
 
     return (
-      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -352,14 +409,14 @@ function SlidePreview({
             )
           })}
         </div>
-      </div>
+      </SlideContainer>
     )
   }
 
   // ── timeline ──────────────────────────────────────────────────────────────
   if (layout === 'timeline') {
     return (
-      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -382,7 +439,7 @@ function SlidePreview({
             )
           })}
         </div>
-      </div>
+      </SlideContainer>
     )
   }
 
@@ -390,7 +447,7 @@ function SlidePreview({
   if (layout === 'big_stat') {
     const stats = bullets.slice(0, 3)
     return (
-      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -414,7 +471,7 @@ function SlidePreview({
             )
           })}
         </div>
-      </div>
+      </SlideContainer>
     )
   }
 
@@ -422,7 +479,7 @@ function SlidePreview({
   if (layout === 'process') {
     const steps = bullets.slice(0, 5)
     return (
-      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -446,7 +503,7 @@ function SlidePreview({
             </div>
           ))}
         </div>
-      </div>
+      </SlideContainer>
     )
   }
 
@@ -455,7 +512,7 @@ function SlidePreview({
     const quoteText = bullets[0] ?? ''
     const attribution = bullets[1] ?? ''
     return (
-      <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute"
@@ -485,13 +542,13 @@ function SlidePreview({
             — {attribution}
           </div>
         )}
-      </div>
+      </SlideContainer>
     )
   }
 
   // ── bullets (default) ─────────────────────────────────────────────────────
   return (
-    <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={containerStyle}>
+    <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
       <div
         {...editableProps('title', slide.title)}
         className="absolute font-extrabold leading-tight"
@@ -513,7 +570,7 @@ function SlidePreview({
           </div>
         ))}
       </div>
-    </div>
+    </SlideContainer>
   )
 }
 
@@ -528,12 +585,14 @@ function PanelHeader({ title, action }: { title: string; action?: React.ReactNod
 }
 
 // ── Editor toolbar ─────────────────────────────────────────────────────────────
-function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }: {
+function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, showWatermark, onToggleWatermark }: {
   conversionId: string
   conversionName?: string
   isSaving?: boolean
   hasError?: boolean
   backTo?: { path: string; label: string }
+  showWatermark?: boolean
+  onToggleWatermark?: () => void
 }) {
   const isDirty = useEditorStore((s) => s.isDirty)
   const name = (conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation')
@@ -581,6 +640,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
       <div className="flex items-center gap-3 min-w-0">
         <Link
           to={backTo?.path ?? '/projects'}
+          replace
           className="flex items-center gap-1.5 text-pm-muted hover:text-pm-primary text-sm transition-colors flex-shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -616,6 +676,29 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo }:
             <><span className="w-1.5 h-1.5 rounded-full bg-pm-teal inline-block" />Saved</>
           )}
         </span>
+
+        {/* Watermark toggle */}
+        <button
+          onClick={onToggleWatermark}
+          title={showWatermark ? 'Hide watermark' : 'Show watermark'}
+          className={cn(
+            'flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors',
+            showWatermark
+              ? 'border-pm-border text-pm-muted hover:text-pm-primary hover:border-gray-300'
+              : 'border-transparent text-pm-muted/50 hover:text-pm-muted'
+          )}
+        >
+          {showWatermark ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          )}
+          WAC
+        </button>
 
         {/* Split export button with dropdown */}
         <div className="relative flex">
@@ -673,16 +756,28 @@ export function EditorPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const backTo = (location.state as { from?: string } | null)?.from === 'templates'
-    ? { path: '/templates', label: 'Templates' }
-    : { path: '/projects', label: 'Projects' }
+  const fromState = (location.state as { from?: string } | null)?.from
+  const backTo =
+    fromState === 'dashboard'       ? { path: '/dashboard',         label: 'Dashboard'        } :
+    fromState === 'templates'       ? { path: '/templates',         label: 'Templates'        } :
+    fromState === 'admin'           ? { path: '/admin/projects',    label: 'Admin Projects'   } :
+    fromState === 'admin-templates' ? { path: '/admin/templates',   label: 'Admin Templates'  } :
+                                      { path: '/projects',          label: 'Projects'         }
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    if (fromState === 'admin') {
+      return () => { void queryClient.invalidateQueries({ queryKey: ['admin-conversions'] }) }
+    }
+  }, [fromState, queryClient])
+
   const { setSlides, setConversionId, setActiveSlide, slides, activeSlideId, updateSlide, markSaved } = useEditorStore()
+  const [showWatermark, setShowWatermark] = useState(true)
   const [showOriginal, setShowOriginal] = useState(false)
   const [origError, setOrigError] = useState(false)
   const initialActiveSet = useRef(false)
   const editInputRef = useRef<HTMLTextAreaElement>(null)
 
-  const { data: conversion, isLoading, isError } = useQuery<Conversion>({
+  const { data: conversion, isLoading, isFetching, isError, error } = useQuery<Conversion>({
     queryKey: ['conversion', id],
     queryFn: async () => {
       const res = await api.get(`/conversions/${id}`)
@@ -690,20 +785,20 @@ export function EditorPage() {
     },
     enabled: !!id,
     retry: 1,
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   useEffect(() => {
-    if (conversion) {
-      setConversionId(conversion.id)
-      if (conversion.slides && !initialActiveSet.current) {
-        initialActiveSet.current = true
-        setSlides(conversion.slides)
-        const first = conversion.slides.find((s) => !s.is_deleted)
-        if (first) setActiveSlide(first.id)
-      }
+    if (!conversion) return
+    setConversionId(conversion.id)
+    if (conversion.slides && !initialActiveSet.current && !isFetching) {
+      initialActiveSet.current = true
+      setSlides(conversion.slides)
+      const first = conversion.slides.find((s) => !s.is_deleted)
+      if (first) setActiveSlide(first.id)
     }
-  }, [conversion, setSlides, setConversionId, setActiveSlide])
+  }, [conversion, isFetching, setSlides, setConversionId, setActiveSlide])
 
   useEffect(() => {
     if (conversion?.status === 'generating' && id) {
@@ -827,9 +922,17 @@ export function EditorPage() {
   }
 
   if (isError) {
+    const status = (error as { response?: { status?: number } })?.response?.status
     return (
-      <div className="flex h-screen items-center justify-center text-pm-muted">
-        Failed to load presentation.
+      <div className="flex h-screen flex-col items-center justify-center gap-2 text-pm-muted">
+        <p className="font-medium text-pm-primary">
+          {status === 404 ? 'Presentation not found.' : 'Failed to load presentation.'}
+        </p>
+        <p className="text-sm">
+          {status === 404
+            ? 'It may have been deleted or you may not have access.'
+            : 'Something went wrong. Please try again.'}
+        </p>
       </div>
     )
   }
@@ -843,6 +946,8 @@ export function EditorPage() {
         isSaving={isSaving}
         hasError={hasError}
         backTo={backTo}
+        showWatermark={showWatermark}
+        onToggleWatermark={() => setShowWatermark((v) => !v)}
       />
 
       {/* Three-panel body */}
@@ -938,6 +1043,8 @@ export function EditorPage() {
                 <SlidePreview
                   slide={activeSlide}
                   theme={theme}
+                  showWatermark={showWatermark}
+                  logoUrl={conversion?.client_logo_url}
                   onTextEdit={openTextEditor}
                   onTypoFocus={(field, bulletIndex) =>
                     setTypoFocus(field === 'title' ? 'title' : `bullet_${bulletIndex ?? 0}`)

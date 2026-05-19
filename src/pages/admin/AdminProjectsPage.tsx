@@ -144,6 +144,7 @@ export function AdminProjectsPage() {
       const res = await api.get('/admin/conversions', { params: { page, page_size: PAGE_SIZE } })
       return res.data
     },
+    refetchOnMount: 'always',
   })
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1
@@ -160,7 +161,7 @@ export function AdminProjectsPage() {
             <span className="text-sm text-pm-muted">{data.total} total</span>
           )}
           <button
-            onClick={() => navigate('/upload')}
+            onClick={() => navigate('/upload', { replace: true })}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,6 +244,8 @@ export function AdminProjectsPage() {
                         <div className="flex items-center gap-1.5">
                           <Link
                             to={`/editor/${c.id}`}
+                            state={{ from: 'admin' }}
+                            replace
                             title="Edit presentation"
                             className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary transition-colors"
                           >

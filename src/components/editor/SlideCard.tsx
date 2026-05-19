@@ -62,7 +62,9 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
           width: 68,
           height: 38,
           backgroundColor: theme.bg,
-          backgroundImage: `url(/themes/${theme.id}.png)`,
+          backgroundImage: slide.background_image_url
+            ? `url(${slide.background_image_url})`
+            : `url(/themes/${theme.id}.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}

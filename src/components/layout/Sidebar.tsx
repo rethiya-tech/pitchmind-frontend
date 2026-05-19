@@ -133,6 +133,7 @@ export function Sidebar({ open = true }: SidebarProps) {
     <NavLink
       key={to}
       to={to}
+      replace
       end={to === '/admin' || to === '/dashboard'}
       className={({ isActive }) =>
         cn(
@@ -203,6 +204,7 @@ export function Sidebar({ open = true }: SidebarProps) {
       <div className="px-3 pb-5 pt-3 border-t border-pm-border">
         <Link
           to="/upload"
+          replace
           className="flex items-center justify-center gap-2 w-full bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm py-2.5 rounded-xl transition-colors"
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">

@@ -139,6 +139,7 @@ export function ExportCard({ conversion }: ExportCardProps) {
       <div className="text-center">
         <Link
           to={`/editor/${conversion.id}`}
+          replace
           className="text-sm text-pm-teal hover:text-pm-teal-hover transition-colors"
         >
           ← Back to Editor

@@ -330,6 +330,7 @@ export function ProjectsPage() {
         </div>
         <Link
           to="/upload"
+          replace
           className="flex items-center gap-2 bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -421,6 +422,7 @@ export function ProjectsPage() {
           </div>
           <Link
             to="/upload"
+            replace
             className="inline-flex items-center gap-2 bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm px-6 py-3 rounded-xl transition-colors"
           >
             Create your first presentation
@@ -535,6 +537,8 @@ export function ProjectsPage() {
                         <div className="flex items-center gap-1.5">
                           <Link
                             to={`/editor/${c.id}`}
+                            state={{ from: 'projects' }}
+                            replace
                             title="Edit presentation"
                             className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary transition-colors"
                           >
@@ -549,6 +553,7 @@ export function ProjectsPage() {
                       {c.status === 'generating' && c.id && (
                         <Link
                           to={`/generating/${c.id}`}
+                          replace
                           title="View generation progress"
                           className="w-8 h-8 rounded-lg flex items-center justify-center border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors"
                         >

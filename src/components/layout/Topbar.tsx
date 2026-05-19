@@ -207,7 +207,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
     setAccountOpen(false)
     try { await api.post('/auth/logout') } catch { /* ignore */ }
     clearAuth()
-    navigate('/login')
+    navigate('/login', { replace: true })
   }
 
   const initials = user?.name
@@ -244,7 +244,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
         </div>
 
         <button
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate('/settings', { replace: true })}
           className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 text-pm-muted hover:text-pm-primary transition-colors"
           title="Settings"
         >
@@ -271,7 +271,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
               </div>
               <button
                 role="menuitem"
-                onClick={() => { setAccountOpen(false); navigate('/profile') }}
+                onClick={() => { setAccountOpen(false); navigate('/profile', { replace: true }) }}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-pm-primary hover:bg-[#FAFAFA] transition-colors"
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
