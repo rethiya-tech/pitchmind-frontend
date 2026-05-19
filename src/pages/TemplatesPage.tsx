@@ -350,7 +350,7 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
     },
     onSuccess: (data) => {
       toast.success('Opening editor…')
-      navigate(`/editor/${data.conversion_id}`, { state: { from: 'templates' } })
+      navigate(`/editor/${data.conversion_id}`, { state: { from: 'templates' }, replace: true })
     },
     onError: () => {
       setCopying(false)

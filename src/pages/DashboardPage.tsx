@@ -352,7 +352,7 @@ export function DashboardPage() {
             <div className="flex-1 flex items-center justify-center py-2">
               <DonutChart
                 segments={donutSegments}
-                onSegmentClick={(label) => navigate(`/projects?status=${label.toLowerCase()}`)}
+                onSegmentClick={(label) => navigate(`/projects?status=${label.toLowerCase()}`, { replace: true })}
               />
             </div>
           </div>
@@ -449,7 +449,7 @@ export function DashboardPage() {
         <div className="col-span-2 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-pm-primary">Recent Activity</h2>
-            <Link to="/projects" className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover transition-colors">
+            <Link to="/projects" replace className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover transition-colors">
               View all →
             </Link>
           </div>
@@ -468,6 +468,7 @@ export function DashboardPage() {
               </div>
               <Link
                 to="/upload"
+                replace
                 className="text-xs font-semibold text-pm-teal border border-pm-teal rounded-lg px-4 py-2 hover:bg-[#E1F5EE] transition-colors"
               >
                 Create presentation
@@ -515,6 +516,8 @@ export function DashboardPage() {
                     {c.status === 'done' ? (
                       <Link
                         to={`/editor/${c.id}`}
+                        state={{ from: 'dashboard' }}
+                        replace
                         className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover transition-colors"
                       >
                         Edit →
@@ -522,6 +525,7 @@ export function DashboardPage() {
                     ) : c.status === 'generating' && c.id ? (
                       <Link
                         to={`/generating/${c.id}`}
+                        replace
                         className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                       >
                         Progress →

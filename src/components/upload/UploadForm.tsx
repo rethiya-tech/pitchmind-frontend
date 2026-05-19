@@ -175,6 +175,11 @@ export function UploadForm() {
   const [loadingQuestions, setLoadingQuestions] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
+  // Client logo
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+
   // Shared settings
   const [theme, setTheme] = useState('clean_slate')
   const [slideCount, setSlideCount] = useState(8)
@@ -205,6 +210,24 @@ export function UploadForm() {
       else next.add(flag)
       return next
     })
+  }
+
+  const handleLogoFile = async (f: File) => {
+    setLogoPreview(URL.createObjectURL(f))
+    setLogoUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', f)
+      const { data } = await api.post<{ logo_url: string }>('/uploads/logo', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setLogoUrl(data.logo_url)
+    } catch {
+      toast.error('Logo upload failed. Please try again.')
+      setLogoPreview(null)
+    } finally {
+      setLogoUploading(false)
+    }
   }
 
   const presignMutation = useMutation({
@@ -242,6 +265,7 @@ export function UploadForm() {
         slide_count: slideCount,
         speaker_notes: true,
         presentation_flags: Array.from(presentationFlags),
+        ...(logoUrl ? { client_logo_url: logoUrl } : {}),
       }
       if (inputMode === 'prompt') {
         payload.prompt_text = promptText
@@ -258,7 +282,7 @@ export function UploadForm() {
       const { data } = await api.post('/conversions', payload)
       return data as { id: string }
     },
-    onSuccess: (data) => navigate(`/generating/${data.id}`),
+    onSuccess: (data) => navigate(`/generating/${data.id}`, { replace: true }),
     onError: (err: unknown) => {
       const msg = (err as { response?: { data?: { detail?: string | { message?: string } } } })
         ?.response?.data?.detail
@@ -658,6 +682,50 @@ export function UploadForm() {
             </div>
           </Field>
 
+          {/* Client Logo */}
+          <Field label="Client Logo (Optional)">
+            <p className="text-xs text-pm-muted mb-2">Appears as a watermark on every slide. PNG, JPG, SVG, or WebP — max 5 MB.</p>
+            <label className="cursor-pointer flex items-center gap-3">
+              <div className={cn(
+                'w-14 h-14 rounded-xl border-2 border-dashed flex items-center justify-center flex-shrink-0 overflow-hidden transition-colors',
+                logoPreview ? 'border-pm-teal bg-[#F0FBF7]' : 'border-pm-border bg-gray-50 hover:border-pm-teal'
+              )}>
+                {logoUploading ? (
+                  <svg className="animate-spin w-5 h-5 text-pm-teal" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="16 30" />
+                  </svg>
+                ) : logoPreview ? (
+                  <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <svg className="w-5 h-5 text-pm-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                {logoUrl ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-pm-teal font-medium">Logo uploaded</span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setLogoUrl(null); setLogoPreview(null) }}
+                      className="text-xs text-pm-muted hover:text-pm-danger transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-xs text-pm-muted">{logoUploading ? 'Uploading…' : 'Click to upload logo'}</span>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoFile(f) }}
+              />
+            </label>
+          </Field>
 
           {inputMode === 'file' && (
             <Field label="PRESENTATION FORMAT">

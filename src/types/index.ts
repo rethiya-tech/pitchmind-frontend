@@ -55,6 +55,7 @@ export interface Conversion {
   speaker_notes?: boolean
   tokens_used?: number
   source_pptx_key?: string | null
+  client_logo_url?: string | null
   created_at?: string
   updated_at?: string
   slides?: Slide[]

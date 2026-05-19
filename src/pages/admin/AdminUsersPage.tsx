@@ -330,19 +330,37 @@ export function AdminUsersPage() {
   )
 
   const bulkAction = async (action: 'approve' | 'suspend') => {
-    const ids = [...selected]
-    if (!ids.length) return
+    const allIds = [...selected]
+    if (!allIds.length) return
+
+    // Only act on users whose current status makes the action meaningful
+    const eligibleStatus = action === 'approve'
+      ? ['pending', 'suspended', 'rejected']
+      : ['active']
+    const eligible = (data?.items ?? []).filter(
+      (u) => allIds.includes(u.id) && eligibleStatus.includes(u.status)
+    )
+
+    if (!eligible.length) {
+      toast.error(
+        action === 'approve'
+          ? 'No pending/suspended users selected to approve.'
+          : 'No active users selected to suspend.'
+      )
+      return
+    }
+
     setBulkBusy(true)
     let ok = 0
-    for (const id of ids) {
+    for (const u of eligible) {
       try {
-        await api.post(`/admin/users/${id}/${action}`)
+        await api.post(`/admin/users/${u.id}/${action}`)
         ok++
       } catch { /* keep going */ }
     }
     setBulkBusy(false)
     setSelected(new Set())
-    toast.success(`${ok}/${ids.length} user(s) ${action}d.`)
+    toast.success(`${ok}/${eligible.length} user(s) ${action === 'approve' ? 'approved' : 'suspended'}.`)
     void queryClient.invalidateQueries({ queryKey: ['admin-users'] })
   }
 
@@ -434,8 +452,8 @@ export function AdminUsersPage() {
       {selected.size > 0 && (
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#E1F5EE] border border-pm-teal/30">
           <span className="text-sm font-semibold text-pm-teal">{selected.size} selected</span>
-          <Button size="sm" variant="primary" disabled={bulkBusy} onClick={() => bulkAction('approve')}>Approve selected</Button>
-          <Button size="sm" variant="secondary" disabled={bulkBusy} onClick={() => bulkAction('suspend')}>Suspend selected</Button>
+          <Button size="sm" variant="primary" disabled={bulkBusy} onClick={() => bulkAction('approve')} title="Approves pending users; reactivates suspended/rejected ones">Approve / Reactivate</Button>
+          <Button size="sm" variant="secondary" disabled={bulkBusy} onClick={() => bulkAction('suspend')} title="Only applies to active users">Suspend active</Button>
           <button onClick={() => setSelected(new Set())} className="text-xs text-pm-muted hover:text-pm-primary ml-auto">Clear</button>
         </div>
       )}

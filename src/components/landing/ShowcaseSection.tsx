@@ -14,7 +14,7 @@ export function ShowcaseSection() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section className="bg-gradient-to-br from-[#0a1a14] to-[#111a16] py-20 md:py-28 overflow-hidden">
+    <section id="showcase" className="bg-gradient-to-br from-[#0a1a14] to-[#111a16] py-20 md:py-28 overflow-hidden">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div ref={ref} initial={{ opacity: 0, y: 32 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.55 }} className="mb-12">
           <p className="text-xs font-bold tracking-widest uppercase text-[#5DCAA5] mb-3">Real output</p>

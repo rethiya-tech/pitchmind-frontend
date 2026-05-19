@@ -358,7 +358,7 @@ function TemplateRow({
     onMutate: () => setCopying(true),
     onSuccess: (data) => {
       toast.success('Opening editor…')
-      navigate(`/editor/${data.conversion_id}`)
+      navigate(`/editor/${data.conversion_id}`, { state: { from: 'admin-templates' }, replace: true })
     },
     onError: () => {
       setCopying(false)
