@@ -15,3 +15,15 @@ export function conversionSlideImageUrl(conversionId: string, idx: number): stri
   const token = useAuthStore.getState().token ?? ''
   return `${BASE}/api/v1/conversions/${conversionId}/slide-image/${idx}?token=${encodeURIComponent(token)}`
 }
+
+/** Resolve a slide's background_image_url for use as a CSS background-image.
+ * Paths starting with /api/ are token-protected — this appends the current
+ * auth token so the browser can fetch them without a Bearer header. */
+export function resolveSlideBackgroundUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  if (url.startsWith('/api/')) {
+    const token = useAuthStore.getState().token ?? ''
+    return `${BASE}${url}?token=${encodeURIComponent(token)}`
+  }
+  return url
+}

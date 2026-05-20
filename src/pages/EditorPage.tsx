@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import api from '@/services/api'
-import { conversionSlideImageUrl } from '@/utils/slideImage'
+import { conversionSlideImageUrl, resolveSlideBackgroundUrl } from '@/utils/slideImage'
 import type { Conversion, Slide, SlideTextStyle, Theme } from '@/types' // eslint-disable-line @typescript-eslint/no-unused-vars
 import { THEMES } from '@/types'
 
@@ -268,7 +268,7 @@ function SlidePreview({
     position: 'relative',
     backgroundColor: theme.bg,
     backgroundImage: slide.background_image_url
-      ? `url(${slide.background_image_url})`
+      ? `url(${resolveSlideBackgroundUrl(slide.background_image_url)})`
       : `url(/themes/${theme.id}.png)`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
