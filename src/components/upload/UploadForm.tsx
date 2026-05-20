@@ -171,9 +171,11 @@ export function UploadForm() {
   // Questionnaire state
   const [questions, setQuestions] = useState<string[]>([])
   const [answers, setAnswers] = useState<string[]>([])
+  const [chipSelections, setChipSelections] = useState<string[][]>([])
   const [skippedQuestions, setSkippedQuestions] = useState<boolean[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [progressOverride, setProgressOverride] = useState<number | null>(null)
 
   // Client logo
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
@@ -298,7 +300,9 @@ export function UploadForm() {
         const { data } = await api.post<{ questions: string[] }>('/ai/generate-questions', { prompt: promptText })
         setQuestions(data.questions)
         setAnswers(new Array(data.questions.length).fill(''))
+        setChipSelections(Array.from({ length: data.questions.length }, () => []))
         setSkippedQuestions(new Array(data.questions.length).fill(false))
+        setProgressOverride(null)
         setStep('questionnaire')
       } catch {
         createMutation.mutate()
@@ -335,6 +339,23 @@ export function UploadForm() {
     setSkippedQuestions(nextSkipped)
   }
 
+  const toggleChip = (qi: number, option: string) => {
+    const current = chipSelections[qi] ?? []
+    const next = current.includes(option) ? current.filter(c => c !== option) : [...current, option]
+    const nextChips = [...chipSelections]
+    nextChips[qi] = next
+    setChipSelections(nextChips)
+    setQuestionAnswer(qi, next.join(', '))
+  }
+
+  const setTextAnswer = (qi: number, text: string) => {
+    // Typing clears chip selections for that question
+    const nextChips = [...chipSelections]
+    nextChips[qi] = []
+    setChipSelections(nextChips)
+    setQuestionAnswer(qi, text)
+  }
+
   const advanceQuestion = (skip: boolean) => {
     if (skip) {
       const nextAnswers = [...answers]
@@ -347,7 +368,9 @@ export function UploadForm() {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1)
     } else {
-      createMutation.mutate()
+      // Animate progress to 100% then start generation
+      setProgressOverride(100)
+      setTimeout(() => createMutation.mutate(), 450)
     }
   }
 
@@ -356,8 +379,10 @@ export function UploadForm() {
     const q = questions[qi] ?? ''
     const options = getQuestionOptions(q)
     const currentAnswer = answers[qi] ?? ''
+    const currentChips = chipSelections[qi] ?? []
     const isLast = qi === questions.length - 1
-    const progress = ((qi) / questions.length) * 100
+    const naturalProgress = (qi / questions.length) * 100
+    const progress = progressOverride !== null ? progressOverride : naturalProgress
 
     return (
       <div className="flex flex-col h-full bg-white rounded-2xl border border-pm-border overflow-hidden">
@@ -412,15 +437,15 @@ export function UploadForm() {
             {/* Question text */}
             <p className="text-base font-semibold text-pm-primary leading-snug">{q}</p>
 
-            {/* Option chips */}
+            {/* Option chips — multi-select */}
             <div className="flex flex-wrap gap-2">
               {options.map((option) => {
-                const selected = currentAnswer === option
+                const selected = currentChips.includes(option)
                 return (
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setQuestionAnswer(qi, selected ? '' : option)}
+                    onClick={() => toggleChip(qi, option)}
                     className={cn(
                       'px-4 py-2 rounded-full border text-sm font-medium transition-all',
                       selected
@@ -434,13 +459,13 @@ export function UploadForm() {
               })}
             </div>
 
-            {/* Free-text input */}
+            {/* Free-text input — clears chip selections when typed */}
             <textarea
               rows={3}
-              value={currentAnswer}
-              onChange={(e) => setQuestionAnswer(qi, e.target.value)}
-              placeholder="Or type your own answer…"
-              className="w-full border border-pm-border rounded-xl px-4 py-3 text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-gray-300 resize-none bg-[#FAFAFA]"
+              value={currentChips.length > 0 ? '' : currentAnswer}
+              onChange={(e) => setTextAnswer(qi, e.target.value)}
+              placeholder={currentChips.length > 0 ? `Selected: ${currentChips.join(', ')}` : 'Or type your own answer…'}
+              className="w-full border border-pm-border rounded-xl px-4 py-3 text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-gray-400 resize-none bg-[#FAFAFA]"
             />
           </div>
         </div>
