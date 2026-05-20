@@ -446,7 +446,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
           {/* Background Image */}
           <SectionLabel>Background Image</SectionLabel>
           <div className="px-3 py-3 space-y-2">
-            {slide.background_image_url ? (
+            {slide.background_image_url && !slide.background_image_url.startsWith('/api/v1/templates/') ? (
               <div className="relative rounded-lg overflow-hidden border border-pm-border group">
                 <img
                   src={slide.background_image_url}

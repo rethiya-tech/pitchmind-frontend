@@ -2,6 +2,7 @@ import { forwardRef } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@/utils/cn'
+import { resolveSlideBackgroundUrl } from '@/utils/slideImage'
 import type { Slide, Theme } from '@/types'
 
 interface SlideCardProps {
@@ -63,7 +64,7 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
           height: 38,
           backgroundColor: theme.bg,
           backgroundImage: slide.background_image_url
-            ? `url(${slide.background_image_url})`
+            ? `url(${resolveSlideBackgroundUrl(slide.background_image_url)})`
             : `url(/themes/${theme.id}.png)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',

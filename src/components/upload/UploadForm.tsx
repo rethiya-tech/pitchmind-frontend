@@ -222,8 +222,9 @@ export function UploadForm() {
     queryKey: ['templates'],
     queryFn: async () => (await api.get('/templates')).data,
   })
+  // Show public (admin-uploaded) templates and the user's own private templates
   const userTemplates = (templatesData?.items ?? []).filter(
-    t => t.created_by === currentUser?.id
+    t => t.is_public || t.created_by === currentUser?.id
   )
 
   const handleLogoFile = async (f: File) => {

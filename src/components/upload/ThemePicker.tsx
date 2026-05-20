@@ -60,7 +60,7 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
   })
 
   const categories = hasUserTemplates
-    ? [...BUILT_IN_CATEGORIES, { id: 'my_templates' as Category, label: 'My Templates' }]
+    ? [...BUILT_IN_CATEGORIES, { id: 'my_templates' as Category, label: 'Templates' }]
     : BUILT_IN_CATEGORIES
 
   const visibleThemes = THEMES.filter(t => t.category === activeCategory)
