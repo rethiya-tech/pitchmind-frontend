@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { DropZone } from './DropZone'
 import { ThemePicker } from './ThemePicker'
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button'
 import api from '@/services/api'
 import { cn } from '@/utils/cn'
 import { THEMES } from '@/types'
+import type { TemplateListResponse } from '@/types'
+import { useAuthStore } from '@/stores/authStore'
 
 type Step = 'form' | 'questionnaire'
 
@@ -154,6 +156,7 @@ const selectCls =
 // ── Main form ─────────────────────────────────────────────────────────────────
 export function UploadForm() {
   const navigate = useNavigate()
+  const currentUser = useAuthStore(s => s.user)
 
   // Wizard step
   const [step, setStep] = useState<Step>('form')
@@ -184,6 +187,7 @@ export function UploadForm() {
 
   // Shared settings
   const [theme, setTheme] = useState('clean_slate')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [slideCount, setSlideCount] = useState(8)
   const [customCount, setCustomCount] = useState('')
   const [customError, setCustomError] = useState('')
@@ -213,6 +217,14 @@ export function UploadForm() {
       return next
     })
   }
+
+  const { data: templatesData } = useQuery<TemplateListResponse>({
+    queryKey: ['templates'],
+    queryFn: async () => (await api.get('/templates')).data,
+  })
+  const userTemplates = (templatesData?.items ?? []).filter(
+    t => t.created_by === currentUser?.id
+  )
 
   const handleLogoFile = async (f: File) => {
     setLogoPreview(URL.createObjectURL(f))
@@ -268,6 +280,7 @@ export function UploadForm() {
         speaker_notes: true,
         presentation_flags: Array.from(presentationFlags),
         ...(logoUrl ? { client_logo_url: logoUrl } : {}),
+        ...(selectedTemplateId ? { template_id: selectedTemplateId } : {}),
       }
       if (inputMode === 'prompt') {
         payload.prompt_text = promptText
@@ -790,11 +803,17 @@ export function UploadForm() {
         done={false}
       >
         <div className="flex flex-col gap-5 h-full">
-          <ThemePicker value={theme} onChange={(id) => {
-            setTheme(id)
-            const category = THEMES.find(t => t.id === id)?.category
-            if (category) setStyles(new Set([category]))
-          }} />
+          <ThemePicker
+            value={theme}
+            onChange={(id) => {
+              setTheme(id)
+              const category = THEMES.find(t => t.id === id)?.category
+              if (category) setStyles(new Set([category]))
+            }}
+            userTemplates={userTemplates}
+            selectedTemplateId={selectedTemplateId}
+            onTemplateSelect={setSelectedTemplateId}
+          />
 
           <div className="mt-auto space-y-2 pt-4 border-t border-pm-border">
             {inputMode === 'file' ? (
@@ -806,7 +825,14 @@ export function UploadForm() {
               />
             )}
             <StatusRow done label={`${slideCount} slides · ${Array.from(styles).join(', ')}`} />
-            <StatusRow done={!!theme} label={theme ? `Theme: ${THEMES.find(t => t.id === theme)?.name ?? theme}` : 'Theme selected'} />
+            <StatusRow
+              done={!!theme}
+              label={
+                selectedTemplateId
+                  ? `Template: ${userTemplates.find(t => t.id === selectedTemplateId)?.name ?? 'Custom'}`
+                  : theme ? `Theme: ${THEMES.find(t => t.id === theme)?.name ?? theme}` : 'Theme selected'
+              }
+            />
           </div>
 
           <Button

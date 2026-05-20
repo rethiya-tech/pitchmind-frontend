@@ -333,7 +333,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
 
 // ── Template row ──────────────────────────────────────────────────────────────
 
-function TemplateRow({ template, currentUserId }: { template: Template; currentUserId: string | undefined }) {
+function TemplateRow({ template, currentUserId, isAdmin }: { template: Template; currentUserId: string | undefined; isAdmin: boolean }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showView, setShowView] = useState(false)
@@ -341,7 +341,8 @@ function TemplateRow({ template, currentUserId }: { template: Template; currentU
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const t = resolveTheme(template.theme)
 
-  const isOwn = !template.is_public && template.created_by === currentUserId
+  // Admins can delete their own public templates; regular users can only delete their private ones
+  const isOwn = template.created_by === currentUserId && (!template.is_public || isAdmin)
 
   const { mutate: copyTemplate } = useMutation({
     mutationFn: async () => {
@@ -520,6 +521,7 @@ export function TemplatesPage() {
     queryFn: async () => (await api.get('/templates')).data,
   })
   const currentUser = useAuthStore(s => s.user)
+  const isAdmin = currentUser?.role === 'admin'
 
   return (
     <div className="space-y-6">
@@ -573,7 +575,7 @@ export function TemplatesPage() {
             </thead>
             <tbody className="divide-y divide-pm-border">
               {data.items.map(template => (
-                <TemplateRow key={template.id} template={template} currentUserId={currentUser?.id} />
+                <TemplateRow key={template.id} template={template} currentUserId={currentUser?.id} isAdmin={isAdmin} />
               ))}
             </tbody>
           </table>
