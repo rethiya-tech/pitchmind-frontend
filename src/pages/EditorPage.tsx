@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useEditorStore } from '@/stores/editorStore'
 import { useAutoSave } from '@/hooks/useAutoSave'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
+import { PageLoader } from '@/components/ui/PageLoader'
 import { SlideList } from '@/components/editor/SlideList'
 import { SlideDetailPanel } from '@/components/editor/SlideDetailPanel'
 import { Spinner } from '@/components/ui/Spinner'
@@ -788,6 +790,7 @@ export function EditorPage() {
     staleTime: 0,
     refetchOnMount: 'always',
   })
+  const showSpinner = useDelayedLoading(isLoading)
 
   useEffect(() => {
     if (!conversion) return
@@ -914,11 +917,7 @@ export function EditorPage() {
   })
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner size="lg" className="text-pm-teal" />
-      </div>
-    )
+    return <PageLoader show={showSpinner} fullScreen />
   }
 
   if (isError) {

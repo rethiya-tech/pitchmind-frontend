@@ -215,7 +215,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
     : user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <header className="h-14 bg-white border-b border-pm-border flex items-center justify-between px-5 flex-shrink-0">
+    <header className="h-14 bg-white/80 backdrop-blur-md border-b border-pm-border/60 flex items-center justify-between px-5 flex-shrink-0 z-30">
       <div className="flex items-center gap-6">
         <button
           onClick={onToggleSidebar}

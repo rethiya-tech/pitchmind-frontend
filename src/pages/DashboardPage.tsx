@@ -1,12 +1,26 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Spinner } from '@/components/ui/Spinner'
+import { motion, type Variants } from 'framer-motion'
+import { PageLoader } from '@/components/ui/PageLoader'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
 import { THEMES } from '@/types'
 import type { ConversionListResponse } from '@/types'
 import { TemplatePicker } from '@/components/templates/TemplatePicker'
+
+const MotionLink = motion(Link)
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } },
+}
+
+const staggerContainer: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+}
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({
@@ -23,7 +37,12 @@ function StatCard({
   accent: string
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-pm-border px-6 py-5 flex items-start justify-between">
+    <motion.div
+      variants={cardVariants}
+      whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+      className="bg-white rounded-2xl border border-pm-border px-6 py-5 flex items-start justify-between cursor-default"
+    >
       <div className="space-y-3">
         <p className="text-xs font-semibold text-pm-muted uppercase tracking-widest">{label}</p>
         <p className="text-3xl font-extrabold text-pm-primary leading-none">{value}</p>
@@ -32,7 +51,7 @@ function StatCard({
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${accent}`}>
         {icon}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -51,9 +70,12 @@ function ActionCard({
   cta: string
 }) {
   return (
-    <Link
+    <MotionLink
       to={to}
-      className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal hover:shadow-md transition-all overflow-hidden"
+      variants={cardVariants}
+      whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+      className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal transition-colors overflow-hidden"
     >
       <div className="w-10 h-10 rounded-xl bg-[#E1F5EE] flex items-center justify-center text-pm-teal">
         {icon}
@@ -68,9 +90,8 @@ function ActionCard({
           <path d="M2.5 6h7m-3-3 3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>
-      {/* Subtle top-left accent line */}
       <div className="absolute top-0 left-0 w-0 h-0.5 bg-pm-teal group-hover:w-full transition-all duration-300" />
-    </Link>
+    </MotionLink>
   )
 }
 
@@ -227,6 +248,7 @@ export function DashboardPage() {
       return res.data
     },
   })
+  const showSpinner = useDelayedLoading(isLoading)
 
   const items = data?.items ?? []
   const doneCount = items.filter(c => c.status === 'done').length
@@ -270,11 +292,7 @@ export function DashboardPage() {
   )
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-24">
-        <Spinner size="lg" className="text-pm-teal" />
-      </div>
-    )
+    return <PageLoader show={showSpinner} />
   }
 
   return (
@@ -292,7 +310,12 @@ export function DashboardPage() {
       </div>
 
       {/* ── Stats ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         <StatCard
           label="Total Projects"
           value={items.length}
@@ -340,7 +363,7 @@ export function DashboardPage() {
             </svg>
           }
         />
-      </div>
+      </motion.div>
 
       {/* ── Charts ── */}
       {items.length > 0 && (
@@ -395,7 +418,12 @@ export function DashboardPage() {
       <div className="grid grid-cols-3 gap-5">
 
         {/* Quick actions (left column) */}
-        <div className="flex flex-col gap-4">
+        <motion.div
+          className="flex flex-col gap-4"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           <h2 className="text-sm font-bold text-pm-primary">Quick Actions</h2>
           <ActionCard
             to="/upload"
@@ -409,9 +437,12 @@ export function DashboardPage() {
             }
           />
           {/* Use Template button — triggers picker modal */}
-          <button
+          <motion.button
             onClick={() => setShowTemplatePicker(true)}
-            className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal hover:shadow-md transition-all overflow-hidden text-left"
+            variants={cardVariants}
+            whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal transition-colors overflow-hidden text-left"
           >
             <div className="w-10 h-10 rounded-xl bg-[#E1F5EE] flex items-center justify-center text-pm-teal">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -431,7 +462,7 @@ export function DashboardPage() {
               </svg>
             </span>
             <div className="absolute top-0 left-0 w-0 h-0.5 bg-pm-teal group-hover:w-full transition-all duration-300" />
-          </button>
+          </motion.button>
           <ActionCard
             to="/projects"
             title="My Projects"
@@ -443,7 +474,7 @@ export function DashboardPage() {
               </svg>
             }
           />
-        </div>
+        </motion.div>
 
         {/* Recent activity (2-col span) */}
         <div className="col-span-2 flex flex-col gap-4">

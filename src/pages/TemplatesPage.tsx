@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
+import { PageLoader } from '@/components/ui/PageLoader'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import api from '@/services/api'
 import { THEMES } from '@/types'
@@ -100,6 +102,7 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
     queryKey: ['template-detail', template.id],
     queryFn: async () => (await api.get(`/templates/${template.id}`)).data,
   })
+  const showSpinner = useDelayedLoading(isLoading)
   const t = resolveTheme(template)
 
   return (
@@ -130,7 +133,7 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
 
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
-            <div className="flex justify-center py-12"><Spinner size="lg" className="text-pm-teal" /></div>
+            <PageLoader show={showSpinner} />
           ) : (template.preview_count ?? 0) > 0 ? (
             <div className="space-y-4">
               {Array.from({ length: template.preview_count ?? 0 }).map((_, i) => (
@@ -524,6 +527,7 @@ export function TemplatesPage() {
     queryKey: ['templates'],
     queryFn: async () => (await api.get('/templates')).data,
   })
+  const showSpinner = useDelayedLoading(isLoading)
   const currentUser = useAuthStore(s => s.user)
   const isAdmin = currentUser?.role === 'admin'
 
@@ -549,9 +553,7 @@ export function TemplatesPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Spinner size="lg" className="text-pm-teal" />
-        </div>
+        <PageLoader show={showSpinner} />
       ) : !data?.items.length ? (
         <div className="bg-white rounded-2xl border border-pm-border py-20 text-center space-y-4">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">

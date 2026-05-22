@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ExportCard } from '@/components/export/ExportCard'
-import { Spinner } from '@/components/ui/Spinner'
+import { PageLoader } from '@/components/ui/PageLoader'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import api from '@/services/api'
 import type { Conversion } from '@/types'
 
@@ -16,13 +17,10 @@ export function ExportPage() {
     },
     enabled: !!id,
   })
+  const showSpinner = useDelayedLoading(isLoading)
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner size="lg" className="text-pm-teal" />
-      </div>
-    )
+    return <PageLoader show={showSpinner} fullScreen />
   }
 
   if (isError || !conversion) {

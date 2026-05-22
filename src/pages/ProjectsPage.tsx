@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
-import { Spinner } from '@/components/ui/Spinner'
+import { PageLoader } from '@/components/ui/PageLoader'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import api from '@/services/api'
 import { THEMES } from '@/types'
@@ -289,6 +290,7 @@ export function ProjectsPage() {
       return res.data
     },
   })
+  const showSpinner = useDelayedLoading(isLoading)
 
   const rawItems = data?.items ?? []
 
@@ -404,9 +406,7 @@ export function ProjectsPage() {
 
       {/* Loading state */}
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Spinner size="lg" className="text-pm-teal" />
-        </div>
+        <PageLoader show={showSpinner} />
       ) : rawItems.length === 0 ? (
         /* Empty state — no projects at all */
         <div className="bg-pm-surface rounded-2xl border border-pm-border py-20 text-center space-y-5">

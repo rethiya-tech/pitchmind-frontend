@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Spinner } from '@/components/ui/Spinner'
+import { PageLoader } from '@/components/ui/PageLoader'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import api from '@/services/api'
 import type { AdminMetrics, AuditLogListResponse, AdminConversionListResponse } from '@/types'
 import { TokenUsageTable } from '@/components/admin/TokenUsageTable'
@@ -94,6 +95,7 @@ export function AdminDashboardPage() {
     queryFn: async () => (await api.get('/admin/metrics')).data,
     refetchInterval: 30_000,
   })
+  const showSpinner = useDelayedLoading(isLoading)
 
   const { data: auditData } = useQuery<AuditLogListResponse>({
     queryKey: ['admin-audit-log', 1],
@@ -106,7 +108,7 @@ export function AdminDashboardPage() {
   })
 
   if (isLoading) {
-    return <div className="flex justify-center py-20"><Spinner size="lg" className="text-pm-teal" /></div>
+    return <PageLoader show={showSpinner} />
   }
 
   const m = metrics!

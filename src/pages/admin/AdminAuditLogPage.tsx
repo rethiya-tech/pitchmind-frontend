@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
+import { PageLoader } from '@/components/ui/PageLoader'
+import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import api from '@/services/api'
 import type { AuditLogListResponse } from '@/types'
 
@@ -23,6 +24,7 @@ export function AdminAuditLogPage() {
       return res.data
     },
   })
+  const showSpinner = useDelayedLoading(isLoading)
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1
 
@@ -64,9 +66,7 @@ export function AdminAuditLogPage() {
       </form>
 
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Spinner size="lg" className="text-pm-teal" />
-        </div>
+        <PageLoader show={showSpinner} />
       ) : (
         <div className="bg-pm-surface rounded-2xl border border-pm-border divide-y divide-pm-border">
           {data?.items.length === 0 && (
