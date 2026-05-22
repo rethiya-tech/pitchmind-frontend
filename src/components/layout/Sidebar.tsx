@@ -82,6 +82,17 @@ function TemplatesIcon() {
   )
 }
 
+function GenerateTemplateIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <rect x="2" y="3" width="16" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 17h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M10 14v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M10 7v4M8 9h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function LogoMark() {
   return (
     <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-pm-teal flex-shrink-0">
@@ -98,10 +109,11 @@ function LogoMark() {
 }
 
 const NAV = [
-  { to: '/dashboard', label: 'Dashboard', Icon: DashboardIcon },
-  { to: '/projects',  label: 'Projects',  Icon: ProjectsIcon  },
-  { to: '/templates', label: 'Templates', Icon: TemplatesIcon },
-  { to: '/settings',  label: 'Settings',  Icon: SettingsIcon  },
+  { to: '/dashboard',           label: 'Dashboard',          Icon: DashboardIcon         },
+  { to: '/projects',            label: 'Projects',           Icon: ProjectsIcon          },
+  { to: '/templates',           label: 'Templates',          Icon: TemplatesIcon         },
+  { to: '/generate-template',   label: 'Generate Template',  Icon: GenerateTemplateIcon  },
+  { to: '/settings',            label: 'Settings',           Icon: SettingsIcon          },
 ]
 
 const ADMIN_NAV = [
