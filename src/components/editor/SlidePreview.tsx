@@ -34,21 +34,37 @@ function bgIsDark(hex: string): boolean {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
 }
 
-function SlideContainer({ style, showWatermark, logoUrl, hasUserBg, children }: {
+function SlideContainer({ style, showWatermark, logoUrl, refImageUrl, children }: {
   style: React.CSSProperties
   showWatermark?: boolean
   logoUrl?: string | null
-  hasUserBg?: boolean
+  refImageUrl?: string | null
   children: React.ReactNode
 }) {
   const dark = bgIsDark((style.backgroundColor as string) ?? '#1e2a3a')
-  const watermarkColor = hasUserBg
-    ? 'rgba(255,255,255,0.55)'
-    : dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'
-  const watermarkShadow = hasUserBg ? '0 1px 4px rgba(0,0,0,0.65)' : undefined
+  const watermarkColor = dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'
   return (
     <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={style}>
       {children}
+      {refImageUrl && (
+        <div
+          style={{
+            position: 'absolute', right: 0, top: 0, width: '30%', height: '100%',
+            pointerEvents: 'none', userSelect: 'none', zIndex: 5, overflow: 'hidden',
+          }}
+        >
+          <div style={{
+            position: 'absolute', left: 0, top: 0, width: '40%', height: '100%',
+            background: `linear-gradient(to right, ${style.backgroundColor ?? '#fff'}, transparent)`,
+            zIndex: 2,
+          }} />
+          <img
+            src={resolveSlideBackgroundUrl(refImageUrl)}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        </div>
+      )}
       {logoUrl && (
         <img
           src={logoUrl}
@@ -68,7 +84,6 @@ function SlideContainer({ style, showWatermark, logoUrl, hasUserBg, children }: 
             pointerEvents: 'none', userSelect: 'none', zIndex: 20,
             fontSize: 'clamp(7px, 1vw, 13px)', fontWeight: 900, letterSpacing: '0.28em',
             color: watermarkColor,
-            textShadow: watermarkShadow,
             fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}
         >
@@ -208,13 +223,14 @@ export function SlidePreview({
     title: 'Click or select text to edit',
   }
 
+  const hasRefImg = !!slide.background_image_url
+  const refRight = hasRefImg ? '33%' : '7%'
+
   const containerStyle: React.CSSProperties = {
     aspectRatio: '16/9',
     position: 'relative',
     backgroundColor: theme.bg,
-    backgroundImage: slide.background_image_url
-      ? `url(${resolveSlideBackgroundUrl(slide.background_image_url)})`
-      : `url(/themes/${theme.id}.png)`,
+    backgroundImage: `url(/themes/${theme.id}.png)`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     fontFamily: '"Plus Jakarta Sans", sans-serif',
@@ -225,11 +241,11 @@ export function SlidePreview({
     const subtitle = bullets[0] ?? ''
     const tagline = bullets[1] ?? ''
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
-          style={mergeTextStyle({ top: '28%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(18px, 3.5vw, 42px)', cursor: isInlineEditable ? 'text' : (clickable && slide.title ? 'pointer' : undefined) }, 'title')}
+          style={mergeTextStyle({ top: '28%', left: '7%', right: refRight, color: theme.text, fontSize: 'clamp(18px, 3.5vw, 42px)', cursor: isInlineEditable ? 'text' : (clickable && slide.title ? 'pointer' : undefined) }, 'title')}
         >
           {slide.title || 'Untitled Slide'}
         </div>
@@ -241,7 +257,7 @@ export function SlidePreview({
           <div
             {...editableProps('bullet', subtitle, 0)}
             className="absolute"
-            style={mergeTextStyle({ top: '65%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85, cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
+            style={mergeTextStyle({ top: '65%', left: '7%', right: refRight, color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85, cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
           >
             {subtitle}
           </div>
@@ -250,7 +266,7 @@ export function SlidePreview({
           <div
             {...editableProps('bullet', tagline, 1)}
             className="absolute"
-            style={mergeTextStyle({ top: '75%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1.2vw, 14px)', opacity: 0.65, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
+            style={mergeTextStyle({ top: '75%', left: '7%', right: refRight, color: theme.text, fontSize: 'clamp(7px, 1.2vw, 14px)', opacity: 0.65, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
           >
             {tagline}
           </div>
@@ -286,7 +302,7 @@ export function SlidePreview({
     }
 
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -328,7 +344,7 @@ export function SlidePreview({
     const valueBg = lighterHex(theme.bg, 35)
 
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -361,7 +377,7 @@ export function SlidePreview({
   // ── timeline ──────────────────────────────────────────────────────────────
   if (layout === 'timeline') {
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -392,7 +408,7 @@ export function SlidePreview({
   if (layout === 'big_stat') {
     const stats = bullets.slice(0, 3)
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -424,7 +440,7 @@ export function SlidePreview({
   if (layout === 'process') {
     const steps = bullets.slice(0, 5)
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -457,11 +473,11 @@ export function SlidePreview({
     const quoteText = bullets[0] ?? ''
     const attribution = bullets[1] ?? ''
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute"
-          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(8px, 1.3vw, 15px)', opacity: 0.6, cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
+          style={mergeTextStyle({ top: '7%', left: '7%', right: refRight, color: theme.text, fontSize: 'clamp(8px, 1.3vw, 15px)', opacity: 0.6, cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
         >
           {slide.title}
         </div>
@@ -472,7 +488,7 @@ export function SlidePreview({
           <div
             {...editableProps('bullet', quoteText, 0)}
             className="absolute leading-snug"
-            style={mergeTextStyle({ top: '26%', left: '14%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.5vw, 18px)', fontStyle: 'italic', cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
+            style={mergeTextStyle({ top: '26%', left: '14%', right: refRight, color: theme.text, fontSize: 'clamp(9px, 1.5vw, 18px)', fontStyle: 'italic', cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
           >
             {quoteText}
           </div>
@@ -482,7 +498,7 @@ export function SlidePreview({
           <div
             {...editableProps('bullet', attribution, 1)}
             className="absolute text-right"
-            style={mergeTextStyle({ top: '78%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', opacity: 0.7, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
+            style={mergeTextStyle({ top: '78%', right: refRight, color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', opacity: 0.7, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
           >
             — {attribution}
           </div>
@@ -493,16 +509,16 @@ export function SlidePreview({
 
   // ── bullets (default) ─────────────────────────────────────────────────────
   return (
-    <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
+    <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url}>
       <div
         {...editableProps('title', slide.title)}
         className="absolute font-extrabold leading-tight"
-        style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(11px, 2vw, 26px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
+        style={mergeTextStyle({ top: '7%', left: '7%', right: refRight, color: theme.text, fontSize: 'clamp(11px, 2vw, 26px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
       >
         {slide.title || 'Untitled Slide'}
       </div>
       <div className="absolute rounded-full" style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }} />
-      <div className="absolute overflow-hidden" style={{ top: '29%', left: '7%', right: '7%', bottom: '4%' }}>
+      <div className="absolute overflow-hidden" style={{ top: '29%', left: '7%', right: refRight, bottom: '4%' }}>
         {bullets.map((b, i) => (
           <div key={i} {...editableProps('bullet', b, i)} className="flex items-start" style={{ marginBottom: '2%', cursor: clickable ? 'pointer' : undefined }}>
             <span

@@ -196,6 +196,7 @@ export function UploadForm() {
 
   // Prompt mode state
   const [promptText, setPromptText] = useState('')
+  const [enhancing, setEnhancing] = useState(false)
 
   // Questionnaire state
   const [questions, setQuestions] = useState<string[]>([])
@@ -621,27 +622,66 @@ export function UploadForm() {
                 )}
                 style={{ minHeight: '220px' }}
               />
-              <div className="flex items-center justify-between">
-                {promptText.trim().length > 0 && promptText.trim().length < PROMPT_MIN ? (
-                  <span className="text-xs text-amber-600">
-                    {PROMPT_MIN - promptText.trim().length} more characters needed
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {promptText.trim().length > 0 && promptText.trim().length < PROMPT_MIN ? (
+                    <span className="text-xs text-amber-600">
+                      {PROMPT_MIN - promptText.trim().length} more characters needed
+                    </span>
+                  ) : promptReady ? (
+                    <span className="text-xs text-pm-teal font-medium flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Ready to generate
+                    </span>
+                  ) : (
+                    <span className="text-xs text-pm-muted">Min {PROMPT_MIN} characters</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {promptReady && (
+                    <button
+                      type="button"
+                      disabled={enhancing}
+                      onClick={async () => {
+                        setEnhancing(true)
+                        try {
+                          const { data } = await api.post<{ enhanced_prompt: string }>('/ai/enhance-prompt', { prompt: promptText.trim() })
+                          setPromptText(data.enhanced_prompt)
+                        } catch {
+                          // silently fail — user keeps their original prompt
+                        } finally {
+                          setEnhancing(false)
+                        }
+                      }}
+                      className={cn(
+                        'flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all',
+                        enhancing
+                          ? 'border-pm-border text-pm-muted bg-gray-50 cursor-not-allowed'
+                          : 'border-pm-teal/60 text-pm-teal bg-[#F0FBF7] hover:bg-pm-teal hover:text-white hover:border-pm-teal'
+                      )}
+                    >
+                      {enhancing ? (
+                        <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" />
+                        </svg>
+                      )}
+                      {enhancing ? 'Enhancing…' : 'Enhance with AI'}
+                    </button>
+                  )}
+                  <span className={cn(
+                    'text-xs',
+                    promptText.length > PROMPT_MAX * 0.9 ? 'text-amber-500' : 'text-pm-muted'
+                  )}>
+                    {promptText.length}/{PROMPT_MAX}
                   </span>
-                ) : promptReady ? (
-                  <span className="text-xs text-pm-teal font-medium flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Ready to generate
-                  </span>
-                ) : (
-                  <span className="text-xs text-pm-muted">Min {PROMPT_MIN} characters</span>
-                )}
-                <span className={cn(
-                  'text-xs',
-                  promptText.length > PROMPT_MAX * 0.9 ? 'text-amber-500' : 'text-pm-muted'
-                )}>
-                  {promptText.length}/{PROMPT_MAX}
-                </span>
+                </div>
               </div>
             </div>
           )}
