@@ -1,4 +1,5 @@
 import { forwardRef } from 'react'
+import { motion } from 'framer-motion'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@/utils/cn'
@@ -34,9 +35,16 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
       className={cn(
         'group relative flex items-center gap-2 px-2 py-2 rounded-xl transition-all select-none',
         isDragOverlay ? 'cursor-grabbing shadow-xl ring-2 ring-pm-teal bg-[#E1F5EE]' : 'cursor-pointer',
-        !isDragOverlay && (isActive ? 'bg-[#E1F5EE] ring-1 ring-pm-teal' : 'hover:bg-gray-50')
+        !isDragOverlay && (isActive ? 'bg-[#E1F5EE]' : 'hover:bg-gray-50')
       )}
     >
+      {isActive && !isDragOverlay && (
+        <motion.div
+          layoutId="active-slide-indicator"
+          className="absolute left-0 inset-y-2 w-[3px] rounded-full bg-pm-teal"
+          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+        />
+      )}
       {/* Drag handle */}
       <div
         {...(locked ? {} : dragHandleProps)}
@@ -54,7 +62,9 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
       </div>
 
       {/* Mini thumbnail */}
-      <div
+      <motion.div
+        whileHover={{ scale: 1.06 }}
+        transition={{ duration: 0.15 }}
         className={cn(
           'relative flex-shrink-0 rounded-md overflow-hidden border',
           isActive ? 'border-pm-teal shadow-sm' : 'border-pm-border'
@@ -85,7 +95,7 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">

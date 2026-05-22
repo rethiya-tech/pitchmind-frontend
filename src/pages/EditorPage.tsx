@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useEditorStore } from '@/stores/editorStore'
 import { useAutoSave } from '@/hooks/useAutoSave'
@@ -675,7 +676,26 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
           ) : (isSaving || isDirty) ? (
             <><Spinner size="sm" />Saving…</>
           ) : (
-            <><span className="w-1.5 h-1.5 rounded-full bg-pm-teal inline-block" />Saved</>
+            <>
+              <motion.svg
+                key="saved-check"
+                className="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <motion.path
+                  d="M5 13l4 4L19 7"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' as const }}
+                />
+              </motion.svg>
+              Saved
+            </>
           )}
         </span>
 
@@ -1074,11 +1094,20 @@ export function EditorPage() {
         {/* ── Panel 3: Properties ── */}
         <aside className="w-80 flex flex-col bg-pm-surface border-l border-pm-border flex-shrink-0">
           <PanelHeader title="Properties" />
-          <div className="flex-1 overflow-y-auto">
-            <SlideDetailPanel
-              typoFocus={typoFocus}
-            />
-          </div>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeSlideId ?? 'none'}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' as const }}
+              className="flex-1 overflow-y-auto"
+            >
+              <SlideDetailPanel
+                typoFocus={typoFocus}
+              />
+            </motion.div>
+          </AnimatePresence>
         </aside>
 
       </div>

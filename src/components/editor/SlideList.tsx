@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { flushSync } from 'react-dom'
+import { motion } from 'framer-motion'
 import {
   DndContext,
   closestCenter,
@@ -153,15 +154,18 @@ export function SlideList({ conversionId, theme, onSlideSaved }: SlideListProps)
               onTitleChange={(title) => updateSlide(slide.id, { title })}
             />
           ))}
-          <button
+          <motion.button
             onClick={handleAddSlide}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-pm-border text-xs font-semibold text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-[#E1F5EE] transition-all"
+            whileHover={{ scale: 1.02, boxShadow: '0 0 0 3px rgba(15,110,86,0.12)' }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-pm-border text-xs font-semibold text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-[#E1F5EE] transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add Slide
-          </button>
+          </motion.button>
         </div>
       </SortableContext>
 
