@@ -29,20 +29,28 @@ function StatCard({
   sub,
   icon,
   accent,
+  barGradient,
 }: {
   label: string
   value: number | string
   sub?: string
   icon: React.ReactNode
   accent: string
+  barGradient?: string
 }) {
   return (
     <motion.div
       variants={cardVariants}
-      whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
+      whileHover={{ y: -4, boxShadow: '0 14px 40px rgba(15,110,86,0.13), 0 4px 12px rgba(0,0,0,0.05)' }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="bg-white rounded-2xl border border-pm-border shadow-card px-6 py-5 flex items-start justify-between cursor-default"
+      className="relative bg-white rounded-2xl border border-pm-border shadow-card px-6 py-5 flex items-start justify-between cursor-default overflow-hidden"
     >
+      {barGradient && (
+        <div
+          className="absolute left-0 inset-y-0 w-[3px] rounded-l-2xl"
+          style={{ background: barGradient }}
+        />
+      )}
       <div className="space-y-3">
         <p className="text-xs font-semibold text-pm-muted uppercase tracking-widest">{label}</p>
         <p className="text-3xl font-extrabold text-pm-primary leading-none">{value}</p>
@@ -73,10 +81,15 @@ function ActionCard({
     <MotionLink
       to={to}
       variants={cardVariants}
-      whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
+      whileHover={{ y: -4, boxShadow: '0 14px 40px rgba(15,110,86,0.13), 0 4px 12px rgba(0,0,0,0.05)' }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal transition-colors overflow-hidden"
+      className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal/40 transition-colors overflow-hidden"
     >
+      {/* Gradient shimmer overlay on hover */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl"
+        style={{ background: 'linear-gradient(135deg, rgba(15,110,86,0.025) 0%, rgba(201,147,10,0.02) 100%)' }}
+      />
       <div className="w-10 h-10 rounded-xl bg-[#E1F5EE] flex items-center justify-center text-pm-teal">
         {icon}
       </div>
@@ -90,7 +103,11 @@ function ActionCard({
           <path d="M2.5 6h7m-3-3 3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>
-      <div className="absolute top-0 left-0 w-0 h-0.5 bg-pm-teal group-hover:w-full transition-all duration-300" />
+      {/* Green-to-gold gradient top accent line */}
+      <div
+        className="absolute top-0 left-0 w-0 h-[2px] group-hover:w-full transition-all duration-400"
+        style={{ background: 'linear-gradient(90deg, #0F6E56, #C9930A)' }}
+      />
     </MotionLink>
   )
 }
@@ -342,6 +359,7 @@ export function DashboardPage() {
           value={items.length}
           sub={items.length === 1 ? '1 presentation' : `${items.length} presentations`}
           accent="bg-[#E1F5EE] text-pm-teal"
+          barGradient="linear-gradient(180deg, #0F6E56 0%, #0A9B6E 100%)"
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M3 5.5A1.5 1.5 0 014.5 4h4l1.5 2H15.5A1.5 1.5 0 0117 7.5v8A1.5 1.5 0 0115.5 17h-11A1.5 1.5 0 013 15.5v-10z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
@@ -353,6 +371,7 @@ export function DashboardPage() {
           value={doneCount}
           sub={`${successRate}% success rate`}
           accent="bg-green-50 text-green-600"
+          barGradient="linear-gradient(180deg, #10B981 0%, #34D399 100%)"
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
@@ -365,6 +384,7 @@ export function DashboardPage() {
           value={generatingCount}
           sub={generatingCount ? 'Generating now' : 'Nothing running'}
           accent="bg-blue-50 text-blue-500"
+          barGradient="linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%)"
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M10 3v2m0 10v2M3 10h2m10 0h2M5.05 5.05l1.41 1.41m7.08 7.08 1.41 1.41M5.05 14.95l1.41-1.41m7.08-7.08 1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -375,7 +395,8 @@ export function DashboardPage() {
           label="Total Slides"
           value={totalSlides}
           sub="Across all projects"
-          accent="bg-amber-50 text-amber-600"
+          accent="bg-[#FFF8E3] text-pm-gold"
+          barGradient="linear-gradient(180deg, #C9930A 0%, #E8B84A 100%)"
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <rect x="3" y="4" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
@@ -391,7 +412,7 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* Status donut */}
-          <div className="bg-white rounded-2xl border border-pm-border p-5 flex flex-col gap-3">
+          <div className="bg-white rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-3">
             <p className="text-sm font-bold text-pm-primary">Project Status</p>
             <div className="flex-1 flex items-center justify-center py-2">
               <DonutChart
@@ -402,7 +423,7 @@ export function DashboardPage() {
           </div>
 
           {/* Slides per project */}
-          <div className="bg-white rounded-2xl border border-pm-border p-5 flex flex-col gap-4">
+          <div className="bg-white rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-4">
             <p className="text-sm font-bold text-pm-primary">Slides per Project</p>
             {barData.length > 0 ? (
               <div className="flex-1 flex items-center">
@@ -414,10 +435,13 @@ export function DashboardPage() {
           </div>
 
           {/* 7-day activity sparkline */}
-          <div className="bg-white rounded-2xl border border-pm-border p-5 flex flex-col gap-4">
+          <div className="bg-white rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-4">
             <div className="flex items-start justify-between">
               <p className="text-sm font-bold text-pm-primary">Activity (7 days)</p>
-              <span className="text-xs text-pm-muted">{spark7.reduce((a, b) => a + b, 0)} projects</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full"
+                style={{ background: 'rgba(201,147,10,0.08)', color: '#C9930A' }}>
+                {spark7.reduce((a, b) => a + b, 0)} projects
+              </span>
             </div>
             <div className="flex-1 flex flex-col justify-end gap-2">
               <Sparkline points={spark7} />
@@ -463,7 +487,7 @@ export function DashboardPage() {
             variants={cardVariants}
             whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
             transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-            className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal transition-colors overflow-hidden text-left"
+            className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal/40 transition-colors overflow-hidden text-left"
           >
             <div className="w-10 h-10 rounded-xl bg-[#E1F5EE] flex items-center justify-center text-pm-teal">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -482,7 +506,10 @@ export function DashboardPage() {
                 <path d="M2.5 6h7m-3-3 3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </span>
-            <div className="absolute top-0 left-0 w-0 h-0.5 bg-pm-teal group-hover:w-full transition-all duration-300" />
+            <div
+              className="absolute top-0 left-0 w-0 h-[2px] group-hover:w-full transition-all duration-400"
+              style={{ background: 'linear-gradient(90deg, #0F6E56, #C9930A)' }}
+            />
           </motion.button>
           <ActionCard
             to="/projects"

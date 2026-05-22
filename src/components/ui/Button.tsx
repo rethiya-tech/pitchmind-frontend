@@ -4,7 +4,7 @@ import { cn } from '@/utils/cn'
 import { Spinner } from './Spinner'
 
 interface ButtonProps extends HTMLMotionProps<'button'> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'gold'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   children?: React.ReactNode
@@ -27,6 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'bg-white border border-pm-border text-pm-primary hover:bg-gray-50 focus:ring-pm-teal': variant === 'secondary',
             'bg-pm-danger hover:bg-red-700 text-white focus:ring-pm-danger': variant === 'danger',
             'text-pm-primary hover:bg-gray-100 focus:ring-gray-300': variant === 'ghost',
+            'bg-gradient-to-r from-pm-gold to-pm-gold-end hover:from-pm-gold-hover hover:to-pm-gold text-white focus:ring-pm-gold shadow-gold': variant === 'gold',
             'px-3 py-1.5 text-sm': size === 'sm',
             'px-5 py-2.5 text-sm': size === 'md',
             'px-8 py-3 text-base': size === 'lg',

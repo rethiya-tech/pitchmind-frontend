@@ -153,7 +153,7 @@ export function AdminProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">All Projects</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">All Projects</h1>
           <p className="text-sm text-pm-muted mt-0.5">All user presentations across the platform</p>
         </div>
         <div className="flex items-center gap-3">
@@ -162,7 +162,8 @@ export function AdminProjectsPage() {
           )}
           <button
             onClick={() => navigate('/upload', { replace: true })}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 14px rgba(15,110,86,0.25)' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -177,10 +178,10 @@ export function AdminProjectsPage() {
           <Spinner size="lg" className="text-pm-teal" />
         </div>
       ) : (
-        <div className="bg-pm-surface rounded-2xl border border-pm-border overflow-hidden">
+        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#F9FAFB]">
+              <tr className="bg-white/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Name</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">User</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Status</th>
@@ -202,7 +203,9 @@ export function AdminProjectsPage() {
                 const filename = c.original_filename ?? 'Untitled'
                 const s = STATUS_STYLES[c.status] ?? STATUS_STYLES.cancelled
                 return (
-                  <tr key={c.id} className="border-t border-pm-border hover:bg-[#FAFAFA] transition-colors">
+                  <tr key={c.id} className="border-t border-pm-border/60 transition-all duration-150 hover:shadow-[inset_3px_0_0_#0F6E56]"
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
                     {/* Name */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3 min-w-0">
@@ -272,7 +275,7 @@ export function AdminProjectsPage() {
             </tbody>
           </table>
 
-          <div className="px-5 py-3 border-t border-pm-border bg-[#F9FAFB] flex items-center justify-between">
+          <div className="px-5 py-3 border-t border-pm-border/60 flex items-center justify-between bg-white/60">
             <p className="text-xs text-pm-muted">
               Showing <span className="font-semibold text-pm-primary">{data?.items.length ?? 0}</span> of{' '}
               <span className="font-semibold text-pm-primary">{data?.total ?? 0}</span> projects

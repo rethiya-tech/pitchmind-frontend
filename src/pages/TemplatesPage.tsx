@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Spinner } from '@/components/ui/Spinner'
 import { PageLoader } from '@/components/ui/PageLoader'
@@ -167,7 +168,8 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
           </button>
           <button
             onClick={onUse}
-            className="flex items-center gap-2 px-5 py-2.5 bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold rounded-xl transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 14px rgba(15,110,86,0.25)' }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="4" y="4" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
@@ -338,6 +340,17 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   )
 }
 
+const templateListVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } },
+  exit:  { opacity: 0, transition: { duration: 0.1 } },
+}
+
+const templateRowVariants = {
+  hidden: { opacity: 0, y: 14 },
+  show:   { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 380, damping: 28 } },
+}
+
 // ── Template row ──────────────────────────────────────────────────────────────
 
 function TemplateRow({ template, currentUserId, isAdmin }: { template: Template; currentUserId: string | undefined; isAdmin: boolean }) {
@@ -400,7 +413,13 @@ function TemplateRow({ template, currentUserId, isAdmin }: { template: Template;
           onUse={() => { setShowView(false); handleUse() }}
         />
       )}
-      <tr className="hover:bg-[#F9FAFB] transition-colors">
+      <motion.tr
+        variants={templateRowVariants}
+        className="transition-colors duration-150 hover:shadow-[inset_3px_0_0_#0F6E56]"
+        style={{ backgroundColor: 'transparent' }}
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+      >
         {/* Thumbnail */}
         <td className="px-5 py-3">
           {(template.preview_count ?? 0) > 0 ? (
@@ -502,7 +521,8 @@ function TemplateRow({ template, currentUserId, isAdmin }: { template: Template;
             <button
               onClick={handleUse}
               disabled={copying}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-pm-teal hover:bg-pm-teal-hover text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-60"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-white rounded-lg text-xs font-semibold transition-all duration-150 hover:-translate-y-px disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' }}
             >
               {copying ? <Spinner size="sm" /> : (
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
@@ -514,7 +534,7 @@ function TemplateRow({ template, currentUserId, isAdmin }: { template: Template;
             </button>
           </div>
         </td>
-      </tr>
+      </motion.tr>
     </>
   )
 }
@@ -542,7 +562,8 @@ export function TemplatesPage() {
         </div>
         <button
           onClick={() => setShowUpload(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold rounded-xl transition-colors flex-shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-semibold rounded-xl flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 16px rgba(15,110,86,0.25)' }}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M7 1v8M4 4l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -555,7 +576,7 @@ export function TemplatesPage() {
       {isLoading ? (
         <PageLoader show={showSpinner} />
       ) : !data?.items.length ? (
-        <div className="bg-white rounded-2xl border border-pm-border py-20 text-center space-y-4">
+        <div className="rounded-2xl border border-pm-border/60 py-20 text-center space-y-4 shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="6" width="20" height="16" rx="2" stroke="#0F6E56" strokeWidth="1.8" />
@@ -568,10 +589,10 @@ export function TemplatesPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-pm-border overflow-hidden">
+        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full">
             <thead>
-              <tr className="border-b border-pm-border bg-[#F9FAFB]">
+              <tr className="border-b border-pm-border/60 bg-white/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-pm-muted uppercase tracking-wider w-24">Preview</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-pm-muted uppercase tracking-wider">Name</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-pm-muted uppercase tracking-wider hidden sm:table-cell">Theme</th>
@@ -579,11 +600,20 @@ export function TemplatesPage() {
                 <th className="text-right px-5 py-3 text-xs font-semibold text-pm-muted uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-pm-border">
-              {data.items.map(template => (
-                <TemplateRow key={template.id} template={template} currentUserId={currentUser?.id} isAdmin={isAdmin} />
-              ))}
-            </tbody>
+            <AnimatePresence mode="wait">
+              <motion.tbody
+                key="templates-list"
+                className="divide-y divide-pm-border"
+                variants={templateListVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
+                {data.items.map(template => (
+                  <TemplateRow key={template.id} template={template} currentUserId={currentUser?.id} isAdmin={isAdmin} />
+                ))}
+              </motion.tbody>
+            </AnimatePresence>
           </table>
         </div>
       )}

@@ -173,7 +173,8 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full bg-pm-teal hover:bg-pm-teal-hover disabled:opacity-60 text-white font-bold py-3 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+              className="w-full disabled:opacity-60 py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 16px rgba(15,110,86,0.28)' }}
             >
               {loginMutation.isPending ? (
                 <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">

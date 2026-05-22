@@ -10,7 +10,10 @@ export function AppShell() {
 
   return (
     <div className="flex h-screen bg-pm-app overflow-hidden">
-      <Sidebar open={sidebarOpen} />
+      {/* Padding wrapper so sidebar floats as a rounded glass panel */}
+      <div className="p-3 pr-0 flex-shrink-0 flex">
+        <Sidebar open={sidebarOpen} />
+      </div>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Topbar onToggleSidebar={() => setSidebarOpen((o) => !o)} />
         <main className="flex-1 relative overflow-hidden">

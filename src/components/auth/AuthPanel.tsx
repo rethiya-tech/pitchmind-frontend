@@ -44,7 +44,14 @@ const STEPS = [
 
 export function AuthPanel() {
   return (
-    <div className="hidden lg:flex flex-col justify-between h-full bg-gradient-to-br from-[#0F6E56] via-[#0d5e48] to-[#0a3d2e] p-10 text-white">
+    <div className="hidden lg:flex flex-col justify-between h-full p-10 text-white relative overflow-hidden"
+      style={{ background: 'linear-gradient(145deg, #0C1421 0%, #0F2D22 40%, #0C3520 100%)' }}
+    >
+      {/* Background decorative orbs */}
+      <div className="absolute top-0 right-0 w-72 h-72 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(15,110,86,0.25) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
+      <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(201,147,10,0.15) 0%, transparent 70%)', transform: 'translate(-30%, 30%)' }} />
       {/* Logo */}
       <div className="flex items-center gap-2.5">
         <LogoIcon />
@@ -57,7 +64,8 @@ export function AuthPanel() {
       {/* Main content */}
       <div className="space-y-8">
         <div className="space-y-4">
-          <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#C8850A]">
+          <p className="text-[11px] font-bold tracking-[0.2em] uppercase"
+            style={{ color: '#E8B84A' }}>
             Phase 1 · Document → Deck
           </p>
           <h2 className="text-3xl font-extrabold leading-[1.15] tracking-tight">
@@ -74,8 +82,11 @@ export function AuthPanel() {
           {STEPS.map((step) => (
             <div
               key={step.label}
-              className="bg-white/10 border border-white/15 rounded-xl px-3 py-4 flex flex-col items-center gap-2 text-white/80 hover:bg-white/15 transition-colors"
+              className="relative rounded-xl px-3 py-4 flex flex-col items-center gap-2 text-white/85 hover:text-white transition-colors overflow-hidden"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}
             >
+              <div className="absolute top-0 left-0 right-0 h-[1px]"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(201,147,10,0.4), transparent)' }} />
               {step.icon}
               <span className="text-xs font-semibold">{step.label}</span>
             </div>

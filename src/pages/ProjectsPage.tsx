@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { PageLoader } from '@/components/ui/PageLoader'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
@@ -251,11 +252,12 @@ function PaginationChips({
           <button
             key={p}
             onClick={() => onPage(p)}
-            className={`w-8 h-8 rounded-lg text-sm font-medium border transition-colors ${
+            className={`w-8 h-8 rounded-lg text-sm font-medium border transition-all duration-150 ${
               isActive
-                ? 'bg-pm-teal text-white border-pm-teal'
-                : 'bg-white text-pm-primary border-pm-border hover:bg-[#F3F4F6]'
+                ? 'text-white border-transparent'
+                : 'bg-white/80 text-pm-primary border-pm-border/60 hover:bg-[#EEF8F2] hover:-translate-y-px'
             }`}
+            style={isActive ? { background: 'linear-gradient(135deg, #0F6E56, #0A9B6E)' } : {}}
           >
             {p}
           </button>
@@ -263,6 +265,17 @@ function PaginationChips({
       })}
     </>
   )
+}
+
+const listVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.045 } },
+  exit:  { opacity: 0, transition: { duration: 0.1 } },
+}
+
+const rowVariants = {
+  hidden: { opacity: 0, y: 14 },
+  show:   { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 380, damping: 28 } },
 }
 
 const STATUS_TABS = [
@@ -333,7 +346,8 @@ export function ProjectsPage() {
         <Link
           to="/upload"
           replace
-          className="flex items-center gap-2 bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+          className="flex items-center gap-2 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 16px rgba(15,110,86,0.25)' }}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -359,7 +373,8 @@ export function ProjectsPage() {
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search projects…"
-              className="w-full pl-9 pr-9 py-2 text-sm border border-pm-border rounded-xl bg-white text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors"
+              className="w-full pl-9 pr-9 py-2 text-sm border border-pm-border/60 rounded-xl text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors"
+              style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)' }}
             />
             {search && (
               <button
@@ -374,7 +389,7 @@ export function ProjectsPage() {
           </div>
 
           {/* Status tabs */}
-          <div className="flex items-center gap-1 p-1 bg-[#F3F4F6] rounded-xl">
+          <div className="flex items-center gap-1 p-1 rounded-xl border border-pm-border/50" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(8px)' }}>
             {STATUS_TABS.map((tab) => {
               const count = tab.id === 'all'
                 ? rawItems.length
@@ -385,7 +400,7 @@ export function ProjectsPage() {
                   onClick={() => handleTab(tab.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                     statusTab === tab.id
-                      ? 'bg-white text-pm-primary shadow-sm'
+                      ? 'bg-white text-pm-teal shadow-sm border border-pm-teal/20'
                       : 'text-pm-muted hover:text-pm-primary'
                   }`}
                 >
@@ -450,10 +465,10 @@ export function ProjectsPage() {
         </div>
       ) : (
         /* Table */
-        <div className="bg-pm-surface border border-pm-border rounded-2xl overflow-hidden">
+        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#F9FAFB]">
+              <tr className="bg-white/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">
                   Name
                 </th>
@@ -477,13 +492,24 @@ export function ProjectsPage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <AnimatePresence mode="wait">
+              <motion.tbody
+                key={`${statusTab}-${safePage}`}
+                variants={listVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+              >
               {pageItems.map((c) => {
                 const filename = c.name ?? c.original_filename ?? 'Untitled'
                 return (
-                  <tr
+                  <motion.tr
                     key={c.id}
-                    className="border-t border-pm-border hover:bg-[#FAFAFA] transition-colors"
+                    variants={rowVariants}
+                    className="border-t border-pm-border/60 transition-colors duration-150 hover:shadow-[inset_3px_0_0_#0F6E56]"
+                    style={{ backgroundColor: 'transparent' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     {/* Name */}
                     <td className="px-5 py-3.5">
@@ -567,15 +593,16 @@ export function ProjectsPage() {
                         <DeleteButton conversionId={c.id} />
                       )}
                     </td>
-                  </tr>
+                  </motion.tr>
                 )
               })}
-            </tbody>
+              </motion.tbody>
+            </AnimatePresence>
           </table>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3.5 border-t border-pm-border bg-[#F9FAFB]">
+            <div className="flex items-center justify-between px-5 py-3.5 border-t border-pm-border/60 bg-white/60">
               <p className="text-xs text-pm-muted">
                 Showing{' '}
                 <span className="font-semibold text-pm-primary">{startIdx + 1}–{endIdx}</span>
@@ -619,7 +646,7 @@ export function ProjectsPage() {
 
           {/* Showing info when only one page */}
           {totalPages === 1 && total > 0 && (
-            <div className="px-5 py-3 border-t border-pm-border bg-[#F9FAFB]">
+            <div className="px-5 py-3 border-t border-pm-border/60 bg-white/60">
               <p className="text-xs text-pm-muted">
                 Showing{' '}
                 <span className="font-semibold text-pm-primary">{total}</span>

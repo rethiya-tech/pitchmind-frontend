@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/Button'
@@ -42,15 +43,22 @@ function Card({
   subtitle,
   icon,
   children,
+  barGradient = 'linear-gradient(180deg, #0F6E56 0%, #0A9B6E 100%)',
 }: {
   title: string
   subtitle?: string
   icon: React.ReactNode
   children: React.ReactNode
+  barGradient?: string
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-pm-border overflow-hidden">
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-pm-border">
+    <motion.div
+      className="relative bg-white/85 backdrop-blur-sm rounded-2xl border border-pm-border/70 overflow-hidden shadow-card"
+      whileHover={{ y: -3, boxShadow: '0 12px 36px rgba(15,110,86,0.12), 0 4px 12px rgba(0,0,0,0.05)' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
+      <div className="absolute left-0 inset-y-0 w-[3px]" style={{ background: barGradient }} />
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-pm-border/60">
         <div className="w-8 h-8 rounded-lg bg-[#E1F5EE] flex items-center justify-center text-pm-teal flex-shrink-0">
           {icon}
         </div>
@@ -60,7 +68,7 @@ function Card({
         </div>
       </div>
       <div className="px-6 py-5">{children}</div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -104,7 +112,7 @@ export function SettingsPage() {
 
       {/* ── Header ── */}
       <div>
-        <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Settings</h1>
         <p className="text-sm text-pm-muted mt-0.5">Manage your account and preferences</p>
       </div>
 
@@ -176,6 +184,7 @@ export function SettingsPage() {
       <Card
         title="Danger Zone"
         subtitle="Irreversible account actions"
+        barGradient="linear-gradient(180deg, #DC2626 0%, #EF4444 100%)"
         icon={
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-red-500">
             <path d="M10 3L2 17h16L10 3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />

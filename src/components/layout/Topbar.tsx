@@ -215,7 +215,12 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
     : user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <header className="h-14 bg-white/80 backdrop-blur-md border-b border-pm-border/60 flex items-center justify-between px-5 flex-shrink-0 z-30">
+    <header className="h-14 bg-white/92 backdrop-blur-xl border-b border-pm-border/50 flex items-center justify-between px-5 flex-shrink-0 z-30 relative">
+      {/* Gradient bottom separator */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
+        style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(15,110,86,0.18) 30%, rgba(201,147,10,0.12) 70%, transparent 100%)' }}
+      />
       <div className="flex items-center gap-6">
         <button
           onClick={onToggleSidebar}
@@ -256,7 +261,8 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
             title="Account"
             aria-haspopup="menu"
             aria-expanded={accountOpen}
-            className="w-9 h-9 rounded-full bg-[#1D9E75] text-white text-xs font-bold flex items-center justify-center hover:bg-[#0F6E56] transition-colors"
+            className="w-9 h-9 rounded-full text-white text-xs font-bold flex items-center justify-center transition-all duration-200 ring-2 ring-transparent hover:ring-pm-gold/50"
+            style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 2px 8px rgba(15,110,86,0.30)' }}
           >
             {initials}
           </button>

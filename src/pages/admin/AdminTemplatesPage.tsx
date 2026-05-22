@@ -152,7 +152,8 @@ function UploadModal({ onClose }: { onClose: () => void }) {
           <button
             onClick={() => upload()}
             disabled={isPending || !file || !name.trim()}
-            className="flex items-center gap-2 px-5 py-2 bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' }}
           >
             {isPending && <Spinner size="sm" />}
             {isPending ? 'Uploading…' : 'Upload Template'}
@@ -394,7 +395,9 @@ function TemplateRow({
   return (
     <>
       {showView && <ViewModal template={template} onClose={() => setShowView(false)} />}
-      <tr className="border-t border-pm-border hover:bg-[#FAFAFA] transition-colors">
+      <tr className="border-t border-pm-border/60 transition-all duration-150 hover:shadow-[inset_3px_0_0_#0F6E56]"
+        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
+        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
         {/* Name */}
         <td className="px-5 py-3.5">
           <div className="flex items-center gap-3 min-w-0">
@@ -598,12 +601,13 @@ export function AdminTemplatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Templates</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Templates</h1>
           <p className="text-sm text-pm-muted mt-0.5">Upload and manage presentation templates for users</p>
         </div>
         <button
           onClick={() => setShowUpload(true)}
-          className="flex items-center gap-2 bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+          className="flex items-center gap-2 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 14px rgba(15,110,86,0.25)' }}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -629,16 +633,17 @@ export function AdminTemplatesPage() {
           </div>
           <button
             onClick={() => setShowUpload(true)}
-            className="inline-flex items-center gap-2 bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm px-6 py-3 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 14px rgba(15,110,86,0.25)' }}
           >
             Upload your first template
           </button>
         </div>
       ) : (
-        <div className="bg-white border border-pm-border rounded-2xl overflow-hidden">
+        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#F9FAFB]">
+              <tr className="bg-white/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Name</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Slides</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Theme</th>
@@ -662,7 +667,7 @@ export function AdminTemplatesPage() {
               ))}
             </tbody>
           </table>
-          <div className="px-5 py-3 border-t border-pm-border text-xs text-pm-muted">
+          <div className="px-5 py-3 border-t border-pm-border/60 text-xs text-pm-muted bg-white/60">
             Showing {data.items.length} template{data.items.length !== 1 ? 's' : ''}
           </div>
         </div>

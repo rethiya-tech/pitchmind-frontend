@@ -1,5 +1,6 @@
 import { NavLink, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
@@ -95,7 +96,13 @@ function GenerateTemplateIcon() {
 
 function LogoMark() {
   return (
-    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-pm-teal flex-shrink-0">
+    <span
+      className="inline-flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
+      style={{
+        background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)',
+        boxShadow: '0 2px 12px rgba(15,110,86,0.35)',
+      }}
+    >
       <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
         <rect x="2" y="1" width="10" height="13" rx="1.5" fill="white" fillOpacity="0.25" />
         <rect x="1" y="2" width="10" height="13" rx="1.5" fill="white" fillOpacity="0.5" />
@@ -149,21 +156,30 @@ export function Sidebar({ open = true }: SidebarProps) {
       end={to === '/admin' || to === '/dashboard'}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
+          'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
           isActive
-            ? 'bg-[#E1F5EE] text-pm-teal'
-            : 'text-pm-muted hover:bg-gray-100 hover:text-pm-primary'
+            ? 'bg-[#E6F2EF] text-pm-teal'
+            : 'text-pm-muted hover:bg-gray-50 hover:text-pm-primary'
         )
       }
     >
       {({ isActive }) => (
         <>
+          {/* Gold animated active indicator */}
+          {isActive && (
+            <motion.div
+              layoutId="sidebar-nav-indicator"
+              className="absolute left-0 inset-y-2 w-[3px] rounded-full"
+              style={{ background: 'linear-gradient(180deg, #C9930A 0%, #E8B84A 100%)' }}
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+          )}
           <span className={isActive ? 'text-pm-teal' : 'text-pm-muted'}>
             <Icon />
           </span>
           <span className="flex-1">{label}</span>
           {to === '/admin/users' && pendingCount > 0 && (
-            <span className="text-[10px] font-bold bg-amber-500 text-white rounded-full px-1.5 py-0.5 leading-none">
+            <span className="badge-gold text-[10px] rounded-full px-1.5 py-0.5 leading-none">
               {pendingCount}
             </span>
           )}
@@ -181,13 +197,19 @@ export function Sidebar({ open = true }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'h-full flex flex-col transition-all duration-200 flex-shrink-0',
-        'bg-white border-r border-pm-border',
-        open ? 'w-56' : 'w-0 overflow-hidden'
+        'h-full flex flex-col transition-all duration-300 flex-shrink-0 rounded-2xl overflow-hidden',
+        open ? 'w-56' : 'w-0',
       )}
+      style={{
+        background: 'linear-gradient(to bottom, rgba(255,255,255,0.72) 0%, rgba(253,247,232,0.58) 100%)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: '1px solid rgba(255,255,255,0.82)',
+        boxShadow: '0 8px 32px rgba(15,110,86,0.07), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.95)',
+      }}
     >
       {/* Logo */}
-      <div className="px-5 py-5 flex items-center gap-2.5 border-b border-pm-border">
+      <div className="px-5 py-5 flex items-center gap-3 border-b border-white/50">
         <LogoMark />
         <div>
           <span className="text-[15px] font-extrabold text-pm-teal tracking-tight leading-none">PitchMind</span>
@@ -198,12 +220,11 @@ export function Sidebar({ open = true }: SidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 pt-3 space-y-0.5">
+      <nav className="flex-1 px-3 pt-3 space-y-0.5 overflow-y-auto">
         {isAdmin ? (
           <>
             <SectionHeading>Admin</SectionHeading>
             {ADMIN_NAV.map(renderLink)}
-
             <SectionHeading>User</SectionHeading>
             {NAV.map(renderLink)}
           </>
@@ -212,12 +233,16 @@ export function Sidebar({ open = true }: SidebarProps) {
         )}
       </nav>
 
-      {/* Bottom */}
-      <div className="px-3 pb-5 pt-3 border-t border-pm-border">
+      {/* Create CTA — green primary */}
+      <div className="px-3 pb-3 pt-3 border-t border-white/50">
         <Link
           to="/upload"
           replace
-          className="flex items-center justify-center gap-2 w-full bg-pm-teal hover:bg-pm-teal-hover text-white font-semibold text-sm py-2.5 rounded-xl transition-colors"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
+          style={{
+            background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)',
+            boxShadow: '0 4px 16px rgba(15,110,86,0.30)',
+          }}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

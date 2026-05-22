@@ -15,27 +15,26 @@
   }
 
   body {
-    background-color: #F7F8F6;
+    background: linear-gradient(to right, #F4FCF8 0%, #FDF7E8 100%);
+    background-attachment: fixed;
     color: #1A1A1A;
   }
 
-  /* 4.3 — green glow on all focusable form elements */
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    box-shadow: 0 0 0 3px rgba(15, 110, 86, 0.14), 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 0 0 3px rgba(15, 110, 86, 0.16), 0 1px 3px rgba(0,0,0,0.06);
   }
 }
 
 @layer utilities {
-  /* 4.4 — subtle dot-grid on the app background */
+  /* Left-to-right lightest green → lightest golden gradient */
   .bg-pm-app {
-    background-color: #F7F8F6;
-    background-image: radial-gradient(rgba(15, 110, 86, 0.055) 1px, transparent 1px);
-    background-size: 22px 22px;
+    background: linear-gradient(to right, #F4FCF8 0%, #FDF7E8 100%);
+    background-attachment: fixed;
   }
 
-  /* 4.5 — gradient text for page headings */
+  /* Green gradient headings */
   .gradient-heading {
     background: linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%);
     -webkit-background-clip: text;
@@ -43,10 +42,59 @@
     background-clip: text;
   }
 
-  /* 4.6 — shimmer skeleton base */
+  /* Gold CTA button */
+  .btn-gold {
+    background: linear-gradient(135deg, #C9930A 0%, #E8B84A 100%);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 18px rgba(201,147,10,0.32), 0 1px 4px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-gold::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .btn-gold:hover {
+    background: linear-gradient(135deg, #B07808 0%, #D4A035 100%);
+    box-shadow: 0 6px 24px rgba(201,147,10,0.42), 0 2px 6px rgba(0,0,0,0.14);
+    transform: translateY(-1px);
+  }
+
+  .btn-gold:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 12px rgba(201,147,10,0.28);
+  }
+
+  /* Shimmer skeleton base */
   .skeleton-shimmer {
     background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
     background-size: 600px 100%;
     animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* Premium card hover — add to any card */
+  .card-hover-lift {
+    transition: box-shadow 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+  }
+
+  .card-hover-lift:hover {
+    box-shadow: 0 12px 36px rgba(15,110,86,0.12), 0 4px 12px rgba(0,0,0,0.05);
+    border-color: rgba(15,110,86,0.22);
+    transform: translateY(-2px);
+  }
+
+  /* Gold badge */
+  .badge-gold {
+    background: linear-gradient(135deg, #C9930A 0%, #E8B84A 100%);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(201,147,10,0.30);
   }
 }

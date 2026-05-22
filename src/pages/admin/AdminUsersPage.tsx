@@ -102,7 +102,8 @@ function CreateUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
             <button
               type="button"
               onClick={() => { onSaved() }}
-              className="w-full py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors"
+              className="w-full py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' }}
             >
               Done
             </button>
@@ -150,7 +151,8 @@ function CreateUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                className="flex-1 py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' }}
               >
                 {saving && <Spinner size="sm" className="text-white" />}
                 Create User
@@ -244,7 +246,8 @@ function EditUserModal({ user, onClose, onSaved }: { user: AdminUser; onClose: (
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' }}
             >
               {saving && <Spinner size="sm" className="text-white" />}
               Save Changes
@@ -395,7 +398,8 @@ export function AdminUsersPage() {
             </div>
             <button
               onClick={() => setResetCreds(null)}
-              className="w-full py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors"
+              className="w-full py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' }}
             >
               Done
             </button>
@@ -405,12 +409,13 @@ export function AdminUsersPage() {
 
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Users</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Users</h1>
           <p className="text-sm text-pm-muted mt-0.5">Review registrations and manage accounts</p>
         </div>
         <button
           onClick={() => setModal({ mode: 'create' })}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-semibold transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)', boxShadow: '0 4px 14px rgba(15,110,86,0.25)' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -420,15 +425,15 @@ export function AdminUsersPage() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 p-1 rounded-xl border border-pm-border/50" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(8px)', width: 'fit-content' }}>
         {STATUS_FILTERS.map((f) => (
           <button
             key={f.value || 'all'}
             onClick={() => { setStatusFilter(f.value); setPage(1) }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
               statusFilter === f.value
-                ? 'bg-pm-teal text-white'
-                : 'bg-white border border-pm-border text-pm-muted hover:text-pm-primary'
+                ? 'bg-white text-pm-teal shadow-sm border border-pm-teal/20'
+                : 'text-pm-muted hover:text-pm-primary hover:bg-white/60'
             }`}
           >
             {f.label}
@@ -442,7 +447,8 @@ export function AdminUsersPage() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by name or email…"
-          className="flex-1 px-3 py-2 rounded-xl border border-pm-border text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-white"
+          className="flex-1 px-3 py-2 rounded-xl border border-pm-border/60 text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal"
+          style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)' }}
         />
         <Button type="submit" variant="secondary" size="sm">Search</Button>
         {search && (
@@ -464,9 +470,9 @@ export function AdminUsersPage() {
       {isLoading ? (
         <PageLoader show={showSpinner} />
       ) : (
-        <div className="bg-pm-surface rounded-2xl border border-pm-border overflow-hidden">
+        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
-            <thead className="bg-[#F9FAFB]">
+            <thead className="bg-white/60">
               <tr>
                 <th className="px-4 py-3 w-10"></th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Name / Email</th>
@@ -486,7 +492,9 @@ export function AdminUsersPage() {
               {data?.items.map((u) => {
                 const busy = busyId === u.id
                 return (
-                  <tr key={u.id} className="hover:bg-[#FAFAFA] transition-colors">
+                  <tr key={u.id} className="transition-all duration-150 divide-y divide-pm-border/60 hover:shadow-[inset_3px_0_0_#0F6E56]"
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
                     <td className="px-4 py-3.5">
                       <input
                         type="checkbox"
@@ -555,7 +563,7 @@ export function AdminUsersPage() {
             </tbody>
           </table>
 
-          <div className="px-5 py-3 border-t border-pm-border bg-[#F9FAFB] flex items-center justify-between">
+          <div className="px-5 py-3 border-t border-pm-border/60 flex items-center justify-between bg-white/60">
             <p className="text-xs text-pm-muted">
               Showing <span className="font-semibold text-pm-primary">{data?.items.length ?? 0}</span> of{' '}
               <span className="font-semibold text-pm-primary">{data?.total ?? 0}</span> users

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { PageLoader } from '@/components/ui/PageLoader'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import api from '@/services/api'
@@ -7,16 +8,25 @@ import type { AdminMetrics, AuditLogListResponse, AdminConversionListResponse } 
 import { TokenUsageTable } from '@/components/admin/TokenUsageTable'
 
 function StatCard({
-  label, value, sub, icon, accent = false,
+  label, value, sub, icon, accent = false, barGradient,
 }: {
   label: string
   value: string | number
   sub?: string
   icon: React.ReactNode
   accent?: boolean
+  barGradient?: string
 }) {
   return (
-    <div className={`rounded-2xl border p-5 flex items-start gap-4 ${accent ? 'bg-pm-teal border-pm-teal' : 'bg-pm-surface border-pm-border'}`}>
+    <motion.div
+      className={`relative rounded-2xl border p-5 flex items-start gap-4 overflow-hidden ${accent ? 'border-pm-teal' : 'border-pm-border/60 shadow-card'}`}
+      style={accent ? { background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' } : { background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}
+      whileHover={{ y: -3, boxShadow: accent ? '0 12px 32px rgba(15,110,86,0.35)' : '0 12px 36px rgba(15,110,86,0.12), 0 4px 12px rgba(0,0,0,0.05)' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
+      {barGradient && !accent && (
+        <div className="absolute left-0 inset-y-0 w-[3px] rounded-l-2xl" style={{ background: barGradient }} />
+      )}
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? 'bg-white/20' : 'bg-[#E1F5EE]'}`}>
         <span className={accent ? 'text-white' : 'text-pm-teal'}>{icon}</span>
       </div>
@@ -25,7 +35,7 @@ function StatCard({
         <p className={`text-2xl font-extrabold mt-0.5 ${accent ? 'text-white' : 'text-pm-primary'}`}>{value}</p>
         {sub && <p className={`text-xs mt-0.5 ${accent ? 'text-white/60' : 'text-pm-muted'}`}>{sub}</p>}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -121,25 +131,25 @@ export function AdminDashboardPage() {
           <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Admin Overview</h1>
           <p className="text-sm text-pm-muted mt-0.5">Platform health and activity at a glance</p>
         </div>
-        <span className="text-xs text-pm-muted border border-pm-border rounded-lg px-3 py-1.5 bg-white">
+        <span className="text-xs text-pm-muted border border-pm-border/50 rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.70)', backdropFilter: 'blur(8px)' }}>
           Auto-refreshes every 30s
         </span>
       </div>
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Total Users" value={m.total_users} sub={`${m.active_users_today} active today`} icon={<UsersIcon />} />
-        <StatCard label="Total Presentations" value={m.total_conversions} sub={`${m.done_conversions} completed`} icon={<SlideIcon />} />
+        <StatCard label="Total Users" value={m.total_users} sub={`${m.active_users_today} active today`} icon={<UsersIcon />} barGradient="linear-gradient(180deg, #0F6E56, #0A9B6E)" />
+        <StatCard label="Total Presentations" value={m.total_conversions} sub={`${m.done_conversions} completed`} icon={<SlideIcon />} barGradient="linear-gradient(180deg, #3B82F6, #60A5FA)" />
         <StatCard label="Success Rate" value={`${m.success_rate}%`} sub={`${m.done_conversions} of ${m.total_conversions}`} icon={<CheckIcon />} accent />
-        <StatCard label="Slides Generated" value={m.total_slides.toLocaleString()} sub="all time" icon={<LayersIcon />} />
+        <StatCard label="Slides Generated" value={m.total_slides.toLocaleString()} sub="all time" icon={<LayersIcon />} barGradient="linear-gradient(180deg, #C9930A, #E8B84A)" />
       </div>
 
       {/* Secondary KPIs */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Conversions Today" value={m.conversions_today} icon={<ActivityIcon />} />
-        <StatCard label="Failed Today" value={m.failed_today} sub={m.failed_today > 0 ? 'needs attention' : 'all good'} icon={<CheckIcon />} />
-        <StatCard label="AI Cost Today" value={`$${m.ai_cost_today_usd.toFixed(4)}`} sub={`${(m.total_tokens).toLocaleString()} total tokens`} icon={<CostIcon />} />
-        <StatCard label="Total AI Spend" value={`$${m.ai_cost_total_usd.toFixed(3)}`} sub="all time" icon={<CostIcon />} />
+        <StatCard label="Conversions Today" value={m.conversions_today} icon={<ActivityIcon />} barGradient="linear-gradient(180deg, #0F6E56, #0A9B6E)" />
+        <StatCard label="Failed Today" value={m.failed_today} sub={m.failed_today > 0 ? 'needs attention' : 'all good'} icon={<CheckIcon />} barGradient="linear-gradient(180deg, #DC2626, #EF4444)" />
+        <StatCard label="AI Cost Today" value={`$${m.ai_cost_today_usd.toFixed(4)}`} sub={`${(m.total_tokens).toLocaleString()} total tokens`} icon={<CostIcon />} barGradient="linear-gradient(180deg, #C9930A, #E8B84A)" />
+        <StatCard label="Total AI Spend" value={`$${m.ai_cost_total_usd.toFixed(3)}`} sub="all time" icon={<CostIcon />} barGradient="linear-gradient(180deg, #C9930A, #E8B84A)" />
       </div>
 
       {/* Token Usage Table */}
@@ -149,8 +159,8 @@ export function AdminDashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {/* Recent Presentations */}
-        <div className="bg-pm-surface border border-pm-border rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border">
+        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border/60">
             <h2 className="text-sm font-bold text-pm-primary">Recent Presentations</h2>
             <Link to="/admin/projects" className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover">View all →</Link>
           </div>
@@ -158,7 +168,9 @@ export function AdminDashboardPage() {
             {!convData?.items.length ? (
               <p className="px-5 py-8 text-sm text-pm-muted text-center">No presentations yet</p>
             ) : convData.items.map((c) => (
-              <div key={c.id} className="flex items-center gap-3 px-5 py-3">
+              <div key={c.id} className="flex items-center gap-3 px-5 py-3 transition-all duration-150 hover:shadow-[inset_3px_0_0_#0F6E56]"
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusDot(c.status)}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-pm-primary truncate">{c.original_filename ?? 'Untitled'}</p>
@@ -178,8 +190,8 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Audit Log */}
-        <div className="bg-pm-surface border border-pm-border rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border">
+        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border/60">
             <h2 className="text-sm font-bold text-pm-primary">Recent Activity</h2>
             <Link to="/admin/audit-log" className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover">View all →</Link>
           </div>
@@ -187,7 +199,9 @@ export function AdminDashboardPage() {
             {!auditData?.items.length ? (
               <p className="px-5 py-8 text-sm text-pm-muted text-center">No activity logged yet</p>
             ) : auditData.items.map((entry) => (
-              <div key={entry.id} className="flex items-start gap-3 px-5 py-3">
+              <div key={entry.id} className="flex items-start gap-3 px-5 py-3 transition-all duration-150 hover:shadow-[inset_3px_0_0_#0F6E56]"
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${actionColor(entry.action)}`}>
