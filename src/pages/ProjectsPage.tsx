@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -21,10 +21,12 @@ const MIME: Record<ExportFormat, string> = {
 async function downloadFile(conversionId: string, name: string, format: ExportFormat) {
   const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export?format=${format}`)
   const url = data.download_url
-  const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-  const stripScheme = (u: string) => u.replace(/^https?:\/\//, '').replace(/^(127\.0\.0\.1|0\.0\.0\.0)(?=:)/, 'localhost')
-  const isLocalUrl = apiBase && stripScheme(url).startsWith(stripScheme(apiBase))
-  if (isLocalUrl) {
+  let isLocal = false
+  try {
+    const { hostname } = new URL(url)
+    isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0'
+  } catch { /* invalid url — treat as remote */ }
+  if (isLocal) {
     const path = url.replace(/^https?:\/\/[^/]+\/api\/v1/, '')
     const res = await api.get(path, { responseType: 'blob' })
     const blob = new Blob([res.data], { type: MIME[format] })
@@ -42,6 +44,18 @@ async function downloadFile(conversionId: string, name: string, format: ExportFo
 function ExportButton({ conversionId, name }: { conversionId: string; name: string }) {
   const [loadingFormat, setLoadingFormat] = useState<ExportFormat | null>(null)
   const [open, setOpen] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
 
   const handle = async (fmt: ExportFormat) => {
     setOpen(false)
@@ -68,8 +82,7 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
   )
 
   return (
-    <div className="relative flex">
-      {/* Main PPTX button */}
+    <div ref={wrapperRef} className="relative flex">
       <button
         onClick={() => handle('pptx')}
         disabled={loadingFormat !== null}
@@ -79,7 +92,6 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
         {loadingFormat === 'pptx' ? <SpinIcon /> : <DownloadIcon />}
       </button>
 
-      {/* Chevron dropdown */}
       <button
         onClick={() => setOpen((o) => !o)}
         disabled={loadingFormat !== null}
@@ -96,20 +108,17 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
       </button>
 
       {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-pm-border rounded-lg shadow-lg py-1 min-w-[148px]">
-            {(['pptx', 'pdf', 'docx'] as ExportFormat[]).map((fmt) => (
-              <button
-                key={fmt}
-                className="w-full text-left px-3 py-1.5 text-sm text-pm-primary hover:bg-gray-50 transition-colors"
-                onClick={() => handle(fmt)}
-              >
-                Download {fmt.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </>
+        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-pm-border rounded-lg shadow-lg py-1 min-w-[128px]">
+          {(['pptx', 'pdf', 'docx'] as ExportFormat[]).map((fmt) => (
+            <button
+              key={fmt}
+              className="w-full text-left px-3 py-1.5 text-sm text-pm-primary hover:bg-gray-50 transition-colors whitespace-nowrap"
+              onClick={() => handle(fmt)}
+            >
+              Download {fmt.toUpperCase()}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   )
@@ -465,7 +474,7 @@ export function ProjectsPage() {
         </div>
       ) : (
         /* Table */
-        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-white/60">

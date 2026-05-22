@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
@@ -8,6 +8,14 @@ import { Button } from '@/components/ui/Button'
 import api from '@/services/api'
 import { THEMES } from '@/types'
 import type { AdminConversionListResponse } from '@/types'
+
+type ExportFormat = 'pptx' | 'pdf' | 'docx'
+
+const MIME: Record<ExportFormat, string> = {
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  pdf: 'application/pdf',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+}
 
 const PAGE_SIZE = 20
 
@@ -30,20 +38,22 @@ function MiniThumb({ theme }: { theme: string | null }) {
   )
 }
 
-async function downloadPptx(conversionId: string, name: string) {
-  const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export`)
+async function downloadFile(conversionId: string, name: string, format: ExportFormat) {
+  const { data } = await api.post<{ download_url: string }>(`/conversions/${conversionId}/export?format=${format}`)
   const url = data.download_url
-  const apiBase = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
-  const stripScheme = (u: string) => u.replace(/^https?:\/\//, '')
-  const isLocalUrl = apiBase && stripScheme(url).startsWith(stripScheme(apiBase))
-  if (isLocalUrl) {
+  let isLocal = false
+  try {
+    const { hostname } = new URL(url)
+    isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0'
+  } catch { /* invalid url — treat as remote */ }
+  if (isLocal) {
     const path = url.replace(/^https?:\/\/[^/]+\/api\/v1/, '')
     const res = await api.get(path, { responseType: 'blob' })
-    const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' })
+    const blob = new Blob([res.data], { type: MIME[format] })
     const blobUrl = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = blobUrl
-    a.download = `${name}.pptx`
+    a.download = `${name}.${format}`
     a.click()
     URL.revokeObjectURL(blobUrl)
   } else {
@@ -52,35 +62,84 @@ async function downloadPptx(conversionId: string, name: string) {
 }
 
 function ExportButton({ conversionId, name }: { conversionId: string; name: string }) {
-  const [loading, setLoading] = useState(false)
-  const handleClick = async () => {
-    setLoading(true)
+  const [loadingFormat, setLoadingFormat] = useState<ExportFormat | null>(null)
+  const [open, setOpen] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const handle = async (fmt: ExportFormat) => {
+    setOpen(false)
+    setLoadingFormat(fmt)
     try {
-      await downloadPptx(conversionId, name)
+      await downloadFile(conversionId, name, fmt)
     } catch {
       toast.error('Export failed. Please try again.')
     } finally {
-      setLoading(false)
+      setLoadingFormat(null)
     }
   }
+
+  const DownloadIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M7 1v8M4 6l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2 10v1.5A1.5 1.5 0 003.5 13h7a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+  const SpinIcon = () => (
+    <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 6" />
+    </svg>
+  )
+
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      title="Export PPTX"
-      className="w-8 h-8 rounded-lg flex items-center justify-center bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors disabled:opacity-60"
-    >
-      {loading ? (
-        <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 6" />
-        </svg>
-      ) : (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M7 1v8M4 6l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M2 10v1.5A1.5 1.5 0 003.5 13h7a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+    <div ref={wrapperRef} className="relative flex">
+      <button
+        onClick={() => handle('pptx')}
+        disabled={loadingFormat !== null}
+        title="Export PPTX"
+        className="w-8 h-8 rounded-l-lg flex items-center justify-center bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors disabled:opacity-60 border-r border-r-white/20"
+      >
+        {loadingFormat === 'pptx' ? <SpinIcon /> : <DownloadIcon />}
+      </button>
+      <button
+        onClick={() => setOpen(o => !o)}
+        disabled={loadingFormat !== null}
+        title="More export formats"
+        className="h-8 px-1 rounded-r-lg flex items-center justify-center bg-pm-teal hover:bg-pm-teal-hover text-white transition-colors disabled:opacity-60 border-l border-l-white/20"
+      >
+        {loadingFormat && loadingFormat !== 'pptx' ? (
+          <SpinIcon />
+        ) : (
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-pm-border rounded-lg shadow-lg py-1 min-w-[128px]">
+          {(['pptx', 'pdf', 'docx'] as ExportFormat[]).map((fmt) => (
+            <button
+              key={fmt}
+              className="w-full text-left px-3 py-1.5 text-sm text-pm-primary hover:bg-gray-50 transition-colors whitespace-nowrap"
+              onClick={() => handle(fmt)}
+            >
+              Download {fmt.toUpperCase()}
+            </button>
+          ))}
+        </div>
       )}
-    </button>
+    </div>
   )
 }
 
@@ -178,7 +237,7 @@ export function AdminProjectsPage() {
           <Spinner size="lg" className="text-pm-teal" />
         </div>
       ) : (
-        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl border border-pm-border/60 shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-white/60">
