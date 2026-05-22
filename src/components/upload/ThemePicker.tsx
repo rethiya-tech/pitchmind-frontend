@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/utils/cn'
 import { THEMES } from '@/types'
 import type { Template } from '@/types'
@@ -75,6 +76,8 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
     onTemplateSelect?.(template.id)
   }
 
+  const anyThemeSelected = activeCategory !== 'my_templates'
+
   return (
     <div className={cn('flex flex-col gap-3', { 'opacity-50 pointer-events-none': disabled })}>
       {/* Category tabs */}
@@ -99,61 +102,107 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
       {/* Built-in theme grid */}
       {activeCategory !== 'my_templates' && (
         <div className="grid grid-cols-3 gap-3">
-          {visibleThemes.map(theme => (
-            <button
-              key={theme.id}
-              type="button"
-              data-testid="theme-swatch"
-              onClick={() => handleThemeClick(theme.id)}
-              className={cn(
-                'flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-all',
-                value === theme.id && !selectedTemplateId
-                  ? 'border-pm-teal ring-2 ring-pm-teal ring-offset-1'
-                  : 'border-pm-border hover:border-gray-300'
-              )}
-            >
-              <div className="w-full rounded-lg overflow-hidden flex-shrink-0" style={{ aspectRatio: '16/9' }}>
-                <img
-                  src={`/themes/${theme.id}.png`}
-                  alt={theme.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const el = e.currentTarget
-                    el.style.display = 'none'
-                    const parent = el.parentElement
-                    if (parent) parent.style.backgroundColor = theme.bg
-                  }}
-                />
-              </div>
-              <span className="text-xs font-medium text-pm-primary text-center leading-tight">
-                {theme.name}
-              </span>
-            </button>
-          ))}
+          {visibleThemes.map(theme => {
+            const isSelected = value === theme.id && !selectedTemplateId
+            return (
+              <motion.button
+                key={theme.id}
+                type="button"
+                data-testid="theme-swatch"
+                onClick={() => handleThemeClick(theme.id)}
+                animate={{
+                  scale: isSelected ? 1.03 : 1,
+                  opacity: anyThemeSelected && !isSelected ? 0.72 : 1,
+                }}
+                whileHover={{ scale: isSelected ? 1.04 : 1.04 }}
+                transition={{ duration: 0.18 }}
+                className={cn(
+                  'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
+                  isSelected
+                    ? 'border-pm-teal ring-2 ring-pm-teal ring-offset-1'
+                    : 'border-pm-border hover:border-gray-300'
+                )}
+              >
+                {/* Selected checkmark badge */}
+                <AnimatePresence>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-pm-teal flex items-center justify-center z-10 shadow-sm"
+                    >
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <div className="w-full rounded-lg overflow-hidden flex-shrink-0" style={{ aspectRatio: '16/9' }}>
+                  <img
+                    src={`/themes/${theme.id}.png`}
+                    alt={theme.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const el = e.currentTarget
+                      el.style.display = 'none'
+                      const parent = el.parentElement
+                      if (parent) parent.style.backgroundColor = theme.bg
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-medium text-pm-primary text-center leading-tight">
+                  {theme.name}
+                </span>
+              </motion.button>
+            )
+          })}
         </div>
       )}
 
       {/* User templates grid */}
       {activeCategory === 'my_templates' && (
         <div className="grid grid-cols-3 gap-3">
-          {userTemplates?.map(template => (
-            <button
-              key={template.id}
-              type="button"
-              onClick={() => handleTemplateClick(template)}
-              className={cn(
-                'flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-all',
-                selectedTemplateId === template.id
-                  ? 'border-pm-teal ring-2 ring-pm-teal ring-offset-1'
-                  : 'border-pm-border hover:border-gray-300'
-              )}
-            >
-              <TemplateThumb templateId={template.id} name={template.name} theme={template.theme} previewCount={template.preview_count ?? 0} />
-              <span className="text-xs font-medium text-pm-primary text-center leading-tight line-clamp-1">
-                {template.name}
-              </span>
-            </button>
-          ))}
+          {userTemplates?.map(template => {
+            const isSelected = selectedTemplateId === template.id
+            return (
+              <motion.button
+                key={template.id}
+                type="button"
+                onClick={() => handleTemplateClick(template)}
+                animate={{ scale: isSelected ? 1.03 : 1, opacity: selectedTemplateId && !isSelected ? 0.72 : 1 }}
+                whileHover={{ scale: 1.04 }}
+                transition={{ duration: 0.18 }}
+                className={cn(
+                  'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
+                  isSelected
+                    ? 'border-pm-teal ring-2 ring-pm-teal ring-offset-1'
+                    : 'border-pm-border hover:border-gray-300'
+                )}
+              >
+                <AnimatePresence>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-pm-teal flex items-center justify-center z-10 shadow-sm"
+                    >
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <TemplateThumb templateId={template.id} name={template.name} theme={template.theme} previewCount={template.preview_count ?? 0} />
+                <span className="text-xs font-medium text-pm-primary text-center leading-tight line-clamp-1">
+                  {template.name}
+                </span>
+              </motion.button>
+            )
+          })}
         </div>
       )}
     </div>

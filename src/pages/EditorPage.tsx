@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,6 +9,8 @@ import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { PageLoader } from '@/components/ui/PageLoader'
 import { SlideList } from '@/components/editor/SlideList'
 import { SlideDetailPanel } from '@/components/editor/SlideDetailPanel'
+import { KeyboardShortcutsModal } from '@/components/editor/KeyboardShortcutsModal'
+import { CommandPalette } from '@/components/editor/CommandPalette'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
@@ -588,7 +590,7 @@ function PanelHeader({ title, action }: { title: string; action?: React.ReactNod
 }
 
 // ── Editor toolbar ─────────────────────────────────────────────────────────────
-function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, showWatermark, onToggleWatermark }: {
+function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, showWatermark, onToggleWatermark, onPresent }: {
   conversionId: string
   conversionName?: string
   isSaving?: boolean
@@ -596,6 +598,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
   backTo?: { path: string; label: string }
   showWatermark?: boolean
   onToggleWatermark?: () => void
+  onPresent?: () => void
 }) {
   const isDirty = useEditorStore((s) => s.isDirty)
   const name = (conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation')
@@ -722,6 +725,18 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
           WAC
         </button>
 
+        {/* Present button */}
+        <button
+          onClick={onPresent}
+          title="Presentation mode (P)"
+          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-pm-border text-pm-muted hover:text-pm-primary hover:border-gray-300 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+          </svg>
+          Present
+        </button>
+
         {/* Split export button with dropdown */}
         <div className="relative flex">
           <Button
@@ -796,6 +811,9 @@ export function EditorPage() {
   const [showWatermark, setShowWatermark] = useState(true)
   const [showOriginal, setShowOriginal] = useState(false)
   const [origError, setOrigError] = useState(false)
+  const [presentationMode, setPresentationMode] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
+  const [showCommandPalette, setShowCommandPalette] = useState(false)
   const initialActiveSet = useRef(false)
   const editInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -839,6 +857,30 @@ export function EditorPage() {
 
   // Reset typo focus to title whenever the active slide changes
   useEffect(() => { setTypoFocus('title') }, [activeSlideId])
+
+  // Global keyboard shortcuts
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const tag = (e.target as HTMLElement).tagName
+    const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable
+    if (isInput) return
+
+    if (e.key === '?') { e.preventDefault(); setShowShortcuts((v) => !v) }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setShowCommandPalette((v) => !v) }
+    if (e.key === 'p' || e.key === 'P') { e.preventDefault(); setPresentationMode(true) }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (activeIndex < visibleSlides.length - 1) setActiveSlide(visibleSlides[activeIndex + 1].id)
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (activeIndex > 0) setActiveSlide(visibleSlides[activeIndex - 1].id)
+    }
+  }, [activeIndex, visibleSlides, setActiveSlide])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   useEffect(() => {
     if (!textEditor) return
@@ -967,6 +1009,7 @@ export function EditorPage() {
         backTo={backTo}
         showWatermark={showWatermark}
         onToggleWatermark={() => setShowWatermark((v) => !v)}
+        onPresent={() => setPresentationMode(true)}
       />
 
       {/* Three-panel body */}
@@ -1111,6 +1154,93 @@ export function EditorPage() {
         </aside>
 
       </div>
+
+      {/* 5.1 Keyboard shortcuts modal */}
+      <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+
+      {/* 5.2 Command palette */}
+      <CommandPalette open={showCommandPalette} onClose={() => setShowCommandPalette(false)} />
+
+      {/* 5.3 Presentation mode */}
+      <AnimatePresence>
+        {presentationMode && activeSlide && (
+          <motion.div
+            className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setPresentationMode(false)
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                if (activeIndex < visibleSlides.length - 1) setActiveSlide(visibleSlides[activeIndex + 1].id)
+              }
+              if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                if (activeIndex > 0) setActiveSlide(visibleSlides[activeIndex - 1].id)
+              }
+            }}
+            tabIndex={-1}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide.id}
+                className="w-full max-w-5xl px-8"
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ duration: 0.22, ease: 'easeOut' as const }}
+              >
+                <SlidePreview
+                  slide={activeSlide}
+                  theme={theme}
+                  showWatermark={showWatermark}
+                  logoUrl={conversion?.client_logo_url}
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Nav controls */}
+            <div className="absolute bottom-8 flex items-center gap-6">
+              <button
+                onClick={() => activeIndex > 0 && setActiveSlide(visibleSlides[activeIndex - 1].id)}
+                disabled={activeIndex === 0}
+                className="w-10 h-10 rounded-full border border-white/20 text-white/70 hover:text-white hover:border-white/50 flex items-center justify-center disabled:opacity-25 transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="text-white/60 text-sm tabular-nums font-medium">
+                {activeIndex + 1} <span className="text-white/30">/</span> {visibleSlides.length}
+              </span>
+              <button
+                onClick={() => activeIndex < visibleSlides.length - 1 && setActiveSlide(visibleSlides[activeIndex + 1].id)}
+                disabled={activeIndex === visibleSlides.length - 1}
+                className="w-10 h-10 rounded-full border border-white/20 text-white/70 hover:text-white hover:border-white/50 flex items-center justify-center disabled:opacity-25 transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Close */}
+            <button
+              onClick={() => setPresentationMode(false)}
+              className="absolute top-5 right-5 w-9 h-9 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-all"
+              title="Exit (Esc)"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <p className="absolute top-5 left-1/2 -translate-x-1/2 text-white/40 text-xs">
+              Press <kbd className="font-mono">Esc</kbd> to exit · <kbd className="font-mono">← →</kbd> to navigate
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {textEditor && (
         <div

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { DropZone } from './DropZone'
 import { ThemePicker } from './ThemePicker'
@@ -114,20 +115,45 @@ function Section({
   return (
     <div className="flex flex-col bg-white rounded-2xl border border-pm-border overflow-hidden h-full">
       <div className="flex items-start gap-3 px-5 py-4 border-b border-pm-border flex-shrink-0">
-        <span
-          className={cn(
-            'mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-colors',
-            done ? 'bg-pm-teal text-white' : 'bg-[#E1F5EE] text-pm-teal'
-          )}
+        <motion.span
+          animate={{
+            backgroundColor: done ? '#0F6E56' : '#E6F2EF',
+            color: done ? '#FFFFFF' : '#0F6E56',
+            scale: done ? [1, 1.25, 1] : 1,
+          }}
+          transition={{ duration: 0.35, ease: 'easeOut' as const }}
+          className="mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
         >
-          {done ? (
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-          ) : (
-            step
-          )}
-        </span>
+          <AnimatePresence mode="wait" initial={false}>
+            {done ? (
+              <motion.svg
+                key="check"
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              >
+                <motion.path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 13l4 4L19 7"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' as const }}
+                />
+              </motion.svg>
+            ) : (
+              <motion.span key="num" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                {step}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.span>
         <div>
           <p className="text-sm font-semibold text-pm-primary leading-tight">{title}</p>
           <p className="text-xs text-pm-muted mt-0.5">{subtitle}</p>
