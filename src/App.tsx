@@ -22,6 +22,7 @@ import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 import { AdminAuditLogPage } from '@/pages/admin/AdminAuditLogPage'
 import { AdminProjectsPage } from '@/pages/admin/AdminProjectsPage'
 import { AdminTemplatesPage } from '@/pages/admin/AdminTemplatesPage'
+import { ShareViewPage } from '@/pages/ShareViewPage'
 
 import { AppShell } from '@/components/layout/AppShell'
 import { RequireAuth } from '@/components/layout/RequireAuth'
@@ -68,6 +69,7 @@ export default function App() {
               <RequireAuth><ChangePasswordPage /></RequireAuth>
             } />
 
+            <Route path="/share/:token" element={<ShareViewPage />} />
             <Route path="/generating/:id" element={<GeneratingPage />} />
             <Route path="/editor/:id" element={
               <RequireAuth><EditorPage /></RequireAuth>

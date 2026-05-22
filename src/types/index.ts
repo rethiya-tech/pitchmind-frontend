@@ -56,6 +56,8 @@ export interface Conversion {
   tokens_used?: number
   source_pptx_key?: string | null
   client_logo_url?: string | null
+  share_token?: string | null
+  is_shared?: boolean
   created_at?: string
   updated_at?: string
   slides?: Slide[]

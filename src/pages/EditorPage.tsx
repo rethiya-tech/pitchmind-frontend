@@ -11,40 +11,14 @@ import { SlideList } from '@/components/editor/SlideList'
 import { SlideDetailPanel } from '@/components/editor/SlideDetailPanel'
 import { KeyboardShortcutsModal } from '@/components/editor/KeyboardShortcutsModal'
 import { CommandPalette } from '@/components/editor/CommandPalette'
+import { SlidePreview, type TextEditTarget } from '@/components/editor/SlidePreview'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
 import api from '@/services/api'
-import { conversionSlideImageUrl, resolveSlideBackgroundUrl } from '@/utils/slideImage'
-import type { Conversion, Slide, SlideTextStyle, Theme } from '@/types' // eslint-disable-line @typescript-eslint/no-unused-vars
+import { conversionSlideImageUrl } from '@/utils/slideImage'
+import type { Conversion, SlideTextStyle } from '@/types'
 import { THEMES } from '@/types'
-
-/*
- * Percentages derived directly from pptx_builder.py EMU coordinates:
- * Slide: 9144000 W × 5143500 H
- * Header band  : y=0,       h=685800  → 0%   – 13.33%
- * Slide number : x=8686800, y=0       → x=95%, y=0
- * Title box    : x=457200,  y=800000  → x=5%,  y=15.56%
- * Divider      : x=457200,  y=1943400 → x=5%,  y=37.78%,  w=20%
- * Bullets box  : x=457200,  y=2057400 → x=5%,  y=40%
- * Footer       : y=5006700, h=136800  → 97.34% – 100%
- */
-
-const COLOR_SCHEME_MAP: Record<string, string> = {
-  teal: '#0F6E56',
-  blue: '#3B82F6',
-  purple: '#8B5CF6',
-  amber: '#F59E0B',
-  rose: '#F43F5E',
-  green: '#10B981',
-  orange: '#F97316',
-}
-
-const SHAPE_RADIUS: Record<string, string> = {
-  square: '0px',
-  rounded: '12px',
-  pill: '50%',
-}
 
 const FONT_OPTIONS = [
   'Plus Jakarta Sans',
@@ -64,15 +38,6 @@ const FONT_WEIGHTS = [
 
 const COLOR_SWATCHES = ['#FFFFFF', '#111827', '#0F6E56', '#2563EB', '#7C3AED', '#F59E0B', '#EF4444']
 
-type TextEditTarget = {
-  field: 'title' | 'bullet'
-  bulletIndex?: number
-  fullText: string
-  selectedText: string
-  selectedStart?: number
-  rect: DOMRect
-}
-
 type TextEditState = {
   field: 'title' | 'bullet'
   bulletIndex?: number
@@ -85,500 +50,6 @@ type TextEditState = {
   left: number
 }
 
-/** Lighten (positive amount) or darken (negative amount) a hex color. */
-function lighterHex(hex: string, amount: number): string {
-  const h = hex.replace('#', '')
-  const clamp = (v: number) => Math.min(255, Math.max(0, v))
-  const r = clamp(parseInt(h.slice(0, 2), 16) + amount)
-  const g = clamp(parseInt(h.slice(2, 4), 16) + amount)
-  const b = clamp(parseInt(h.slice(4, 6), 16) + amount)
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
-}
-
-function bgIsDark(hex: string): boolean {
-  const h = hex.replace('#', '')
-  const r = parseInt(h.slice(0, 2), 16) || 0
-  const g = parseInt(h.slice(2, 4), 16) || 0
-  const b = parseInt(h.slice(4, 6), 16) || 0
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
-}
-
-function SlideContainer({ style, showWatermark, logoUrl, hasUserBg, children }: {
-  style: React.CSSProperties
-  showWatermark?: boolean
-  logoUrl?: string | null
-  hasUserBg?: boolean
-  children: React.ReactNode
-}) {
-  const dark = bgIsDark((style.backgroundColor as string) ?? '#1e2a3a')
-  const watermarkColor = hasUserBg
-    ? 'rgba(255,255,255,0.55)'
-    : dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'
-  const watermarkShadow = hasUserBg ? '0 1px 4px rgba(0,0,0,0.65)' : undefined
-  return (
-    <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={style}>
-      {children}
-      {logoUrl && (
-        <img
-          src={logoUrl}
-          alt="Client logo"
-          style={{
-            position: 'absolute', bottom: '3.5%', left: '3.5%',
-            maxHeight: '10%', maxWidth: '18%', objectFit: 'contain',
-            pointerEvents: 'none', userSelect: 'none', zIndex: 20,
-            opacity: 0.85,
-          }}
-        />
-      )}
-      {showWatermark && (
-        <span
-          style={{
-            position: 'absolute', bottom: '3.5%', right: '3.5%',
-            pointerEvents: 'none', userSelect: 'none', zIndex: 20,
-            fontSize: 'clamp(7px, 1vw, 13px)', fontWeight: 900, letterSpacing: '0.28em',
-            color: watermarkColor,
-            textShadow: watermarkShadow,
-            fontFamily: '"Plus Jakarta Sans", sans-serif',
-          }}
-        >
-          WAC
-        </span>
-      )}
-    </div>
-  )
-}
-
-function SlidePreview({
-  slide,
-  theme,
-  showWatermark,
-  logoUrl,
-  onTextEdit,
-  onUpdateText,
-  onTypoFocus,
-}: {
-  slide: Slide
-  theme: Theme
-  showWatermark?: boolean
-  logoUrl?: string | null
-  onTextEdit?: (target: TextEditTarget) => void
-  onUpdateText?: (field: 'title' | 'bullet', value: string, bulletIndex?: number) => void
-  onTypoFocus?: (field: 'title' | 'bullet', bulletIndex?: number) => void
-}) {
-  const bullets: string[] = slide.bullets ?? []
-  const layout = slide.layout || 'bullets'
-  const accentColor = COLOR_SCHEME_MAP[slide.color_scheme] ?? theme.accent
-  const radius = SHAPE_RADIUS[slide.shape_style] ?? '0px'
-  const mergeTextStyle = (
-    base: React.CSSProperties,
-    field: 'title' | 'bullet',
-    bulletIndex?: number
-  ): React.CSSProperties => {
-    const saved = field === 'title'
-      ? slide.text_styles?.title
-      : bulletIndex !== undefined
-        ? slide.text_styles?.bullets?.[String(bulletIndex)]
-        : undefined
-
-    if (!saved) return base
-    return {
-      ...base,
-      ...(saved.fontFamily && { fontFamily: `"${saved.fontFamily}", sans-serif` }),
-      ...(saved.fontWeight && { fontWeight: saved.fontWeight }),
-      ...(saved.fontSize && { fontSize: `${saved.fontSize}px` }),
-      ...(saved.color && { color: saved.color }),
-      ...(saved.italic !== undefined && { fontStyle: saved.italic ? 'italic' : 'normal' }),
-    }
-  }
-
-  const clickable = !!onTextEdit
-  const openEditor = (
-    e: React.MouseEvent<HTMLElement>,
-    field: 'title' | 'bullet',
-    fullText: string,
-    bulletIndex?: number
-  ) => {
-    if (!onTextEdit || !fullText) return
-    const selection = window.getSelection()
-    const hasSelection = !!selection?.toString().trim() && selection.rangeCount > 0
-    const range = hasSelection && selection ? selection.getRangeAt(0) : null
-    const selectedFromThisElement = !!range && e.currentTarget.contains(range.commonAncestorContainer)
-    const selectedText =
-      selectedFromThisElement
-        ? selection?.toString().trim() ?? fullText
-        : fullText
-    const rect = selectedFromThisElement
-      ? range.getBoundingClientRect()
-      : e.currentTarget.getBoundingClientRect()
-    e.stopPropagation()
-    onTextEdit({ field, bulletIndex, fullText, selectedText, rect })
-  }
-  const isInlineEditable = !!onUpdateText
-
-  const handleInlineTextBlur = (
-    e: React.FocusEvent<HTMLElement>,
-    field: 'title' | 'bullet',
-    text: string,
-    bulletIndex?: number
-  ) => {
-    const rawValue = e.currentTarget.innerText.trim()
-    const placeholder = field === 'title' && !text ? 'Untitled Slide' : ''
-    const nextValue = rawValue === placeholder ? '' : rawValue
-    if (nextValue !== text && onUpdateText) {
-      onUpdateText(field, nextValue, bulletIndex)
-    }
-  }
-
-  const handleInlineTextKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      ;(e.currentTarget as HTMLElement).blur()
-    }
-  }
-
-  const editableProps = (
-    field: 'title' | 'bullet',
-    text: string,
-    bulletIndex?: number
-  ): React.HTMLAttributes<HTMLElement> => {
-    if (!isInlineEditable) return tx(field, text, bulletIndex)
-    return {
-      contentEditable: true,
-      suppressContentEditableWarning: true,
-      spellCheck: false,
-      onFocus: () => onTypoFocus?.(field, bulletIndex),
-      onBlur: (e) => handleInlineTextBlur(e, field, text, bulletIndex),
-      onKeyDown: handleInlineTextKeyDown,
-    }
-  }
-
-  const tx = (
-    field: 'title' | 'bullet',
-    text: string,
-    bulletIndex?: number
-  ): React.HTMLAttributes<HTMLElement> => !clickable || !text ? {} : {
-    onMouseUp: (e) => {
-      if (window.getSelection()?.toString().trim()) openEditor(e, field, text, bulletIndex)
-    },
-    onClick: (e) => {
-      onTypoFocus?.(field, bulletIndex)
-      if (window.getSelection()?.toString().trim()) return
-      openEditor(e, field, text, bulletIndex)
-    },
-    title: 'Click or select text to edit',
-  }
-
-  const containerStyle: React.CSSProperties = {
-    aspectRatio: '16/9',
-    position: 'relative',
-    backgroundColor: theme.bg,
-    backgroundImage: slide.background_image_url
-      ? `url(${resolveSlideBackgroundUrl(slide.background_image_url)})`
-      : `url(/themes/${theme.id}.png)`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    fontFamily: '"Plus Jakarta Sans", sans-serif',
-  }
-
-  // ── hero ──────────────────────────────────────────────────────────────────
-  if (layout === 'hero') {
-    const subtitle = bullets[0] ?? ''
-    const tagline = bullets[1] ?? ''
-    return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-        <div
-          {...editableProps('title', slide.title)}
-          className="absolute font-extrabold leading-tight"
-          style={mergeTextStyle({ top: '28%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(18px, 3.5vw, 42px)', cursor: isInlineEditable ? 'text' : (clickable && slide.title ? 'pointer' : undefined) }, 'title')}
-        >
-          {slide.title || 'Untitled Slide'}
-        </div>
-        <div
-          className="absolute rounded-full"
-          style={{ top: '60%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }}
-        />
-        {subtitle && (
-          <div
-            {...editableProps('bullet', subtitle, 0)}
-            className="absolute"
-            style={mergeTextStyle({ top: '65%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.6vw, 18px)', opacity: 0.85, cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
-          >
-            {subtitle}
-          </div>
-        )}
-        {tagline && (
-          <div
-            {...editableProps('bullet', tagline, 1)}
-            className="absolute"
-            style={mergeTextStyle({ top: '75%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1.2vw, 14px)', opacity: 0.65, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
-          >
-            {tagline}
-          </div>
-        )}
-      </SlideContainer>
-    )
-  }
-
-  // ── two_column ────────────────────────────────────────────────────────────
-  if (layout === 'two_column') {
-    const sections: { header: string; items: { text: string; index: number }[] }[] = []
-    let cur: { header: string; items: { text: string; index: number }[] } | null = null
-    bullets.forEach((b, index) => {
-      if (b.startsWith('## ')) {
-        if (cur) sections.push(cur)
-        cur = { header: b.slice(3), items: [] }
-      } else {
-        if (!cur) cur = { header: 'Key Points', items: [] }
-        cur.items.push({ text: b, index })
-      }
-    })
-    if (cur) sections.push(cur)
-    const leftSection = sections[0] ?? {
-      header: 'Key Points',
-      items: bullets.slice(0, Math.ceil(bullets.length / 2)).map((text, index) => ({ text, index })),
-    }
-    const rightSection = sections[1] ?? {
-      header: 'Details',
-      items: bullets.slice(Math.ceil(bullets.length / 2)).map((text, index) => ({
-        text,
-        index: index + Math.ceil(bullets.length / 2),
-      })),
-    }
-
-    return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-        <div
-          {...editableProps('title', slide.title)}
-          className="absolute font-extrabold leading-tight"
-          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
-        >
-          {slide.title || 'Untitled Slide'}
-        </div>
-        <div className="absolute rounded-full" style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }} />
-        {/* Left column */}
-        <div className="absolute" style={{ top: '29%', left: '7%', width: '43%' }}>
-          <div className="flex items-center px-2 py-1 mb-2" style={{ backgroundColor: accentColor, borderRadius: radius }}>
-            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>{leftSection.header}</span>
-          </div>
-          {leftSection.items.map((item) => (
-            <div key={item.index} {...editableProps('bullet', item.text, item.index)} className="flex items-start" style={{ marginBottom: '1.5%', cursor: clickable ? 'pointer' : undefined }}>
-              <span style={{ color: accentColor, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
-              <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }, 'bullet', item.index)}>{item.text}</span>
-            </div>
-          ))}
-        </div>
-        {/* Right column */}
-        <div className="absolute" style={{ top: '29%', left: '53%', right: '7%' }}>
-          <div className="flex items-center px-2 py-1 mb-2" style={{ backgroundColor: lighterHex(accentColor, 20), borderRadius: radius }}>
-            <span className="text-white font-bold" style={{ fontSize: 'clamp(6px, 0.85vw, 10px)' }}>{rightSection.header}</span>
-          </div>
-          {rightSection.items.map((item) => (
-            <div key={item.index} {...editableProps('bullet', item.text, item.index)} className="flex items-start" style={{ marginBottom: '1.5%', cursor: clickable ? 'pointer' : undefined }}>
-              <span style={{ color: accentColor, marginRight: '3%', fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4 }}>●</span>
-              <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', lineHeight: 1.4, opacity: 0.92 }, 'bullet', item.index)}>{item.text}</span>
-            </div>
-          ))}
-        </div>
-      </SlideContainer>
-    )
-  }
-
-  // ── data_table ────────────────────────────────────────────────────────────
-  if (layout === 'data_table') {
-    const valueBg = lighterHex(theme.bg, 35)
-
-    return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-        <div
-          {...editableProps('title', slide.title)}
-          className="absolute font-extrabold leading-tight"
-          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.7vw, 20px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
-        >
-          {slide.title || 'Untitled Slide'}
-        </div>
-        <div className="absolute overflow-hidden" style={{ top: '26%', left: '7%', right: '7%', bottom: '4%' }}>
-          {bullets.map((b, i) => {
-            const sepIdx = b.indexOf(': ')
-            const label = sepIdx !== -1 ? b.slice(0, sepIdx) : b
-            const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : ''
-            const labelBg = i % 2 === 0 ? accentColor : lighterHex(accentColor, 25)
-            return (
-              <div key={i} {...editableProps('bullet', b, i)} className="flex" style={{ height: '9%', marginBottom: '1%', cursor: clickable ? 'pointer' : undefined }}>
-                <div className="flex items-center flex-shrink-0" style={{ width: '38%', backgroundColor: labelBg, paddingLeft: '3%', paddingRight: '2%' }}>
-                  <span className="font-bold truncate" style={mergeTextStyle({ color: '#FFFFFF', fontSize: 'clamp(6px, 0.9vw, 11px)' }, 'bullet', i)}>{label}</span>
-                </div>
-                <div className="flex items-center flex-1" style={{ backgroundColor: valueBg, paddingLeft: '3%', paddingRight: '2%' }}>
-                  <span className="truncate" style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)' }, 'bullet', i)}>{value || '—'}</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </SlideContainer>
-    )
-  }
-
-  // ── timeline ──────────────────────────────────────────────────────────────
-  if (layout === 'timeline') {
-    return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-        <div
-          {...editableProps('title', slide.title)}
-          className="absolute font-extrabold leading-tight"
-          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
-        >
-          {slide.title || 'Untitled Slide'}
-        </div>
-        <div className="absolute" style={{ top: '29%', left: '7%', right: '7%', bottom: '4%', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ position: 'absolute', left: '1.4%', top: 0, bottom: 0, width: 2, backgroundColor: accentColor, opacity: 0.45 }} />
-          {bullets.map((b, i) => {
-            const sepIdx = b.indexOf(': ')
-            const label = sepIdx !== -1 ? b.slice(0, sepIdx) : `Phase ${i + 1}`
-            const desc = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
-            return (
-              <div key={i} {...editableProps('bullet', b, i)} style={{ display: 'flex', alignItems: 'center', flex: 1, minHeight: 0, cursor: clickable ? 'pointer' : undefined }}>
-                <div style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: accentColor, flexShrink: 0, marginRight: '2.5%', zIndex: 1 }} />
-                <span style={mergeTextStyle({ color: accentColor, fontWeight: 700, fontSize: 'clamp(7px, 1vw, 11px)' }, 'bullet', i)}>{label}</span>
-                {desc && <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(6px, 0.85vw, 10px)', opacity: 0.8, marginLeft: '1.5%' }, 'bullet', i)}>{desc}</span>}
-              </div>
-            )
-          })}
-        </div>
-      </SlideContainer>
-    )
-  }
-
-  // ── big_stat ───────────────────────────────────────────────────────────────
-  if (layout === 'big_stat') {
-    const stats = bullets.slice(0, 3)
-    return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-        <div
-          {...editableProps('title', slide.title)}
-          className="absolute font-extrabold leading-tight"
-          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
-        >
-          {slide.title || 'Untitled Slide'}
-        </div>
-        <div className="absolute flex gap-[2%]" style={{ top: '34%', left: '7%', right: '7%', bottom: '8%' }}>
-          {stats.map((b, i) => {
-            const sepIdx = b.indexOf(': ')
-            const label = sepIdx !== -1 ? b.slice(0, sepIdx) : 'Metric'
-            const value = sepIdx !== -1 ? b.slice(sepIdx + 2) : b
-            return (
-              <div key={i} {...editableProps('bullet', b, i)} className="relative flex flex-col overflow-hidden flex-1" style={{ backgroundColor: lighterHex(theme.bg, 30), borderRadius: radius, cursor: clickable ? 'pointer' : undefined }}>
-                <div style={{ height: 4, backgroundColor: accentColor, flexShrink: 0 }} />
-                <div style={{ padding: '8% 10%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={mergeTextStyle({ color: accentColor, fontWeight: 800, fontSize: 'clamp(14px, 2.4vw, 30px)', lineHeight: 1.1 }, 'bullet', i)}>{value}</div>
-                  <div style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(6px, 0.9vw, 11px)', opacity: 0.75, marginTop: '6%' }, 'bullet', i)}>{label}</div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </SlideContainer>
-    )
-  }
-
-  // ── process ────────────────────────────────────────────────────────────────
-  if (layout === 'process') {
-    const steps = bullets.slice(0, 5)
-    return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-        <div
-          {...editableProps('title', slide.title)}
-          className="absolute font-extrabold leading-tight"
-          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(10px, 1.8vw, 22px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
-        >
-          {slide.title || 'Untitled Slide'}
-        </div>
-        <div className="absolute rounded-full" style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }} />
-        <div className="absolute flex items-stretch gap-[1.5%]" style={{ top: '31%', left: '7%', right: '7%', bottom: '8%' }}>
-          {steps.map((b, i) => (
-            <div key={i} className="flex items-center" style={{ flex: '1 1 0' }}>
-              <div {...editableProps('bullet', b, i)} className="flex flex-col overflow-hidden flex-1 h-full" style={{ backgroundColor: i % 2 === 0 ? accentColor : lighterHex(accentColor, 30), borderRadius: radius, cursor: clickable ? 'pointer' : undefined }}>
-                <div className="flex items-center justify-center font-bold text-white flex-shrink-0" style={{ height: '30%', fontSize: 'clamp(8px, 1.3vw, 16px)', backgroundColor: lighterHex(accentColor, -20), borderRadius: `${radius} ${radius} 0 0` }}>
-                  {i + 1}
-                </div>
-                <div style={mergeTextStyle({ padding: '5% 8%', color: '#fff', fontSize: 'clamp(5px, 0.8vw, 9px)', lineHeight: 1.4, overflow: 'hidden' }, 'bullet', i)}>{b}</div>
-              </div>
-              {i < steps.length - 1 && (
-                <span style={{ color: accentColor, fontSize: 'clamp(8px, 1.2vw, 14px)', flexShrink: 0, padding: '0 2%' }}>→</span>
-              )}
-            </div>
-          ))}
-        </div>
-      </SlideContainer>
-    )
-  }
-
-  // ── quote ──────────────────────────────────────────────────────────────────
-  if (layout === 'quote') {
-    const quoteText = bullets[0] ?? ''
-    const attribution = bullets[1] ?? ''
-    return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-        <div
-          {...editableProps('title', slide.title)}
-          className="absolute"
-          style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(8px, 1.3vw, 15px)', opacity: 0.6, cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
-        >
-          {slide.title}
-        </div>
-        <div className="absolute font-extrabold leading-none" style={{ top: '18%', left: '7%', color: accentColor, fontSize: 'clamp(24px, 5vw, 60px)', lineHeight: 1 }}>
-          &ldquo;
-        </div>
-        {quoteText && (
-          <div
-            {...editableProps('bullet', quoteText, 0)}
-            className="absolute leading-snug"
-            style={mergeTextStyle({ top: '26%', left: '14%', right: '7%', color: theme.text, fontSize: 'clamp(9px, 1.5vw, 18px)', fontStyle: 'italic', cursor: clickable ? 'pointer' : undefined }, 'bullet', 0)}
-          >
-            {quoteText}
-          </div>
-        )}
-        <div className="absolute rounded-full" style={{ top: '74%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }} />
-        {attribution && (
-          <div
-            {...editableProps('bullet', attribution, 1)}
-            className="absolute text-right"
-            style={mergeTextStyle({ top: '78%', right: '7%', color: theme.text, fontSize: 'clamp(7px, 1vw, 11px)', opacity: 0.7, cursor: clickable ? 'pointer' : undefined }, 'bullet', 1)}
-          >
-            — {attribution}
-          </div>
-        )}
-      </SlideContainer>
-    )
-  }
-
-  // ── bullets (default) ─────────────────────────────────────────────────────
-  return (
-    <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} hasUserBg={!!slide.background_image_url}>
-      <div
-        {...editableProps('title', slide.title)}
-        className="absolute font-extrabold leading-tight"
-        style={mergeTextStyle({ top: '7%', left: '7%', right: '7%', color: theme.text, fontSize: 'clamp(11px, 2vw, 26px)', cursor: clickable && slide.title ? 'pointer' : undefined }, 'title')}
-      >
-        {slide.title || 'Untitled Slide'}
-      </div>
-      <div className="absolute rounded-full" style={{ top: '26%', left: '7%', width: '20%', height: '0.7%', backgroundColor: accentColor }} />
-      <div className="absolute overflow-hidden" style={{ top: '29%', left: '7%', right: '7%', bottom: '4%' }}>
-        {bullets.map((b, i) => (
-          <div key={i} {...editableProps('bullet', b, i)} className="flex items-start" style={{ marginBottom: '2%', cursor: clickable ? 'pointer' : undefined }}>
-            <span
-              className="flex-shrink-0 rounded-full"
-              style={{ backgroundColor: accentColor, width: '0.6em', height: '0.6em', minWidth: '0.6em', marginTop: '0.35em', marginRight: '0.6em', fontSize: 'clamp(9px, 1.3vw, 14px)' }}
-            />
-            <span style={mergeTextStyle({ color: theme.text, fontSize: 'clamp(9px, 1.3vw, 14px)', lineHeight: 1.45, opacity: 0.92 }, 'bullet', i)}>
-              {b}
-            </span>
-          </div>
-        ))}
-      </div>
-    </SlideContainer>
-  )
-}
-
 // ── Panel header shared by left and right sidebars ────────────────────────────
 function PanelHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
@@ -589,8 +60,159 @@ function PanelHeader({ title, action }: { title: string; action?: React.ReactNod
   )
 }
 
+// ── Share modal ────────────────────────────────────────────────────────────────
+function ShareModal({
+  conversionId, shareToken, isShared, onClose, onShared, onUnshared,
+}: {
+  conversionId: string
+  shareToken: string | null
+  isShared: boolean
+  onClose: () => void
+  onShared: (token: string) => void
+  onUnshared: () => void
+}) {
+  const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const shareUrl = shareToken ? `${window.location.origin}/share/${shareToken}` : null
+
+  const handleEnable = async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.post(`/conversions/${conversionId}/share`)
+      onShared(data.share_token)
+      toast.success('Sharing enabled')
+    } catch {
+      toast.error('Failed to enable sharing')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDisable = async () => {
+    setLoading(true)
+    try {
+      await api.delete(`/conversions/${conversionId}/share`)
+      onUnshared()
+      toast.success('Sharing disabled')
+    } catch {
+      toast.error('Failed to disable sharing')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCopy = async () => {
+    if (!shareUrl) return
+    await navigator.clipboard.writeText(shareUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.18, ease: 'easeOut' as const }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-pm-border">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#E1F5EE] flex items-center justify-center">
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
+                <circle cx="11" cy="2.5" r="1.5" stroke="#0F6E56" strokeWidth="1.3" />
+                <circle cx="11" cy="11.5" r="1.5" stroke="#0F6E56" strokeWidth="1.3" />
+                <circle cx="2.5" cy="7" r="1.5" stroke="#0F6E56" strokeWidth="1.3" />
+                <path d="M9.5 3.3L4 6.2M4 7.8l5.5 2.9" stroke="#0F6E56" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h2 className="text-base font-bold text-pm-primary">Share Presentation</h2>
+          </div>
+          <button onClick={onClose} className="text-pm-muted hover:text-pm-primary transition-colors">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          {/* Toggle row */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-pm-primary">Public link</p>
+              <p className="text-xs text-pm-muted mt-0.5">Anyone with the link can view this presentation</p>
+            </div>
+            <button
+              onClick={isShared ? handleDisable : handleEnable}
+              disabled={loading}
+              className={cn(
+                'relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 disabled:opacity-60',
+                isShared ? 'bg-pm-teal' : 'bg-gray-200'
+              )}
+            >
+              <span className={cn(
+                'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200',
+                isShared ? 'left-5' : 'left-0.5'
+              )} />
+            </button>
+          </div>
+
+          {/* URL box */}
+          {isShared && shareUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 p-3 rounded-xl border border-pm-border/60 bg-[#F9FAFB]"
+            >
+              <span className="flex-1 text-xs text-pm-primary font-mono truncate">{shareUrl}</span>
+              <button
+                onClick={handleCopy}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0',
+                  copied
+                    ? 'bg-pm-teal text-white'
+                    : 'bg-white border border-pm-border text-pm-primary hover:bg-gray-50'
+                )}
+              >
+                {copied ? (
+                  <><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg> Copied!</>
+                ) : (
+                  <><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" /><path d="M4 4V3A1.5 1.5 0 012.5 1.5h0A1.5 1.5 0 011 3v7A1.5 1.5 0 002.5 11.5H4" stroke="currentColor" strokeWidth="1.3" /></svg> Copy</>
+                )}
+              </button>
+            </motion.div>
+          )}
+
+          {isShared && shareUrl && (
+            <a
+              href={shareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-pm-teal font-semibold hover:underline"
+            >
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <path d="M6 2H2.5A1.5 1.5 0 001 3.5v8A1.5 1.5 0 002.5 13h8A1.5 1.5 0 0012 11.5V8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                <path d="M8 1h5v5M13 1L7 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Open in new tab
+            </a>
+          )}
+        </div>
+
+        <div className="px-6 py-3 border-t border-pm-border bg-[#F9FAFB] flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-pm-muted hover:text-pm-primary transition-colors">
+            Close
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
 // ── Editor toolbar ─────────────────────────────────────────────────────────────
-function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, showWatermark, onToggleWatermark, onPresent }: {
+function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, showWatermark, onToggleWatermark, onPresent, onShare, isShared }: {
   conversionId: string
   conversionName?: string
   isSaving?: boolean
@@ -599,6 +221,8 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
   showWatermark?: boolean
   onToggleWatermark?: () => void
   onPresent?: () => void
+  onShare?: () => void
+  isShared?: boolean
 }) {
   const isDirty = useEditorStore((s) => s.isDirty)
   const name = (conversionName?.replace(/\.[^.]+$/, '') ?? 'Untitled Presentation')
@@ -725,6 +349,26 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
           WAC
         </button>
 
+        {/* Share button */}
+        <button
+          onClick={onShare}
+          title="Share presentation"
+          className={cn(
+            'flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors',
+            isShared
+              ? 'border-pm-teal/40 bg-[#E1F5EE] text-pm-teal hover:bg-[#D0EDE6]'
+              : 'border-pm-border text-pm-muted hover:text-pm-primary hover:border-gray-300'
+          )}
+        >
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <circle cx="11" cy="2.5" r="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <circle cx="11" cy="11.5" r="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <circle cx="2.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M9.5 3.3L4 6.2M4 7.8l5.5 2.9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+          {isShared ? 'Shared' : 'Share'}
+        </button>
+
         {/* Present button */}
         <button
           onClick={onPresent}
@@ -815,6 +459,9 @@ export function EditorPage() {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showCommandPalette, setShowCommandPalette] = useState(false)
   const [showNotes, setShowNotes] = useState(true)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareToken, setShareToken] = useState<string | null>(null)
+  const [isShared, setIsShared] = useState(false)
   const autoPresented = useRef(false)
 
   const enterPresentationMode = useCallback(() => {
@@ -850,6 +497,13 @@ export function EditorPage() {
     refetchOnMount: 'always',
   })
   const showSpinner = useDelayedLoading(isLoading)
+
+  useEffect(() => {
+    if (conversion) {
+      setShareToken(conversion.share_token ?? null)
+      setIsShared(conversion.is_shared ?? false)
+    }
+  }, [conversion?.share_token, conversion?.is_shared])
 
   useEffect(() => {
     if (!conversion) return
@@ -1040,6 +694,8 @@ export function EditorPage() {
         showWatermark={showWatermark}
         onToggleWatermark={() => setShowWatermark((v) => !v)}
         onPresent={enterPresentationMode}
+        onShare={() => setShowShareModal(true)}
+        isShared={isShared}
       />
 
       {/* Three-panel body */}
@@ -1238,6 +894,18 @@ export function EditorPage() {
         </aside>
 
       </div>
+
+      {/* Share modal */}
+      {showShareModal && id && (
+        <ShareModal
+          conversionId={id}
+          shareToken={shareToken}
+          isShared={isShared}
+          onClose={() => setShowShareModal(false)}
+          onShared={(token) => { setShareToken(token); setIsShared(true) }}
+          onUnshared={() => setIsShared(false)}
+        />
+      )}
 
       {/* 5.1 Keyboard shortcuts modal */}
       <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
