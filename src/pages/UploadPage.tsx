@@ -2,7 +2,7 @@ import { UploadForm } from '@/components/upload/UploadForm'
 
 export function UploadPage() {
   return (
-    <div className="flex flex-col gap-5 h-full">
+    <div className="flex-1 flex flex-col gap-5">
       {/* Page header */}
       <div>
         <h1 className="text-lg font-bold text-pm-primary">New Presentation</h1>

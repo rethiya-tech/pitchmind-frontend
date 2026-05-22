@@ -1,5 +1,6 @@
 import type { Slide, Theme } from '@/types'
 import { resolveSlideBackgroundUrl } from '@/utils/slideImage'
+import { ThemeDecorSVG } from '@/components/ui/ThemeDecor'
 
 const COLOR_SCHEME_MAP: Record<string, string> = {
   teal: '#0F6E56',
@@ -34,17 +35,19 @@ function bgIsDark(hex: string): boolean {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
 }
 
-function SlideContainer({ style, showWatermark, logoUrl, refImageUrl, children }: {
+function SlideContainer({ style, showWatermark, logoUrl, refImageUrl, theme, children }: {
   style: React.CSSProperties
   showWatermark?: boolean
   logoUrl?: string | null
   refImageUrl?: string | null
+  theme?: Theme
   children: React.ReactNode
 }) {
   const dark = bgIsDark((style.backgroundColor as string) ?? '#1e2a3a')
   const watermarkColor = dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'
   return (
     <div className="w-full rounded-xl overflow-hidden shadow-2xl" style={style}>
+      {theme && <ThemeDecorSVG theme={theme} opacity={0.75} />}
       {children}
       {refImageUrl && (
         <div
@@ -59,7 +62,7 @@ function SlideContainer({ style, showWatermark, logoUrl, refImageUrl, children }
             zIndex: 2,
           }} />
           <img
-            src={resolveSlideBackgroundUrl(refImageUrl)}
+            src={resolveSlideBackgroundUrl(refImageUrl) ?? undefined}
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
@@ -135,9 +138,15 @@ export function SlidePreview({
         ? slide.text_styles?.bullets?.[String(bulletIndex)]
         : undefined
 
-    if (!saved) return base
+    const themeFont = field === 'title'
+      ? `"${theme.headingFont}", serif`
+      : `"${theme.bodyFont}", sans-serif`
+
+    const withFont: React.CSSProperties = { fontFamily: themeFont, ...base }
+
+    if (!saved) return withFont
     return {
-      ...base,
+      ...withFont,
       ...(saved.fontFamily && { fontFamily: `"${saved.fontFamily}", sans-serif` }),
       ...(saved.fontWeight && { fontWeight: saved.fontWeight }),
       ...(saved.fontSize && { fontSize: `${saved.fontSize}px` }),
@@ -230,10 +239,10 @@ export function SlidePreview({
     aspectRatio: '16/9',
     position: 'relative',
     backgroundColor: theme.bg,
-    backgroundImage: `url(/themes/${theme.id}.png)`,
+    backgroundImage: `url(/themes/${theme.id}.png), ${theme.gradient}`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    fontFamily: '"Plus Jakarta Sans", sans-serif',
+    fontFamily: `"${theme.bodyFont}", sans-serif`,
   }
 
   // ── hero ──────────────────────────────────────────────────────────────────
@@ -241,7 +250,7 @@ export function SlidePreview({
     const subtitle = bullets[0] ?? ''
     const tagline = bullets[1] ?? ''
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url} theme={theme}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -302,7 +311,7 @@ export function SlidePreview({
     }
 
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} theme={theme}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -344,7 +353,7 @@ export function SlidePreview({
     const valueBg = lighterHex(theme.bg, 35)
 
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null} theme={theme}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -377,7 +386,7 @@ export function SlidePreview({
   // ── timeline ──────────────────────────────────────────────────────────────
   if (layout === 'timeline') {
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null} theme={theme}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -408,7 +417,7 @@ export function SlidePreview({
   if (layout === 'big_stat') {
     const stats = bullets.slice(0, 3)
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null} theme={theme}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -440,7 +449,7 @@ export function SlidePreview({
   if (layout === 'process') {
     const steps = bullets.slice(0, 5)
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={null} theme={theme}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute font-extrabold leading-tight"
@@ -473,7 +482,7 @@ export function SlidePreview({
     const quoteText = bullets[0] ?? ''
     const attribution = bullets[1] ?? ''
     return (
-      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url}>
+      <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url} theme={theme}>
         <div
           {...editableProps('title', slide.title)}
           className="absolute"
@@ -509,7 +518,7 @@ export function SlidePreview({
 
   // ── bullets (default) ─────────────────────────────────────────────────────
   return (
-    <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url}>
+    <SlideContainer style={containerStyle} showWatermark={showWatermark} logoUrl={logoUrl} refImageUrl={slide.background_image_url} theme={theme}>
       <div
         {...editableProps('title', slide.title)}
         className="absolute font-extrabold leading-tight"

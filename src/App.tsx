@@ -30,6 +30,8 @@ import { RequireAdmin } from '@/components/layout/RequireAdmin'
 import api from '@/services/api'
 import type { TokenResponse } from '@/types'
 
+if (typeof window !== 'undefined') window.history.scrollRestoration = 'manual'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

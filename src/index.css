@@ -8,6 +8,15 @@
 @tailwind utilities;
 
 @layer base {
+  /* Hide scrollbars globally — scroll still works, just no visible indicator */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
   html {
     font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;

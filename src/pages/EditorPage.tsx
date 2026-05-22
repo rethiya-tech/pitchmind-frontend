@@ -458,7 +458,7 @@ export function EditorPage() {
   const [presentationMode, setPresentationMode] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showCommandPalette, setShowCommandPalette] = useState(false)
-  const [showNotes, setShowNotes] = useState(true)
+  const [showNotes, setShowNotes] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareToken, setShareToken] = useState<string | null>(null)
   const [isShared, setIsShared] = useState(false)

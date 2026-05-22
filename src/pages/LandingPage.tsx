@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { LandNav } from '@/components/landing/LandNav'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { HeroDashboard } from '@/components/landing/HeroDashboard'
@@ -11,6 +12,8 @@ import { CtaBanner } from '@/components/landing/CtaBanner'
 import { LandFooter } from '@/components/landing/LandFooter'
 
 export function LandingPage() {
+  useEffect(() => { window.scrollTo(0, 0) }, [])
+
   return (
     <div className="min-h-screen">
       <LandNav />

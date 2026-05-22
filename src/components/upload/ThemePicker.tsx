@@ -1,9 +1,55 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/utils/cn'
 import { THEMES } from '@/types'
-import type { Template } from '@/types'
+import type { Theme, Template } from '@/types'
 import { templateSlideImageUrl } from '@/utils/slideImage'
+import { ThemeDecorSVG } from '@/components/ui/ThemeDecor'
+
+function ThemeSwatch({ theme }: { theme: Theme }) {
+  const [imgError, setImgError] = useState(false)
+  const dark = theme.text === '#FFFFFF' || theme.text.startsWith('#F9') || theme.text.startsWith('#F0')
+  return (
+    <div
+      className="w-full rounded-lg overflow-hidden flex-shrink-0 relative"
+      style={{ aspectRatio: '16/9', background: theme.gradient }}
+    >
+      {!imgError && (
+        <img
+          src={`/themes/${theme.id}.png`}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      )}
+      <ThemeDecorSVG theme={theme} />
+      {/* readability scrim at bottom */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: `linear-gradient(to top, ${dark ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.5)'} 0%, transparent 55%)` }}
+      />
+      {/* font preview */}
+      <div className="absolute inset-0 flex flex-col justify-between px-[9%] py-[8%] pointer-events-none">
+        <div>
+          <div className="rounded-full mb-[5%]" style={{ width: '22%', height: '5%', backgroundColor: theme.accent, opacity: 0.9 }} />
+          <div
+            className="font-bold leading-none truncate"
+            style={{ fontFamily: `"${theme.headingFont}", serif`, fontSize: 'clamp(6px, 1.5vw, 11px)', color: theme.text }}
+          >
+            Aa Headline
+          </div>
+          <div
+            className="mt-[6%] space-y-[3%]"
+            style={{ fontFamily: `"${theme.bodyFont}", sans-serif`, fontSize: 'clamp(4px, 0.9vw, 7px)', color: theme.text, opacity: 0.65 }}
+          >
+            <div>Body text style</div>
+            <div style={{ opacity: 0.75 }}>— {theme.headingFont}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function TemplateThumb({ templateId, name, theme, previewCount }: { templateId: string; name: string; theme: string | null; previewCount: number }) {
   const [errored, setErrored] = useState(false)
@@ -11,7 +57,7 @@ function TemplateThumb({ templateId, name, theme, previewCount }: { templateId: 
   const showImage = previewCount > 0 && !errored
 
   return (
-    <div className="w-full rounded-lg overflow-hidden flex-shrink-0 relative" style={{ aspectRatio: '16/9', backgroundColor: t.bg }}>
+    <div className="w-full rounded-lg overflow-hidden flex-shrink-0 relative" style={{ aspectRatio: '16/9', background: t.gradient }}>
       {showImage ? (
         <img
           src={templateSlideImageUrl(templateId, 0)}
@@ -42,6 +88,18 @@ const BUILT_IN_CATEGORIES: { id: Category; label: string }[] = [
   { id: 'minimal',      label: 'Minimal' },
 ]
 
+const gridVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } },
+  exit:  { transition: { staggerChildren: 0.02, staggerDirection: -1 } },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 18, scale: 0.96 },
+  show:   { opacity: 1, y: 0,  scale: 1,    transition: { duration: 0.22, ease: [0.25, 0.1, 0.25, 1] as const } },
+  exit:   { opacity: 0, y: -8, scale: 0.97, transition: { duration: 0.1 } },
+}
+
 interface ThemePickerProps {
   value: string
   onChange: (themeId: string) => void
@@ -60,6 +118,11 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
     return theme?.category ?? 'professional'
   })
 
+  const scrollRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+  }, [activeCategory])
+
   const categories = hasUserTemplates
     ? [...BUILT_IN_CATEGORIES, { id: 'my_templates' as Category, label: 'Templates' }]
     : BUILT_IN_CATEGORIES
@@ -76,135 +139,141 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
     onTemplateSelect?.(template.id)
   }
 
-  const anyThemeSelected = activeCategory !== 'my_templates'
-
   return (
-    <div className={cn('flex flex-col gap-3', { 'opacity-50 pointer-events-none': disabled })}>
-      {/* Category tabs */}
-      <div className="flex gap-1 bg-pm-app rounded-lg p-1 border border-pm-border">
+    <div className={cn('flex flex-col gap-3 h-full', { 'opacity-50 pointer-events-none': disabled })}>
+
+      {/* Category tabs — gliding pill indicator */}
+      <div className="relative flex gap-1 bg-pm-app rounded-lg p-1 border border-pm-border flex-shrink-0">
         {categories.map(cat => (
           <button
             key={cat.id}
             type="button"
             onClick={() => setActiveCategory(cat.id)}
-            className={cn(
-              'flex-1 py-1.5 text-xs font-semibold rounded-md transition-all',
-              activeCategory === cat.id
-                ? 'bg-white text-pm-teal shadow-sm border border-pm-border'
-                : 'text-pm-muted hover:text-pm-primary'
-            )}
+            className="relative flex-1 py-1.5 text-xs font-semibold rounded-md z-10"
+            style={{ color: activeCategory === cat.id ? '#0F6E56' : '#6B7280' }}
           >
-            {cat.label}
+            {activeCategory === cat.id && (
+              <motion.div
+                layoutId="theme-tab-pill"
+                className="absolute inset-0 bg-white rounded-md shadow-sm border border-pm-border"
+                transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+              />
+            )}
+            <span className="relative z-10">{cat.label}</span>
           </button>
         ))}
       </div>
 
-      {/* Built-in theme grid */}
-      {activeCategory !== 'my_templates' && (
-        <div className="grid grid-cols-3 gap-3">
-          {visibleThemes.map(theme => {
-            const isSelected = value === theme.id && !selectedTemplateId
-            return (
-              <motion.button
-                key={theme.id}
-                type="button"
-                data-testid="theme-swatch"
-                onClick={() => handleThemeClick(theme.id)}
-                animate={{
-                  scale: isSelected ? 1.03 : 1,
-                  opacity: anyThemeSelected && !isSelected ? 0.72 : 1,
-                }}
-                whileHover={{ scale: isSelected ? 1.04 : 1.04 }}
-                transition={{ duration: 0.18 }}
-                className={cn(
-                  'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
-                  isSelected
-                    ? 'border-pm-teal ring-2 ring-pm-teal ring-offset-1'
-                    : 'border-pm-border hover:border-gray-300'
-                )}
-              >
-                {/* Selected checkmark badge */}
-                <AnimatePresence>
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-pm-teal flex items-center justify-center z-10 shadow-sm"
-                    >
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </motion.div>
+      {/* Theme / template grid — scroll container resets on tab change */}
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      >
+      <AnimatePresence mode="wait">
+        {activeCategory !== 'my_templates' ? (
+          <motion.div
+            key={activeCategory}
+            variants={gridVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="grid grid-cols-3 gap-3 p-1"
+          >
+            {visibleThemes.map(theme => {
+              const isSelected = value === theme.id && !selectedTemplateId
+              return (
+                <motion.button
+                  key={theme.id}
+                  variants={itemVariants}
+                  type="button"
+                  data-testid="theme-swatch"
+                  onClick={() => handleThemeClick(theme.id)}
+                  whileHover={{ scale: 1.04 }}
+                  animate={{ scale: isSelected ? 1.03 : 1 }}
+                  transition={{ duration: 0.18 }}
+                  className={cn(
+                    'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
+                    isSelected
+                      ? 'border-pm-teal ring-2 ring-pm-teal ring-inset'
+                      : 'border-pm-border hover:border-gray-300'
                   )}
-                </AnimatePresence>
-                <div className="w-full rounded-lg overflow-hidden flex-shrink-0" style={{ aspectRatio: '16/9' }}>
-                  <img
-                    src={`/themes/${theme.id}.png`}
-                    alt={theme.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const el = e.currentTarget
-                      el.style.display = 'none'
-                      const parent = el.parentElement
-                      if (parent) parent.style.backgroundColor = theme.bg
-                    }}
-                  />
-                </div>
-                <span className="text-xs font-medium text-pm-primary text-center leading-tight">
-                  {theme.name}
-                </span>
-              </motion.button>
-            )
-          })}
-        </div>
-      )}
-
-      {/* User templates grid */}
-      {activeCategory === 'my_templates' && (
-        <div className="grid grid-cols-3 gap-3">
-          {userTemplates?.map(template => {
-            const isSelected = selectedTemplateId === template.id
-            return (
-              <motion.button
-                key={template.id}
-                type="button"
-                onClick={() => handleTemplateClick(template)}
-                animate={{ scale: isSelected ? 1.03 : 1, opacity: selectedTemplateId && !isSelected ? 0.72 : 1 }}
-                whileHover={{ scale: 1.04 }}
-                transition={{ duration: 0.18 }}
-                className={cn(
-                  'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
-                  isSelected
-                    ? 'border-pm-teal ring-2 ring-pm-teal ring-offset-1'
-                    : 'border-pm-border hover:border-gray-300'
-                )}
-              >
-                <AnimatePresence>
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 450, damping: 20 }}
-                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-pm-teal flex items-center justify-center z-10 shadow-sm"
-                    >
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </motion.div>
+                >
+                  <AnimatePresence>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                        className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-pm-teal flex items-center justify-center z-10 shadow-sm"
+                      >
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <ThemeSwatch theme={theme} />
+                  <span className="text-xs font-medium text-pm-primary text-center leading-tight">
+                    {theme.name}
+                  </span>
+                </motion.button>
+              )
+            })}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="my_templates"
+            variants={gridVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="grid grid-cols-3 gap-3 p-1"
+          >
+            {userTemplates?.map(template => {
+              const isSelected = selectedTemplateId === template.id
+              return (
+                <motion.button
+                  key={template.id}
+                  variants={itemVariants}
+                  type="button"
+                  onClick={() => handleTemplateClick(template)}
+                  whileHover={{ scale: 1.04 }}
+                  animate={{ scale: isSelected ? 1.03 : 1 }}
+                  transition={{ duration: 0.18 }}
+                  className={cn(
+                    'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
+                    isSelected
+                      ? 'border-pm-teal ring-2 ring-pm-teal ring-inset'
+                      : 'border-pm-border hover:border-gray-300'
                   )}
-                </AnimatePresence>
-                <TemplateThumb templateId={template.id} name={template.name} theme={template.theme} previewCount={template.preview_count ?? 0} />
-                <span className="text-xs font-medium text-pm-primary text-center leading-tight line-clamp-1">
-                  {template.name}
-                </span>
-              </motion.button>
-            )
-          })}
-        </div>
-      )}
+                >
+                  <AnimatePresence>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 450, damping: 20 }}
+                        className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-pm-teal flex items-center justify-center z-10 shadow-sm"
+                      >
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <TemplateThumb templateId={template.id} name={template.name} theme={template.theme} previewCount={template.preview_count ?? 0} />
+                  <span className="text-xs font-medium text-pm-primary text-center leading-tight line-clamp-1">
+                    {template.name}
+                  </span>
+                </motion.button>
+              )
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </div>
     </div>
   )
 }

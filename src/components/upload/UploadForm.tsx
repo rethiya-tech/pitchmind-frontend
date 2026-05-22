@@ -159,7 +159,7 @@ function Section({
           <p className="text-xs text-pm-muted mt-0.5">{subtitle}</p>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-5">{children}</div>
+      <div className="flex-1 overflow-y-auto p-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">{children}</div>
     </div>
   )
 }
@@ -869,20 +869,24 @@ export function UploadForm() {
         subtitle="Select a visual style for your slides"
         done={false}
       >
-        <div className="flex flex-col gap-5 h-full">
-          <ThemePicker
-            value={theme}
-            onChange={(id) => {
-              setTheme(id)
-              const category = THEMES.find(t => t.id === id)?.category
-              if (category) setStyles(new Set([category]))
-            }}
-            userTemplates={userTemplates}
-            selectedTemplateId={selectedTemplateId}
-            onTemplateSelect={setSelectedTemplateId}
-          />
+        <div className="flex flex-col h-full">
+          {/* ThemePicker manages its own scroll internally */}
+          <div className="flex-1 min-h-0">
+            <ThemePicker
+              value={theme}
+              onChange={(id) => {
+                setTheme(id)
+                const category = THEMES.find(t => t.id === id)?.category
+                if (category) setStyles(new Set([category]))
+              }}
+              userTemplates={userTemplates}
+              selectedTemplateId={selectedTemplateId}
+              onTemplateSelect={setSelectedTemplateId}
+            />
+          </div>
 
-          <div className="mt-auto space-y-2 pt-4 border-t border-pm-border">
+          {/* Pinned footer — always visible */}
+          <div className="flex-shrink-0 space-y-2 pt-4 mt-4 border-t border-pm-border">
             {inputMode === 'file' ? (
               <StatusRow done={fileReady} label={fileReady ? `${file?.name} uploaded` : 'No document uploaded'} />
             ) : (
@@ -903,7 +907,7 @@ export function UploadForm() {
           </div>
 
           <Button
-            className="w-full"
+            className="w-full flex-shrink-0 mt-3"
             size="lg"
             loading={createMutation.isPending || presignMutation.isPending || loadingQuestions}
             disabled={!canGenerate || loadingQuestions}
