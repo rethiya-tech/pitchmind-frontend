@@ -12,12 +12,16 @@ import { templateSlideImageUrl } from '@/utils/slideImage'
 
 const CUSTOM_DESIGN = { bg: '#1E2A3A', accent: '#4A9EBF', text: '#E0E8F0', name: 'Custom Design' }
 
-function resolveTheme(theme: string | null | undefined) {
-  return theme ? (THEMES.find(th => th.id === theme) ?? THEMES[0]) : CUSTOM_DESIGN
+function resolveTheme(template: { theme?: string | null; custom_bg?: string | null; custom_text?: string | null; custom_accent?: string | null }) {
+  if (template.custom_bg && template.custom_text && template.custom_accent) {
+    return { bg: template.custom_bg, text: template.custom_text, accent: template.custom_accent, name: 'Custom' }
+  }
+  const id = template.theme
+  return id ? (THEMES.find(th => th.id === id) ?? THEMES[0]) : CUSTOM_DESIGN
 }
 
 function SlideThumbCard({ slide, index, theme }: { slide: any; index: number; theme: string | null }) {
-  const t = resolveTheme(theme)
+  const t = resolveTheme({ theme })
   const hasTitle = slide.title && !slide.title.match(/^Slide \d+$/)
   const hasBullets = (slide.bullets as string[])?.length > 0
 
@@ -96,7 +100,7 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
     queryKey: ['template-detail', template.id],
     queryFn: async () => (await api.get(`/templates/${template.id}`)).data,
   })
-  const t = resolveTheme(template.theme)
+  const t = resolveTheme(template)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -339,7 +343,7 @@ function TemplateRow({ template, currentUserId, isAdmin }: { template: Template;
   const [showView, setShowView] = useState(false)
   const [copying, setCopying] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const t = resolveTheme(template.theme)
+  const t = resolveTheme(template)
 
   // Admins can delete their own public templates; regular users can only delete their private ones
   const isOwn = template.created_by === currentUserId && (!template.is_public || isAdmin)

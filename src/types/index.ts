@@ -252,6 +252,9 @@ export interface Template {
   is_public: boolean
   sort_order?: number
   preview_count?: number
+  custom_bg?: string | null
+  custom_text?: string | null
+  custom_accent?: string | null
   created_by: string | null
   created_at: string
 }
@@ -268,4 +271,17 @@ export interface TemplateListResponse {
 export interface TemplateCopyResponse {
   conversion_id: string
   slide_count: number
+}
+
+export interface TemplateGenerateRequest {
+  name: string
+  description?: string
+  layouts: string[]
+  theme?: string
+  custom_bg?: string
+  custom_text?: string
+  custom_accent?: string
+  slide_count: number
+  style: 'professional' | 'creative' | 'minimal'
+  use_ai?: boolean
 }

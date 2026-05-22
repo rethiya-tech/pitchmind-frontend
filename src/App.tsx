@@ -16,6 +16,7 @@ import { SettingsPage } from '@/pages/SettingsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { ProjectsPage } from '@/pages/ProjectsPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
+import { GenerateTemplatePage } from '@/pages/GenerateTemplatePage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 import { AdminAuditLogPage } from '@/pages/admin/AdminAuditLogPage'
@@ -79,6 +80,7 @@ export default function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/templates" element={<TemplatesPage />} />
+              <Route path="/generate-template" element={<GenerateTemplatePage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
