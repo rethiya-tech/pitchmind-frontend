@@ -814,6 +814,27 @@ export function EditorPage() {
   const [presentationMode, setPresentationMode] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showCommandPalette, setShowCommandPalette] = useState(false)
+  const [showNotes, setShowNotes] = useState(true)
+  const autoPresented = useRef(false)
+
+  const enterPresentationMode = useCallback(() => {
+    setPresentationMode(true)
+    document.documentElement.requestFullscreen().catch(() => {})
+  }, [])
+
+  const exitPresentationMode = useCallback(() => {
+    setPresentationMode(false)
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+  }, [])
+
+  // Sync state when browser native fullscreen exits (e.g. pressing Esc)
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) setPresentationMode(false)
+    }
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => document.removeEventListener('fullscreenchange', onFsChange)
+  }, [])
   const initialActiveSet = useRef(false)
   const editInputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -866,7 +887,7 @@ export function EditorPage() {
 
     if (e.key === '?') { e.preventDefault(); setShowShortcuts((v) => !v) }
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setShowCommandPalette((v) => !v) }
-    if (e.key === 'p' || e.key === 'P') { e.preventDefault(); setPresentationMode(true) }
+    if (e.key === 'p' || e.key === 'P') { e.preventDefault(); enterPresentationMode() }
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault()
       if (activeIndex < visibleSlides.length - 1) setActiveSlide(visibleSlides[activeIndex + 1].id)
@@ -881,6 +902,15 @@ export function EditorPage() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
+
+  // Auto-present when navigated from the Projects "Present" button
+  const autoPresent = (location.state as { autoPresent?: boolean } | null)?.autoPresent
+  useEffect(() => {
+    if (autoPresent && !autoPresented.current && visibleSlides.length > 0 && !isLoading) {
+      autoPresented.current = true
+      enterPresentationMode()
+    }
+  }, [autoPresent, visibleSlides.length, isLoading, enterPresentationMode])
 
   useEffect(() => {
     if (!textEditor) return
@@ -1009,7 +1039,7 @@ export function EditorPage() {
         backTo={backTo}
         showWatermark={showWatermark}
         onToggleWatermark={() => setShowWatermark((v) => !v)}
-        onPresent={() => setPresentationMode(true)}
+        onPresent={enterPresentationMode}
       />
 
       {/* Three-panel body */}
@@ -1074,12 +1104,30 @@ export function EditorPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
+                <div className="w-px h-4 bg-pm-border mx-1" />
+                <button
+                  onClick={() => setShowNotes(v => !v)}
+                  title="Toggle speaker notes"
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 h-7 rounded-lg border text-xs font-medium transition-colors',
+                    showNotes
+                      ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                      : 'border-pm-border text-pm-muted hover:text-pm-primary'
+                  )}
+                >
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M4 5h6M4 7.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                  Notes
+                </button>
               </div>
             )}
           </div>
 
-          {/* Slide canvas */}
-          <div className="flex-1 overflow-auto flex items-center justify-center p-10">
+          {/* Slide canvas + notes */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-auto flex items-center justify-center p-10 min-h-0">
             {activeSlide ? (
               showOriginal ? (
                 <div className="w-full max-w-4xl drop-shadow-2xl">
@@ -1132,6 +1180,42 @@ export function EditorPage() {
               </div>
             )}
           </div>
+
+          {/* Speaker notes panel */}
+          <AnimatePresence initial={false}>
+            {showNotes && (
+              <motion.div
+                key="notes-panel"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22, ease: 'easeInOut' as const }}
+                className="flex-shrink-0 border-t border-[#D1D5DB] bg-white overflow-hidden"
+              >
+                <div className="flex items-center gap-2 px-5 py-2 border-b border-[#EDEFF2]">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" className="text-pm-muted flex-shrink-0">
+                    <rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M4 5h6M4 7.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                  <span className="text-[11px] font-semibold text-pm-muted uppercase tracking-wider">Speaker Notes</span>
+                  {activeSlide && (
+                    <span className="ml-auto text-[10px] text-pm-muted tabular-nums">
+                      {activeSlide.speaker_notes?.length ?? 0} chars
+                    </span>
+                  )}
+                </div>
+                <textarea
+                  className="w-full px-5 py-3 text-sm text-pm-primary placeholder:text-pm-muted resize-none focus:outline-none bg-transparent leading-relaxed"
+                  rows={4}
+                  value={activeSlide?.speaker_notes ?? ''}
+                  placeholder={activeSlide ? 'Add speaker notes for this slide…' : 'Select a slide to add notes'}
+                  disabled={!activeSlide}
+                  onChange={e => activeSlide && updateSlide(activeSlide.id, { speaker_notes: e.target.value })}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          </div>
         </main>
 
         {/* ── Panel 3: Properties ── */}
@@ -1165,13 +1249,13 @@ export function EditorPage() {
       <AnimatePresence>
         {presentationMode && activeSlide && (
           <motion.div
-            className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[100] bg-black flex flex-col"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.3 }}
             onKeyDown={(e) => {
-              if (e.key === 'Escape') setPresentationMode(false)
+              if (e.key === 'Escape') exitPresentationMode()
               if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                 if (activeIndex < visibleSlides.length - 1) setActiveSlide(visibleSlides[activeIndex + 1].id)
               }
@@ -1181,63 +1265,67 @@ export function EditorPage() {
             }}
             tabIndex={-1}
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide.id}
-                className="w-full max-w-5xl px-8"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ duration: 0.22, ease: 'easeOut' as const }}
-              >
-                <SlidePreview
-                  slide={activeSlide}
-                  theme={theme}
-                  showWatermark={showWatermark}
-                  logoUrl={conversion?.client_logo_url}
-                />
-              </motion.div>
-            </AnimatePresence>
+            {/* Main slide area */}
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden px-16 py-8">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeSlide.id}
+                  className="w-full max-w-[90vw]"
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.28, ease: 'easeOut' as const }}
+                >
+                  <SlidePreview
+                    slide={activeSlide}
+                    theme={theme}
+                    showWatermark={showWatermark}
+                    logoUrl={conversion?.client_logo_url}
+                  />
+                </motion.div>
+              </AnimatePresence>
 
-            {/* Nav controls */}
-            <div className="absolute bottom-8 flex items-center gap-6">
+              {/* Left arrow — edge */}
               <button
                 onClick={() => activeIndex > 0 && setActiveSlide(visibleSlides[activeIndex - 1].id)}
                 disabled={activeIndex === 0}
-                className="w-10 h-10 rounded-full border border-white/20 text-white/70 hover:text-white hover:border-white/50 flex items-center justify-center disabled:opacity-25 transition-all"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-white/30 hover:text-white hover:bg-white/10 disabled:opacity-0 transition-all"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span className="text-white/60 text-sm tabular-nums font-medium">
-                {activeIndex + 1} <span className="text-white/30">/</span> {visibleSlides.length}
-              </span>
+
+              {/* Right arrow — edge */}
               <button
                 onClick={() => activeIndex < visibleSlides.length - 1 && setActiveSlide(visibleSlides[activeIndex + 1].id)}
                 disabled={activeIndex === visibleSlides.length - 1}
-                className="w-10 h-10 rounded-full border border-white/20 text-white/70 hover:text-white hover:border-white/50 flex items-center justify-center disabled:opacity-25 transition-all"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-white/30 hover:text-white hover:bg-white/10 disabled:opacity-0 transition-all"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
+
+              {/* Close — top right */}
+              <button
+                onClick={exitPresentationMode}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-white/30 hover:text-white hover:bg-white/10 transition-all"
+                title="Exit fullscreen"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
             </div>
 
-            {/* Close */}
-            <button
-              onClick={() => setPresentationMode(false)}
-              className="absolute top-5 right-5 w-9 h-9 rounded-full border border-white/20 text-white/60 hover:text-white hover:border-white/50 flex items-center justify-center transition-all"
-              title="Exit (Esc)"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <p className="absolute top-5 left-1/2 -translate-x-1/2 text-white/40 text-xs">
-              Press <kbd className="font-mono">Esc</kbd> to exit · <kbd className="font-mono">← →</kbd> to navigate
-            </p>
+            {/* Slide count */}
+            <div className="flex-shrink-0 flex items-center justify-center py-3">
+              <span className="text-white/40 text-sm tabular-nums font-medium tracking-widest select-none">
+                {activeIndex + 1} <span className="text-white/20 mx-1">/</span> {visibleSlides.length}
+              </span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

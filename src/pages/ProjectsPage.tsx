@@ -572,6 +572,17 @@ export function ProjectsPage() {
                               <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </Link>
+                          <Link
+                            to={`/editor/${c.id}`}
+                            state={{ from: 'projects', autoPresent: true }}
+                            replace
+                            title="Present"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#E1F5EE] hover:border-pm-teal/40 hover:text-pm-teal text-pm-primary transition-colors"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                              <polygon points="3,1.5 12.5,7 3,12.5" fill="currentColor" />
+                            </svg>
+                          </Link>
                           <ExportButton conversionId={c.id} name={(c.name ?? c.original_filename ?? 'presentation').replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9\s-]/g, '').trim().slice(0, 40).trimEnd()} />
                           <DeleteButton conversionId={c.id} />
                         </div>
