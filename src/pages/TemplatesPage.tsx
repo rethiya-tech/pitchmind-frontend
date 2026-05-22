@@ -537,7 +537,7 @@ export function TemplatesPage() {
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Templates</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Templates</h1>
           <p className="text-sm text-pm-muted mt-0.5">Choose a template to start your presentation</p>
         </div>
         <button

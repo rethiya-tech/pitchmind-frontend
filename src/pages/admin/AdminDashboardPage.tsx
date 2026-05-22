@@ -118,7 +118,7 @@ export function AdminDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Admin Overview</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Admin Overview</h1>
           <p className="text-sm text-pm-muted mt-0.5">Platform health and activity at a glance</p>
         </div>
         <span className="text-xs text-pm-muted border border-pm-border rounded-lg px-3 py-1.5 bg-white">

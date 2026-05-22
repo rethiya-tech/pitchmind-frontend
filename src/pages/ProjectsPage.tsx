@@ -327,7 +327,7 @@ export function ProjectsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight">Projects</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Projects</h1>
           <p className="text-sm text-pm-muted mt-0.5">All your AI-generated presentations</p>
         </div>
         <Link

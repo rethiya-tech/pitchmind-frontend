@@ -18,4 +18,35 @@
     background-color: #F7F8F6;
     color: #1A1A1A;
   }
+
+  /* 4.3 — green glow on all focusable form elements */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    box-shadow: 0 0 0 3px rgba(15, 110, 86, 0.14), 0 1px 3px rgba(0,0,0,0.06);
+  }
+}
+
+@layer utilities {
+  /* 4.4 — subtle dot-grid on the app background */
+  .bg-pm-app {
+    background-color: #F7F8F6;
+    background-image: radial-gradient(rgba(15, 110, 86, 0.055) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* 4.5 — gradient text for page headings */
+  .gradient-heading {
+    background: linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* 4.6 — shimmer skeleton base */
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
 }

@@ -37,7 +37,7 @@ export function AdminAuditLogPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-pm-primary">Audit Log</h1>
+      <h1 className="text-2xl font-bold gradient-heading">Audit Log</h1>
 
       <form onSubmit={applyFilters} className="flex flex-wrap gap-2">
         <input

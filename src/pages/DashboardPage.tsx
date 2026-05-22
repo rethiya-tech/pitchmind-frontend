@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion, type Variants } from 'framer-motion'
-import { PageLoader } from '@/components/ui/PageLoader'
+import { SkeletonStatCard, SkeletonRow } from '@/components/ui/SkeletonCard'
 import { useDelayedLoading } from '@/hooks/useDelayedLoading'
 import { useAuthStore } from '@/stores/authStore'
 import api from '@/services/api'
@@ -41,7 +41,7 @@ function StatCard({
       variants={cardVariants}
       whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="bg-white rounded-2xl border border-pm-border px-6 py-5 flex items-start justify-between cursor-default"
+      className="bg-white rounded-2xl border border-pm-border shadow-card px-6 py-5 flex items-start justify-between cursor-default"
     >
       <div className="space-y-3">
         <p className="text-xs font-semibold text-pm-muted uppercase tracking-widest">{label}</p>
@@ -291,9 +291,30 @@ export function DashboardPage() {
     items.filter(c => c.created_at && new Date(c.created_at).toDateString() === day).length
   )
 
-  if (isLoading) {
-    return <PageLoader show={showSpinner} />
+  if (isLoading && showSpinner) {
+    return (
+      <div className="space-y-7">
+        <div className="flex items-end justify-between">
+          <div className="space-y-1.5">
+            <div className="skeleton-shimmer h-3 w-28 rounded-full" />
+            <div className="skeleton-shimmer h-7 w-40 rounded-full" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[0, 1, 2, 3].map((i) => <SkeletonStatCard key={i} />)}
+        </div>
+        <div className="col-span-2 flex flex-col gap-4">
+          <div className="bg-white rounded-2xl border border-pm-border overflow-hidden shadow-card">
+            <div className="px-5 py-3 bg-[#F9FAFB] border-b border-pm-border">
+              <div className="skeleton-shimmer h-3 w-32 rounded-full" />
+            </div>
+            {[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}
+          </div>
+        </div>
+      </div>
+    )
   }
+  if (isLoading) return null
 
   return (
     <div className="space-y-7">
@@ -302,7 +323,7 @@ export function DashboardPage() {
       <div className="flex items-end justify-between">
         <div>
           <p className="text-sm text-pm-muted font-medium">{greeting}, {firstName}</p>
-          <h1 className="text-2xl font-extrabold text-pm-primary tracking-tight mt-0.5">Dashboard</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight mt-0.5 gradient-heading">Dashboard</h1>
         </div>
         <p className="text-xs text-pm-muted hidden sm:block">
           {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date())}

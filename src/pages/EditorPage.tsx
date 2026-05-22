@@ -973,7 +973,7 @@ export function EditorPage() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── Panel 1: Slides ── */}
-        <aside className="w-64 flex flex-col bg-pm-surface border-r border-pm-border flex-shrink-0">
+        <aside className="w-64 flex flex-col bg-white/90 backdrop-blur-sm border-r border-pm-border flex-shrink-0">
           <PanelHeader
             title="Slides"
             action={
@@ -1092,7 +1092,7 @@ export function EditorPage() {
         </main>
 
         {/* ── Panel 3: Properties ── */}
-        <aside className="w-80 flex flex-col bg-pm-surface border-l border-pm-border flex-shrink-0">
+        <aside className="w-80 flex flex-col bg-white/90 backdrop-blur-sm border-l border-pm-border flex-shrink-0">
           <PanelHeader title="Properties" />
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
