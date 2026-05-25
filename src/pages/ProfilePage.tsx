@@ -25,7 +25,7 @@ export function ProfilePage() {
         <p className="text-sm text-pm-muted mt-0.5">Your account identity</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-pm-border overflow-hidden">
+      <div className="bg-pm-surface rounded-2xl border border-pm-border overflow-hidden">
         <div className="flex flex-col items-center gap-3 py-7 border-b border-pm-border">
           <div className="w-20 h-20 rounded-2xl bg-pm-teal flex items-center justify-center text-white text-2xl font-bold select-none">
             {initials}

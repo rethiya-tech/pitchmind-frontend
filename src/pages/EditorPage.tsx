@@ -115,12 +115,12 @@ function ShareModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96 }}
         transition={{ duration: 0.18, ease: 'easeOut' as const }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+        className="bg-pm-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-pm-border">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#E1F5EE] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-pm-teal-light flex items-center justify-center">
               <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
                 <circle cx="11" cy="2.5" r="1.5" stroke="#0F6E56" strokeWidth="1.3" />
                 <circle cx="11" cy="11.5" r="1.5" stroke="#0F6E56" strokeWidth="1.3" />
@@ -149,11 +149,11 @@ function ShareModal({
               disabled={loading}
               className={cn(
                 'relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 disabled:opacity-60',
-                isShared ? 'bg-pm-teal' : 'bg-gray-200'
+                isShared ? 'bg-pm-teal' : 'bg-pm-surface-3'
               )}
             >
               <span className={cn(
-                'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200',
+                'absolute top-0.5 w-5 h-5 rounded-full bg-pm-surface shadow transition-all duration-200',
                 isShared ? 'left-5' : 'left-0.5'
               )} />
             </button>
@@ -164,7 +164,7 @@ function ShareModal({
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 p-3 rounded-xl border border-pm-border/60 bg-[#F9FAFB]"
+              className="flex items-center gap-2 p-3 rounded-xl border border-pm-border/60 bg-pm-surface-2"
             >
               <span className="flex-1 text-xs text-pm-primary font-mono truncate">{shareUrl}</span>
               <button
@@ -173,7 +173,7 @@ function ShareModal({
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0',
                   copied
                     ? 'bg-pm-teal text-white'
-                    : 'bg-white border border-pm-border text-pm-primary hover:bg-gray-50'
+                    : 'bg-pm-surface border border-pm-border text-pm-primary hover:bg-pm-surface-2'
                 )}
               >
                 {copied ? (
@@ -201,7 +201,7 @@ function ShareModal({
           )}
         </div>
 
-        <div className="px-6 py-3 border-t border-pm-border bg-[#F9FAFB] flex justify-end">
+        <div className="px-6 py-3 border-t border-pm-border bg-pm-surface-2 flex justify-end">
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-pm-muted hover:text-pm-primary transition-colors">
             Close
           </button>
@@ -265,7 +265,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
   }
 
   return (
-    <header className="flex-shrink-0 bg-white border-b border-pm-border flex items-center justify-between px-5" style={{ minHeight: '52px' }}>
+    <header className="flex-shrink-0 bg-pm-surface border-b border-pm-border flex items-center justify-between px-5" style={{ minHeight: '52px' }}>
       {/* Left: nav */}
       <div className="flex items-center gap-3 min-w-0">
         <Link
@@ -333,7 +333,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
           className={cn(
             'flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors',
             showWatermark
-              ? 'border-pm-border text-pm-muted hover:text-pm-primary hover:border-gray-300'
+              ? 'border-pm-border text-pm-muted hover:text-pm-primary hover:border-pm-border-strong'
               : 'border-transparent text-pm-muted/50 hover:text-pm-muted'
           )}
         >
@@ -356,8 +356,8 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
           className={cn(
             'flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors',
             isShared
-              ? 'border-pm-teal/40 bg-[#E1F5EE] text-pm-teal hover:bg-[#D0EDE6]'
-              : 'border-pm-border text-pm-muted hover:text-pm-primary hover:border-gray-300'
+              ? 'border-pm-teal/40 bg-pm-teal-light text-pm-teal hover:bg-pm-teal/15'
+              : 'border-pm-border text-pm-muted hover:text-pm-primary hover:border-pm-border-strong'
           )}
         >
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
@@ -373,7 +373,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
         <button
           onClick={onPresent}
           title="Presentation mode (P)"
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-pm-border text-pm-muted hover:text-pm-primary hover:border-gray-300 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-pm-border text-pm-muted hover:text-pm-primary hover:border-pm-border-strong transition-colors"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
@@ -409,7 +409,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
           {dropdownOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-pm-border rounded-lg shadow-lg py-1 min-w-[160px]">
+              <div className="absolute right-0 top-full mt-1 z-20 bg-pm-surface border border-pm-border rounded-lg shadow-lg py-1 min-w-[160px]">
                 {([
                   { fmt: 'pptx', label: 'Download PPTX' },
                   { fmt: 'pdf',  label: 'Download PDF' },
@@ -417,7 +417,7 @@ function EditorBar({ conversionId, conversionName, isSaving, hasError, backTo, s
                 ] as { fmt: 'pptx' | 'pdf' | 'docx'; label: string }[]).map(({ fmt, label }) => (
                   <button
                     key={fmt}
-                    className="w-full text-left px-4 py-2 text-sm text-pm-primary hover:bg-gray-50 transition-colors"
+                    className="w-full text-left px-4 py-2 text-sm text-pm-primary hover:bg-pm-surface-2 transition-colors"
                     onClick={() => handleExport(fmt)}
                   >
                     {label}
@@ -702,7 +702,7 @@ export function EditorPage() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── Panel 1: Slides ── */}
-        <aside className="w-64 flex flex-col bg-white/90 backdrop-blur-sm border-r border-pm-border flex-shrink-0">
+        <aside className="w-64 flex flex-col bg-pm-surface/90 backdrop-blur-sm border-r border-pm-border flex-shrink-0">
           <PanelHeader
             title="Slides"
             action={
@@ -717,9 +717,9 @@ export function EditorPage() {
         </aside>
 
         {/* ── Panel 2: Canvas ── */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-[#E8EAED]">
+        <main className="flex-1 flex flex-col overflow-hidden bg-pm-surface-3">
           {/* Canvas header bar */}
-          <div className="h-11 border-b border-[#D1D5DB] bg-white flex items-center justify-between px-5 flex-shrink-0">
+          <div className="h-11 border-b border-pm-border-strong bg-pm-surface flex items-center justify-between px-5 flex-shrink-0">
             {/* Slide name */}
             <span className="text-sm font-medium text-pm-primary truncate max-w-xs">
               {activeSlide ? activeSlide.title || 'Untitled Slide' : 'No slide selected'}
@@ -733,7 +733,7 @@ export function EditorPage() {
                   className={cn(
                     'px-2.5 h-7 rounded-lg border text-xs font-medium transition-colors mr-1',
                     showOriginal
-                      ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                      ? 'border-pm-teal bg-pm-teal-light text-pm-teal'
                       : 'border-pm-border text-pm-muted hover:text-pm-primary'
                   )}
                 >
@@ -742,19 +742,19 @@ export function EditorPage() {
                 <button
                   onClick={() => activeIndex > 0 && setActiveSlide(visibleSlides[activeIndex - 1].id)}
                   disabled={activeIndex === 0}
-                  className="w-7 h-7 rounded-lg border border-pm-border flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="w-7 h-7 rounded-lg border border-pm-border flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-pm-border-strong disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
                 <span className="text-xs text-pm-muted tabular-nums font-medium">
-                  {activeIndex + 1} <span className="text-gray-300">/</span> {visibleSlides.length}
+                  {activeIndex + 1} <span className="text-pm-subtle">/</span> {visibleSlides.length}
                 </span>
                 <button
                   onClick={() => activeIndex < visibleSlides.length - 1 && setActiveSlide(visibleSlides[activeIndex + 1].id)}
                   disabled={activeIndex === visibleSlides.length - 1}
-                  className="w-7 h-7 rounded-lg border border-pm-border flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="w-7 h-7 rounded-lg border border-pm-border flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-pm-border-strong disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -767,7 +767,7 @@ export function EditorPage() {
                   className={cn(
                     'flex items-center gap-1.5 px-2.5 h-7 rounded-lg border text-xs font-medium transition-colors',
                     showNotes
-                      ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                      ? 'border-pm-teal bg-pm-teal-light text-pm-teal'
                       : 'border-pm-border text-pm-muted hover:text-pm-primary'
                   )}
                 >
@@ -788,7 +788,7 @@ export function EditorPage() {
               showOriginal ? (
                 <div className="w-full max-w-4xl drop-shadow-2xl">
                   {origError ? (
-                    <div className="bg-white rounded-xl border border-pm-border p-10 text-center text-sm text-pm-muted">
+                    <div className="bg-pm-surface rounded-xl border border-pm-border p-10 text-center text-sm text-pm-muted">
                       This deck has no original uploaded design (it wasn't created from an
                       uploaded template). Use “Editing view”.
                     </div>
@@ -797,7 +797,7 @@ export function EditorPage() {
                       src={conversionSlideImageUrl(id ?? '', activeIndex)}
                       alt={`Original slide ${activeIndex + 1}`}
                       onError={() => setOrigError(true)}
-                      className="w-full rounded-xl border border-pm-border bg-white"
+                      className="w-full rounded-xl border border-pm-border bg-pm-surface"
                     />
                   )}
                   <p className="text-center text-xs text-pm-muted mt-2">
@@ -828,7 +828,7 @@ export function EditorPage() {
               </div>
               )
             ) : (
-              <div className="flex flex-col items-center gap-3 text-gray-400">
+              <div className="flex flex-col items-center gap-3 text-pm-subtle">
                 <svg className="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                 </svg>
@@ -846,9 +846,9 @@ export function EditorPage() {
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.22, ease: 'easeInOut' as const }}
-                className="flex-shrink-0 border-t border-[#D1D5DB] bg-white overflow-hidden"
+                className="flex-shrink-0 border-t border-pm-border-strong bg-pm-surface overflow-hidden"
               >
-                <div className="flex items-center gap-2 px-5 py-2 border-b border-[#EDEFF2]">
+                <div className="flex items-center gap-2 px-5 py-2 border-b border-pm-border">
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" className="text-pm-muted flex-shrink-0">
                     <rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
                     <path d="M4 5h6M4 7.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -875,7 +875,7 @@ export function EditorPage() {
         </main>
 
         {/* ── Panel 3: Properties ── */}
-        <aside className="w-80 flex flex-col bg-white/90 backdrop-blur-sm border-l border-pm-border flex-shrink-0">
+        <aside className="w-80 flex flex-col bg-pm-surface/90 backdrop-blur-sm border-l border-pm-border flex-shrink-0">
           <PanelHeader title="Properties" />
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -1000,7 +1000,7 @@ export function EditorPage() {
 
       {textEditor && (
         <div
-          className="fixed z-50 w-[380px] -translate-x-1/2 -translate-y-full rounded-xl border border-pm-border bg-white p-3 shadow-2xl"
+          className="fixed z-50 w-[380px] -translate-x-1/2 -translate-y-full rounded-xl border border-pm-border bg-pm-surface p-3 shadow-2xl"
           style={{ top: textEditor.top, left: textEditor.left }}
           onMouseDown={(e) => e.stopPropagation()}
         >
@@ -1011,7 +1011,7 @@ export function EditorPage() {
             <button
               type="button"
               onClick={closeTextEditor}
-              className="h-6 w-6 rounded-md text-pm-muted hover:bg-gray-100 hover:text-pm-primary"
+              className="h-6 w-6 rounded-md text-pm-muted hover:bg-pm-surface-3 hover:text-pm-primary"
               aria-label="Close text editor"
             >
               ×
@@ -1032,7 +1032,7 @@ export function EditorPage() {
                 saveTextEditor()
               }
             }}
-            className="w-full resize-none rounded-lg border border-pm-border bg-white px-3 py-2 text-sm text-pm-primary outline-none transition focus:ring-2 focus:ring-pm-teal"
+            className="w-full resize-none rounded-lg border border-pm-border bg-pm-surface px-3 py-2 text-sm text-pm-primary outline-none transition focus:ring-2 focus:ring-pm-teal"
           />
 
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -1041,7 +1041,7 @@ export function EditorPage() {
               <select
                 value={textEditor.style.fontFamily ?? 'Plus Jakarta Sans'}
                 onChange={(e) => setTextEditor({ ...textEditor, style: { ...textEditor.style, fontFamily: e.target.value } })}
-                className="h-9 w-full rounded-lg border border-pm-border bg-white px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
+                className="h-9 w-full rounded-lg border border-pm-border bg-pm-surface px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
               >
                 {FONT_OPTIONS.map((font) => (
                   <option key={font} value={font}>{font}</option>
@@ -1054,7 +1054,7 @@ export function EditorPage() {
               <select
                 value={textEditor.style.fontWeight ?? 400}
                 onChange={(e) => setTextEditor({ ...textEditor, style: { ...textEditor.style, fontWeight: Number(e.target.value) } })}
-                className="h-9 w-full rounded-lg border border-pm-border bg-white px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
+                className="h-9 w-full rounded-lg border border-pm-border bg-pm-surface px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
               >
                 {FONT_WEIGHTS.map((weight) => (
                   <option key={weight.value} value={weight.value}>{weight.label}</option>
@@ -1070,7 +1070,7 @@ export function EditorPage() {
                 max={96}
                 value={textEditor.style.fontSize ?? 18}
                 onChange={(e) => setTextEditor({ ...textEditor, style: { ...textEditor.style, fontSize: Number(e.target.value) } })}
-                className="h-9 w-full rounded-lg border border-pm-border bg-white px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
+                className="h-9 w-full rounded-lg border border-pm-border bg-pm-surface px-2 text-xs text-pm-primary outline-none focus:ring-2 focus:ring-pm-teal"
               />
             </label>
 
@@ -1107,7 +1107,7 @@ export function EditorPage() {
               className={cn(
                 'h-8 rounded-lg border px-3 text-xs font-semibold italic transition',
                 textEditor.style.italic
-                  ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                  ? 'border-pm-teal bg-pm-teal-light text-pm-teal'
                   : 'border-pm-border text-pm-muted hover:text-pm-primary'
               )}
             >
@@ -1116,7 +1116,7 @@ export function EditorPage() {
           </div>
 
           <div
-            className="mt-3 rounded-lg border border-pm-border bg-[#F9FAFB] px-3 py-2 text-sm"
+            className="mt-3 rounded-lg border border-pm-border bg-pm-surface-2 px-3 py-2 text-sm"
             style={{
               fontFamily: `"${textEditor.style.fontFamily ?? 'Plus Jakarta Sans'}", sans-serif`,
               fontWeight: textEditor.style.fontWeight ?? 400,
@@ -1132,7 +1132,7 @@ export function EditorPage() {
             <button
               type="button"
               onClick={closeTextEditor}
-              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-pm-muted hover:bg-gray-100 hover:text-pm-primary"
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-pm-muted hover:bg-pm-surface-3 hover:text-pm-primary"
             >
               Cancel
             </button>
@@ -1140,7 +1140,7 @@ export function EditorPage() {
               type="button"
               onClick={saveTextEditor}
               disabled={!textEditor.value.trim()}
-              className="rounded-lg bg-pm-teal px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#0B5F4A] disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg bg-pm-teal px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-pm-teal-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save
             </button>

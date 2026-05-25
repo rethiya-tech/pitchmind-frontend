@@ -138,7 +138,7 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
     <div className={cn('flex flex-col gap-3', { 'opacity-50 pointer-events-none': disabled })}>
 
       {/* Category tabs — gliding pill indicator — sticky within Section scroll */}
-      <div className="sticky top-0 z-20 flex gap-1 bg-white rounded-lg p-1 border border-pm-border shadow-[0_4px_8px_-4px_rgba(0,0,0,0.06)]">
+      <div className="sticky top-0 z-20 flex gap-1 bg-pm-surface rounded-lg p-1 border border-pm-border shadow-[0_4px_8px_-4px_rgba(0,0,0,0.06)]">
         {categories.map(cat => (
           <button
             key={cat.id}
@@ -150,7 +150,7 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
             {activeCategory === cat.id && (
               <motion.div
                 layoutId="theme-tab-pill"
-                className="absolute inset-0 bg-white rounded-md shadow-sm border border-pm-border"
+                className="absolute inset-0 bg-pm-surface rounded-md shadow-sm border border-pm-border"
                 transition={{ type: 'spring', stiffness: 420, damping: 34 }}
               />
             )}
@@ -185,7 +185,7 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
                     'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
                     isSelected
                       ? 'border-pm-teal ring-2 ring-pm-teal ring-inset'
-                      : 'border-pm-border hover:border-gray-300'
+                      : 'border-pm-border hover:border-pm-border-strong'
                   )}
                 >
                   <AnimatePresence>
@@ -235,7 +235,7 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
                     'relative flex flex-col items-center gap-2 p-2 rounded-xl border-2 transition-colors',
                     isSelected
                       ? 'border-pm-teal ring-2 ring-pm-teal ring-inset'
-                      : 'border-pm-border hover:border-gray-300'
+                      : 'border-pm-border hover:border-pm-border-strong'
                   )}
                 >
                   <AnimatePresence>

@@ -117,16 +117,14 @@ function Section({
   scrollable?: boolean
 }) {
   return (
-    <div className="flex flex-col bg-white rounded-2xl border border-pm-border overflow-hidden h-full min-h-0">
+    <div className="flex flex-col bg-pm-surface rounded-2xl border border-pm-border overflow-hidden h-full min-h-0">
       <div className="flex items-start gap-3 px-5 py-4 border-b border-pm-border flex-shrink-0">
         <motion.span
           animate={{
-            backgroundColor: done ? '#0F6E56' : '#E6F2EF',
-            color: done ? '#FFFFFF' : '#0F6E56',
             scale: done ? [1, 1.25, 1] : 1,
           }}
           transition={{ duration: 0.35, ease: 'easeOut' as const }}
-          className="mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+          className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-colors ${done ? 'bg-pm-teal text-white' : 'bg-pm-teal-light text-pm-teal'}`}
         >
           <AnimatePresence mode="wait" initial={false}>
             {done ? (
@@ -167,7 +165,7 @@ function Section({
           the scroll container as a fixed white spacer so scrolling tiles
           never appear in the gap between the section header and a sticky child. */}
       {scrollable ? (
-        <div className="flex-1 min-h-0 flex flex-col bg-white">
+        <div className="flex-1 min-h-0 flex flex-col bg-pm-surface">
           <div className="flex-shrink-0 h-5" aria-hidden />
           <div className="flex-1 min-h-0 px-5 pb-5 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-pm-border [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
             {children}
@@ -180,7 +178,7 @@ function Section({
       )}
       {/* Pinned footer — always visible, outside the scroll area */}
       {footer && (
-        <div className="flex-shrink-0 px-5 pb-4 pt-4 border-t border-pm-border bg-white">
+        <div className="flex-shrink-0 px-5 pb-4 pt-4 border-t border-pm-border bg-pm-surface">
           {footer}
         </div>
       )}
@@ -201,7 +199,7 @@ function Field({ label, children, boldLabel = true }: { label: string; children:
 }
 
 const selectCls =
-  'w-full border border-pm-border rounded-lg px-3 py-2.5 text-sm text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition'
+  'w-full border border-pm-border rounded-lg px-3 py-2.5 text-sm text-pm-primary bg-pm-surface focus:outline-none focus:ring-2 focus:ring-pm-teal transition'
 
 // ── Main form ─────────────────────────────────────────────────────────────────
 export function UploadForm() {
@@ -450,7 +448,7 @@ export function UploadForm() {
     const progress = progressOverride !== null ? progressOverride : naturalProgress
 
     return (
-      <div className="flex flex-col bg-white rounded-2xl border border-pm-border overflow-hidden h-full">
+      <div className="flex flex-col bg-pm-surface rounded-2xl border border-pm-border overflow-hidden h-full">
 
         {/* Header */}
         <div className="flex items-center gap-3 px-6 py-4 border-b border-pm-border flex-shrink-0">
@@ -471,7 +469,7 @@ export function UploadForm() {
             <p className="text-sm font-semibold text-pm-primary leading-tight">Clarifying Questions</p>
             <p className="text-xs text-pm-muted mt-0.5">All fields are optional — skip anything that doesn't apply</p>
           </div>
-          <div className="ml-auto flex items-center gap-1.5 bg-[#E1F5EE] text-pm-teal rounded-full px-3 py-1 text-xs font-semibold">
+          <div className="ml-auto flex items-center gap-1.5 bg-pm-teal-light text-pm-teal rounded-full px-3 py-1 text-xs font-semibold">
             <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
               <path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z" />
             </svg>
@@ -515,7 +513,7 @@ export function UploadForm() {
                       'px-4 py-2 rounded-full border text-sm font-medium transition-all',
                       selected
                         ? 'bg-pm-teal text-white border-pm-teal shadow-sm'
-                        : 'bg-[#F7FAFA] text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                        : 'bg-pm-surface-2 text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
                     )}
                   >
                     {option}
@@ -530,7 +528,7 @@ export function UploadForm() {
               value={currentChips.length > 0 ? '' : currentAnswer}
               onChange={(e) => setTextAnswer(qi, e.target.value)}
               placeholder={currentChips.length > 0 ? `Selected: ${currentChips.join(', ')}` : 'Or type your own answer…'}
-              className="w-full border border-pm-border rounded-xl px-4 py-3 text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-gray-400 resize-none bg-[#FAFAFA]"
+              className="w-full border border-pm-border rounded-xl px-4 py-3 text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-pm-subtle resize-none bg-pm-surface-2"
             />
           </div>
         </div>
@@ -579,7 +577,7 @@ export function UploadForm() {
               className={cn(
                 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all',
                 inputMode === 'file'
-                  ? 'bg-white text-pm-teal shadow-sm border border-pm-border'
+                  ? 'bg-pm-surface text-pm-teal shadow-sm border border-pm-border'
                   : 'text-pm-muted hover:text-pm-primary'
               )}
             >
@@ -595,7 +593,7 @@ export function UploadForm() {
               className={cn(
                 'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all',
                 inputMode === 'prompt'
-                  ? 'bg-white text-pm-teal shadow-sm border border-pm-border'
+                  ? 'bg-pm-surface text-pm-teal shadow-sm border border-pm-border'
                   : 'text-pm-muted hover:text-pm-primary'
               )}
             >
@@ -638,7 +636,7 @@ export function UploadForm() {
                 onChange={(e) => setPromptText(e.target.value.slice(0, PROMPT_MAX))}
                 placeholder={`Describe your presentation topic or paste an outline…\n\nExamples:\n• "A 10-slide pitch deck for a SaaS startup targeting HR teams"\n• "Quarterly business review for Q3 2024 with financial highlights"\n• Paste your raw notes or bullet points directly`}
                 className={cn(
-                  'flex-1 w-full resize-none border rounded-xl px-4 py-3 text-sm text-pm-primary bg-white',
+                  'flex-1 w-full resize-none border rounded-xl px-4 py-3 text-sm text-pm-primary bg-pm-surface',
                   'focus:outline-none focus:ring-2 focus:ring-pm-teal transition leading-relaxed',
                   'placeholder:text-pm-muted/60',
                   promptText.length > 0 && promptText.trim().length < PROMPT_MIN
@@ -685,8 +683,8 @@ export function UploadForm() {
                       className={cn(
                         'flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all',
                         enhancing
-                          ? 'border-pm-border text-pm-muted bg-gray-50 cursor-not-allowed'
-                          : 'border-pm-teal/60 text-pm-teal bg-[#F0FBF7] hover:bg-pm-teal hover:text-white hover:border-pm-teal'
+                          ? 'border-pm-border text-pm-muted bg-pm-surface-2 cursor-not-allowed'
+                          : 'border-pm-teal/60 text-pm-teal bg-pm-teal-light hover:bg-pm-teal hover:text-white hover:border-pm-teal'
                       )}
                     >
                       {enhancing ? (
@@ -735,7 +733,7 @@ export function UploadForm() {
                     'w-10 h-9 rounded-lg text-sm font-medium border transition-all flex-shrink-0',
                     slideCount === n && !customCount
                       ? 'bg-pm-teal text-white border-pm-teal shadow-sm'
-                      : 'bg-white text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                      : 'bg-pm-surface text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
                   )}
                 >
                   {n}
@@ -760,9 +758,9 @@ export function UploadForm() {
                   else { setCustomError(''); setSlideCount(n); setSlideCountSelected(true) }
                 }}
                 className={cn(
-                  'flex-1 min-w-[90px] h-9 border rounded-lg px-3 text-sm text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition',
-                  customError ? 'border-red-400 focus:ring-red-300' :
-                  customCount && !customError ? 'border-pm-teal bg-[#F0FBF7]' : 'border-pm-border'
+                  'flex-1 min-w-[90px] h-9 border rounded-lg px-3 text-sm text-pm-primary bg-pm-surface focus:outline-none focus:ring-2 focus:ring-pm-teal transition',
+                  customError ? 'border-pm-danger focus:ring-pm-danger/40' :
+                  customCount && !customError ? 'border-pm-teal bg-pm-teal-light' : 'border-pm-border'
                 )}
               />
             </div>
@@ -774,7 +772,7 @@ export function UploadForm() {
               )}
               {(!slideCountSelected || customError) && <span />}
               {customError && (
-                <span className="text-xs text-red-500 flex items-center gap-1">
+                <span className="text-xs text-pm-danger flex items-center gap-1">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
@@ -805,7 +803,7 @@ export function UploadForm() {
                     'px-3 py-1.5 rounded-lg border text-xs font-medium transition-all capitalize',
                     styles.has(s)
                       ? 'bg-pm-teal text-white border-pm-teal'
-                      : 'bg-white text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                      : 'bg-pm-surface text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
                   )}
                 >
                   {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -820,7 +818,7 @@ export function UploadForm() {
             <label className="cursor-pointer flex items-center gap-3">
               <div className={cn(
                 'w-14 h-14 rounded-xl border-2 border-dashed flex items-center justify-center flex-shrink-0 overflow-hidden transition-colors',
-                logoPreview ? 'border-pm-teal bg-[#F0FBF7]' : 'border-pm-border bg-gray-50 hover:border-pm-teal'
+                logoPreview ? 'border-pm-teal bg-pm-teal-light' : 'border-pm-border bg-pm-surface-2 hover:border-pm-teal'
               )}>
                 {logoUploading ? (
                   <svg className="animate-spin w-5 h-5 text-pm-teal" fill="none" viewBox="0 0 24 24">
@@ -877,7 +875,7 @@ export function UploadForm() {
                       'px-3 py-1.5 rounded-lg border text-xs font-medium transition-all',
                       presentationFlags.has(flag)
                         ? 'bg-pm-teal text-white border-pm-teal'
-                        : 'bg-white text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
+                        : 'bg-pm-surface text-pm-primary border-pm-border hover:border-pm-teal hover:text-pm-teal'
                     )}
                   >
                     {label}
@@ -951,7 +949,7 @@ function StatusRow({ done, label }: { done: boolean; label: string }) {
       <span
         className={cn(
           'w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0',
-          done ? 'bg-pm-teal' : 'bg-gray-200'
+          done ? 'bg-pm-teal' : 'bg-pm-surface-3'
         )}
       >
         {done ? (

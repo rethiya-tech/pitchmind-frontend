@@ -36,7 +36,7 @@ function SlideThumbnail({
     <button
       onClick={onClick}
       className={`group w-full flex items-center gap-2.5 px-2 py-2 rounded-xl transition-all text-left ${
-        isActive ? 'bg-[#E1F5EE]' : 'hover:bg-gray-50'
+        isActive ? 'bg-pm-teal-light' : 'hover:bg-pm-surface-2'
       }`}
     >
       {/* Active indicator */}
@@ -148,9 +148,9 @@ export function ShareViewPage() {
 
   if (isError || !data) {
     return (
-      <div className="min-h-screen bg-[#F4FCF8] flex items-center justify-center">
+      <div className="min-h-screen bg-pm-app flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-pm-teal-light flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
               <path d="M14 10v5M14 18v.5" stroke="#0F6E56" strokeWidth="1.8" strokeLinecap="round" />
               <circle cx="14" cy="14" r="11" stroke="#0F6E56" strokeWidth="1.8" />
@@ -168,7 +168,7 @@ export function ShareViewPage() {
     <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(to right, #F4FCF8 0%, #FDF7E8 100%)' }}>
 
       {/* Top bar */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-pm-border/50 flex-shrink-0">
+      <header className="bg-pm-surface/80 backdrop-blur-xl border-b border-pm-border/50 flex-shrink-0">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
             <div
@@ -214,7 +214,7 @@ export function ShareViewPage() {
       <div className="flex-1 flex overflow-hidden">
 
         {/* Left sidebar — slide list */}
-        <aside className="w-56 flex-shrink-0 bg-white/60 backdrop-blur-sm border-r border-pm-border/50 flex flex-col overflow-hidden">
+        <aside className="w-56 flex-shrink-0 bg-pm-surface/60 backdrop-blur-sm border-r border-pm-border/50 flex flex-col overflow-hidden">
           <div className="px-3 py-2.5 border-b border-pm-border/50 flex-shrink-0">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-pm-muted">Slides</span>
           </div>
@@ -263,7 +263,7 @@ export function ShareViewPage() {
             <button
               onClick={prev}
               disabled={activeIndex === 0}
-              className="w-9 h-9 rounded-full border border-pm-border bg-white/80 flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+              className="w-9 h-9 rounded-full border border-pm-border bg-pm-surface/80 flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-pm-border-strong disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -288,7 +288,7 @@ export function ShareViewPage() {
             <button
               onClick={next}
               disabled={activeIndex === slides.length - 1}
-              className="w-9 h-9 rounded-full border border-pm-border bg-white/80 flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
+              className="w-9 h-9 rounded-full border border-pm-border bg-pm-surface/80 flex items-center justify-center text-pm-muted hover:text-pm-primary hover:border-pm-border-strong disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

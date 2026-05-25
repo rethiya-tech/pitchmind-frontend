@@ -102,7 +102,7 @@ export function RegisterPage() {
           onChange={(e) => onChange(e.target.value)}
           placeholder={opts.placeholder}
           autoComplete={opts.autoComplete}
-          className="w-full border border-pm-border rounded-lg px-4 py-3 text-sm text-pm-primary bg-white placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors pr-11"
+          className="w-full border border-pm-border rounded-lg px-4 py-3 text-sm text-pm-primary bg-pm-surface placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors pr-11"
         />
         {opts.showToggle && (
           <button
@@ -122,7 +122,7 @@ export function RegisterPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* ── Left: Form ── */}
-      <div className="flex flex-col justify-center px-8 py-12 bg-white">
+      <div className="flex flex-col justify-center px-8 py-12 bg-pm-surface">
         <div className="w-full max-w-sm mx-auto space-y-7">
           {/* Logo */}
           <div className="flex items-center gap-2.5">

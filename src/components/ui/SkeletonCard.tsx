@@ -6,7 +6,7 @@ function SkeletonLine({ className }: { className?: string }) {
 
 export function SkeletonStatCard() {
   return (
-    <div className="bg-white rounded-2xl border border-pm-border px-6 py-5 flex items-start justify-between shadow-card">
+    <div className="bg-pm-surface rounded-2xl border border-pm-border px-6 py-5 flex items-start justify-between shadow-card">
       <div className="space-y-3 flex-1">
         <SkeletonLine className="h-3 w-1/3" />
         <SkeletonLine className="h-8 w-1/2" />

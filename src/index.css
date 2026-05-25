@@ -8,6 +8,173 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Theme tokens ──
+     Values are RGB triplets (space-separated) so Tailwind can
+     synthesize alpha via `rgb(var(--x) / <alpha-value>)`. */
+  :root {
+    /* Surfaces */
+    --pm-app: 244 252 248;          /* #F4FCF8 */
+    --pm-surface: 255 255 255;      /* #FFFFFF */
+    --pm-surface-2: 249 250 251;    /* #F9FAFB */
+    --pm-surface-3: 243 244 246;    /* #F3F4F6 */
+
+    /* Brand greens */
+    --pm-teal: 15 110 86;           /* #0F6E56 */
+    --pm-teal-hover: 10 90 69;      /* #0A5A45 */
+    --pm-teal-light: rgba(15, 110, 86, 0.10);
+    --pm-teal-gradient-end: 10 155 110; /* #0A9B6E */
+
+    /* Gold */
+    --pm-gold: 201 147 10;          /* #C9930A */
+    --pm-gold-hover: 168 120 8;     /* #A87808 */
+    --pm-gold-light: rgba(232, 184, 74, 0.14);
+    --pm-gold-end: 232 184 74;      /* #E8B84A */
+
+    /* Sidebar */
+    --pm-sidebar: 12 20 33;         /* #0C1421 */
+    --pm-sidebar-mid: 15 27 46;     /* #0F1B2E */
+
+    /* Borders — full colors (no alpha modifier support needed) */
+    --pm-border: #E5E7EB;
+    --pm-border-strong: #D1D5DB;
+
+    /* Text */
+    --pm-text-primary: 26 26 26;    /* #1A1A1A */
+    --pm-text-muted: 107 114 128;   /* #6B7280 */
+    --pm-text-subtle: 156 163 175;  /* #9CA3AF */
+
+    /* Status */
+    --pm-danger: 220 38 38;         /* #DC2626 */
+    --pm-warning: 217 119 6;        /* #D97706 */
+    --pm-success: 5 150 105;        /* #059669 */
+    --pm-glow: rgba(15, 110, 86, 0.15);
+
+    /* Shadows */
+    --pm-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --pm-shadow-card-hover: 0 12px 36px rgba(15, 110, 86, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
+    --pm-shadow-premium: 0 20px 48px rgba(0, 0, 0, 0.10), 0 6px 16px rgba(0, 0, 0, 0.06);
+
+    /* Body gradient stops */
+    --pm-body-from: #F4FCF8;
+    --pm-body-to: #FDF7E8;
+
+    /* Focus ring */
+    --pm-focus-ring: 0 0 0 3px rgba(15, 110, 86, 0.16), 0 1px 3px rgba(0, 0, 0, 0.06);
+
+    /* Skeleton */
+    --pm-skeleton-base: #ececec;
+    --pm-skeleton-mid: #f5f5f5;
+
+    /* Sidebar glass */
+    --pm-sidebar-glass-top: rgba(255, 255, 255, 0.72);
+    --pm-sidebar-glass-bottom: rgba(253, 247, 232, 0.58);
+    --pm-sidebar-glass-border: rgba(255, 255, 255, 0.82);
+    --pm-sidebar-glass-divider: rgba(255, 255, 255, 0.50);
+    --pm-sidebar-glass-shadow:
+      0 8px 32px rgba(15, 110, 86, 0.07),
+      0 2px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    /* Glass — theme-aware translucent surface (light mode = white) */
+    --pm-glass-bg: rgba(255, 255, 255, 0.82);
+    --pm-glass-bg-strong: rgba(255, 255, 255, 0.92);
+    --pm-glass-bg-soft: rgba(255, 255, 255, 0.65);
+    --pm-glass-border: rgba(255, 255, 255, 0.82);
+  }
+
+  .dark {
+    /* ── Charcoal noir base ──
+       Refined dark charcoal with a faint green undertone.
+       Reads as elegant neutral, not garish forest green.
+       Brand green is reserved for accents/CTAs. */
+    --pm-app: 11 15 13;             /* #0B0F0D — body (deepest) */
+    --pm-surface: 24 28 26;         /* #181C1A — cards */
+    --pm-surface-2: 34 40 37;       /* #222825 — elevated */
+    --pm-surface-3: 44 51 47;       /* #2C332F — hover */
+
+    /* ── Brand greens — luminous on dark ── */
+    --pm-teal: 45 212 160;          /* #2DD4A0 */
+    --pm-teal-hover: 93 229 184;    /* #5DE5B8 */
+    --pm-teal-light: rgba(45, 212, 160, 0.14);
+    --pm-teal-gradient-end: 93 229 184;
+
+    /* ── Champagne gold — co-equal accent ── */
+    --pm-gold: 229 182 80;          /* #E5B650 */
+    --pm-gold-hover: 242 200 112;   /* #F2C870 */
+    --pm-gold-light: rgba(229, 182, 80, 0.12);
+    --pm-gold-end: 242 200 112;
+
+    /* Sidebar — darker, almost obsidian */
+    --pm-sidebar: 5 11 8;
+    --pm-sidebar-mid: 8 18 13;
+
+    /* ── Borders — teal-tinted hairlines that catch light ── */
+    --pm-border: rgba(45, 212, 160, 0.22);
+    --pm-border-strong: rgba(229, 182, 80, 0.40);
+
+    /* ── Text — warm off-white, never cold ── */
+    --pm-text-primary: 242 239 230;    /* #F2EFE6 — warm champagne */
+    --pm-text-muted: 160 176 166;       /* #A0B0A6 — warm sage gray */
+    --pm-text-subtle: 107 124 115;      /* #6B7C73 — deeper sage */
+
+    /* Status */
+    --pm-danger: 248 113 113;
+    --pm-warning: 251 191 36;
+    --pm-success: 52 211 153;
+    --pm-glow: rgba(45, 212, 160, 0.28);
+
+    /* ── Shadows — premium "lifted card" ──
+       Combine deep ambient shadow + top-edge highlight + faint teal aura.
+       This is what makes cards feel pressed-out of the dark glass. */
+    --pm-shadow-card:
+      0 1px 2px rgba(0, 0, 0, 0.6),
+      0 4px 12px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 0 rgba(245, 235, 200, 0.06);
+
+    --pm-shadow-card-hover:
+      0 16px 48px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(45, 212, 160, 0.3),
+      0 0 32px -8px rgba(45, 212, 160, 0.25),
+      inset 0 1px 0 0 rgba(245, 235, 200, 0.10);
+
+    --pm-shadow-premium:
+      0 24px 64px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(229, 182, 80, 0.18),
+      inset 0 1px 0 0 rgba(229, 182, 80, 0.12);
+
+    /* Body gradient stops — for the linear sweep */
+    --pm-body-from: #08120D;
+    --pm-body-to: #0B1812;
+
+    /* ── Focus ring — GOLD (premium luxury cue) ── */
+    --pm-focus-ring:
+      0 0 0 3px rgba(229, 182, 80, 0.28),
+      0 0 0 1px rgba(229, 182, 80, 0.5),
+      0 1px 3px rgba(0, 0, 0, 0.5);
+
+    /* Skeleton */
+    --pm-skeleton-base: #142620;
+    --pm-skeleton-mid: #1C342C;
+
+    /* ── Sidebar glass (dark) ──
+       Refined charcoal frosted glass with a gold edge — the most
+       premium surface in the app. */
+    --pm-sidebar-glass-top: rgba(28, 34, 31, 0.88);
+    --pm-sidebar-glass-bottom: rgba(11, 15, 13, 0.70);
+    --pm-sidebar-glass-border: rgba(229, 182, 80, 0.22);
+    --pm-sidebar-glass-divider: rgba(229, 182, 80, 0.10);
+    --pm-sidebar-glass-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(229, 182, 80, 0.10),
+      inset 0 1px 0 rgba(229, 182, 80, 0.16);
+
+    /* Glass — dark charcoal version */
+    --pm-glass-bg: rgba(24, 28, 26, 0.82);
+    --pm-glass-bg-strong: rgba(24, 28, 26, 0.92);
+    --pm-glass-bg-soft: rgba(24, 28, 26, 0.65);
+    --pm-glass-border: rgba(229, 182, 80, 0.18);
+  }
+
   /* Hide scrollbars globally — scroll still works, just no visible indicator */
   * {
     scrollbar-width: none;
@@ -24,39 +191,175 @@
   }
 
   body {
-    background: linear-gradient(to right, #F4FCF8 0%, #FDF7E8 100%);
+    background:
+      linear-gradient(to right, var(--pm-body-from) 0%, var(--pm-body-to) 100%);
     background-attachment: fixed;
-    color: #1A1A1A;
+    color: rgb(var(--pm-text-primary));
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* ── Dark-mode atmosphere ──
+     Bold green→gold radial glows pinned to the viewport. Builds the
+     "premium green-and-gold lounge" feel — teal aurora upper-left,
+     warm gold halo lower-right, deeper green center pool. */
+  .dark body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(75vw 70vh at 0% 0%, rgba(45, 212, 160, 0.22), transparent 55%),
+      radial-gradient(80vw 70vh at 100% 100%, rgba(229, 182, 80, 0.20), transparent 55%),
+      radial-gradient(60vw 60vh at 80% 10%, rgba(229, 182, 80, 0.08), transparent 60%),
+      radial-gradient(60vw 60vh at 20% 90%, rgba(45, 212, 160, 0.10), transparent 60%);
+  }
+
+  /* Keep real content above the atmosphere layer */
+  .dark #root {
+    position: relative;
+    z-index: 1;
   }
 
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    box-shadow: 0 0 0 3px rgba(15, 110, 86, 0.16), 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: var(--pm-focus-ring);
+  }
+
+  /* ── Dark-mode form defaults ──
+     Browsers default <input>/<textarea>/<select> to white. Force them
+     to the dark surface so no widget renders white-on-dark. */
+  .dark input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not([type='submit']):not([type='button']):not([type='reset']),
+  .dark textarea,
+  .dark select {
+    background-color: rgb(var(--pm-surface-2));
+    color: rgb(var(--pm-text-primary));
+    border-color: var(--pm-border);
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: rgb(var(--pm-text-subtle));
+  }
+
+  /* Browser autofill keeps a yellowish fill — neutralise in dark mode */
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(var(--pm-text-primary));
+    -webkit-box-shadow: 0 0 0 1000px rgb(var(--pm-surface-2)) inset;
+    transition: background-color 9999s ease-in-out 0s;
   }
 }
 
 @layer utilities {
-  /* Left-to-right lightest green → lightest golden gradient */
+  /* Left-to-right gradient — light or dark */
   .bg-pm-app {
-    background: linear-gradient(to right, #F4FCF8 0%, #FDF7E8 100%);
+    background: linear-gradient(to right, var(--pm-body-from) 0%, var(--pm-body-to) 100%);
     background-attachment: fixed;
   }
 
-  /* Green gradient headings */
+  /* Dark-mode override: rich green→gold sweep + radial accents,
+     so every page that uses bg-pm-app inherits the premium atmosphere */
+  .dark .bg-pm-app {
+    background:
+      radial-gradient(50vw 50vh at 0% 0%, rgba(45, 212, 160, 0.18), transparent 60%),
+      radial-gradient(55vw 50vh at 100% 100%, rgba(229, 182, 80, 0.16), transparent 60%),
+      radial-gradient(40vw 40vh at 100% 0%, rgba(229, 182, 80, 0.06), transparent 70%),
+      linear-gradient(135deg, #08120D 0%, #0B1812 35%, #0E1F18 65%, #131B12 100%);
+    background-attachment: fixed;
+  }
+
+  /* Green gradient headings — leans toward gold in dark mode */
   .gradient-heading {
-    background: linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%);
+    background: linear-gradient(135deg, var(--pm-teal) 0%, var(--pm-teal-gradient-end) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
+  .dark .gradient-heading {
+    background: linear-gradient(135deg, var(--pm-teal) 0%, #C7E6BF 45%, var(--pm-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Pure green→gold luxury gradient */
+  .gradient-heading-gold {
+    background: linear-gradient(135deg, var(--pm-teal) 0%, var(--pm-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Hairline divider with green→gold sheen */
+  .divider-sheen {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(45, 212, 160, 0.25) 30%,
+      rgba(229, 182, 80, 0.30) 70%,
+      transparent 100%
+    );
+  }
+
+  /* Premium card — for "hero" elements that deserve gold accents */
+  .card-premium {
+    background-color: rgb(var(--pm-surface));
+    border: 1px solid var(--pm-border);
+    border-radius: 1rem;
+    box-shadow: var(--pm-shadow-card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-premium::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(45, 212, 160, 0.0) 0%,
+      rgba(45, 212, 160, 0.4) 50%,
+      rgba(229, 182, 80, 0.4) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .dark .card-premium::before { opacity: 1; }
+
+  /* ── Universal premium card lift (dark only) ──
+     Cards (any rounded element with a pm-border) get a faint
+     champagne top-edge highlight + a soft green→gold diagonal sheen.
+     This is what makes every card feel "pressed out of dark glass"
+     without per-component changes. */
+  .dark [class*="rounded-2xl"][class*="border-pm-border"],
+  .dark [class*="rounded-xl"][class*="border-pm-border"],
+  .dark [class*="rounded-3xl"][class*="border-pm-border"] {
+    background-image:
+      linear-gradient(180deg, rgba(245, 235, 200, 0.03) 0%, transparent 35%),
+      linear-gradient(135deg, rgba(45, 212, 160, 0.04) 0%, transparent 30%, rgba(229, 182, 80, 0.04) 100%);
+    box-shadow:
+      var(--pm-shadow-card),
+      inset 0 1px 0 0 rgba(245, 235, 200, 0.08);
+  }
+
   /* Gold CTA button */
   .btn-gold {
-    background: linear-gradient(135deg, #C9930A 0%, #E8B84A 100%);
+    background: linear-gradient(135deg, var(--pm-gold) 0%, var(--pm-gold-end) 100%);
     color: white;
     font-weight: 700;
-    box-shadow: 0 4px 18px rgba(201,147,10,0.32), 0 1px 4px rgba(0,0,0,0.12);
+    box-shadow: 0 4px 18px rgba(201, 147, 10, 0.32), 0 1px 4px rgba(0, 0, 0, 0.12);
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
@@ -66,44 +369,116 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 60%);
     pointer-events: none;
   }
 
   .btn-gold:hover {
-    background: linear-gradient(135deg, #B07808 0%, #D4A035 100%);
-    box-shadow: 0 6px 24px rgba(201,147,10,0.42), 0 2px 6px rgba(0,0,0,0.14);
+    background: linear-gradient(135deg, var(--pm-gold-hover) 0%, var(--pm-gold-end) 100%);
+    box-shadow: 0 6px 24px rgba(201, 147, 10, 0.42), 0 2px 6px rgba(0, 0, 0, 0.14);
     transform: translateY(-1px);
   }
 
   .btn-gold:active {
     transform: translateY(0);
-    box-shadow: 0 2px 12px rgba(201,147,10,0.28);
+    box-shadow: 0 2px 12px rgba(201, 147, 10, 0.28);
   }
 
-  /* Shimmer skeleton base */
+  /* Shimmer skeleton base — theme aware */
   .skeleton-shimmer {
-    background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
+    background: linear-gradient(90deg, var(--pm-skeleton-base) 25%, var(--pm-skeleton-mid) 50%, var(--pm-skeleton-base) 75%);
     background-size: 600px 100%;
     animation: shimmer 1.6s ease-in-out infinite;
   }
 
-  /* Premium card hover — add to any card */
+  /* Premium card hover */
   .card-hover-lift {
     transition: box-shadow 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
   }
 
   .card-hover-lift:hover {
-    box-shadow: 0 12px 36px rgba(15,110,86,0.12), 0 4px 12px rgba(0,0,0,0.05);
-    border-color: rgba(15,110,86,0.22);
+    box-shadow: var(--pm-shadow-card-hover);
+    border-color: rgb(var(--pm-teal));
     transform: translateY(-2px);
   }
 
   /* Gold badge */
   .badge-gold {
-    background: linear-gradient(135deg, #C9930A 0%, #E8B84A 100%);
+    background: linear-gradient(135deg, var(--pm-gold) 0%, var(--pm-gold-end) 100%);
     color: white;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(201,147,10,0.30);
+    box-shadow: 0 2px 8px rgba(201, 147, 10, 0.30);
+  }
+
+  /* ── Premium frosted glass sidebar surface (theme-aware) ── */
+  .sidebar-glass {
+    background: linear-gradient(
+      to bottom,
+      var(--pm-sidebar-glass-top) 0%,
+      var(--pm-sidebar-glass-bottom) 100%
+    );
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--pm-sidebar-glass-border);
+    box-shadow: var(--pm-sidebar-glass-shadow);
+  }
+
+  .sidebar-divider-color {
+    border-color: var(--pm-sidebar-glass-divider);
+  }
+
+  /* ── Sidebar nav item hover ──
+     Plain CSS so it always wins regardless of Tailwind ordering.
+     Light mode: muted gray → pure black. Dark mode: sage → pure white. */
+  .sidebar-nav-item,
+  .sidebar-nav-item > * {
+    transition: color 0.2s ease;
+  }
+  .sidebar-nav-item:not(.is-active):hover,
+  .sidebar-nav-item:not(.is-active):hover > * {
+    color: #000;
+  }
+  .dark .sidebar-nav-item:not(.is-active):hover,
+  .dark .sidebar-nav-item:not(.is-active):hover > * {
+    color: #fff;
   }
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   DARK MODE BULLETPROOF OVERRIDES
+   Outside @layer for natural high cascade priority. Uses html.dark selector
+   (specificity 0,1,1) with hardcoded color values that don't depend on CSS
+   variable resolution. This guarantees no card renders white in dark mode.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+html.dark .bg-pm-surface         { background-color: #181C1A !important; }
+html.dark .bg-pm-surface\/95     { background-color: rgba(24, 28, 26, 0.95) !important; }
+html.dark .bg-pm-surface\/92     { background-color: rgba(24, 28, 26, 0.92) !important; }
+html.dark .bg-pm-surface\/90     { background-color: rgba(24, 28, 26, 0.90) !important; }
+html.dark .bg-pm-surface\/85     { background-color: rgba(24, 28, 26, 0.85) !important; }
+html.dark .bg-pm-surface\/80     { background-color: rgba(24, 28, 26, 0.80) !important; }
+html.dark .bg-pm-surface\/70     { background-color: rgba(24, 28, 26, 0.70) !important; }
+html.dark .bg-pm-surface\/60     { background-color: rgba(24, 28, 26, 0.60) !important; }
+html.dark .bg-pm-surface\/50     { background-color: rgba(24, 28, 26, 0.50) !important; }
+
+html.dark .bg-pm-surface-2       { background-color: #222825 !important; }
+html.dark .hover\:bg-pm-surface-2:hover { background-color: #222825 !important; }
+
+html.dark .bg-pm-surface-3       { background-color: #2C332F !important; }
+html.dark .hover\:bg-pm-surface-3:hover { background-color: #2C332F !important; }
+
+html.dark .bg-pm-teal-light      { background-color: rgba(45, 212, 160, 0.14) !important; }
+html.dark .bg-pm-gold-light      { background-color: rgba(229, 182, 80, 0.12) !important; }
+
+/* Borders */
+html.dark .border-pm-border      { border-color: rgba(45, 212, 160, 0.22) !important; }
+html.dark .border-pm-border\/70  { border-color: rgba(45, 212, 160, 0.16) !important; }
+html.dark .border-pm-border\/60  { border-color: rgba(45, 212, 160, 0.14) !important; }
+html.dark .border-pm-border\/50  { border-color: rgba(45, 212, 160, 0.12) !important; }
+html.dark .border-pm-border-strong { border-color: rgba(229, 182, 80, 0.40) !important; }
+html.dark .divide-pm-border > * + * { border-color: rgba(45, 212, 160, 0.16) !important; }
+
+/* Text */
+html.dark .text-pm-primary       { color: #F2EFE6 !important; }
+html.dark .text-pm-muted         { color: #A0B0A6 !important; }
+html.dark .text-pm-subtle        { color: #6B7C73 !important; }

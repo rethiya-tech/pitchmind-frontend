@@ -35,7 +35,7 @@ export function KeyboardShortcutsModal({ open, onClose }: Props) {
         >
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
           <motion.div
-            className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 w-80 border border-pm-border"
+            className="relative z-10 bg-pm-surface rounded-2xl shadow-2xl p-6 w-80 border border-pm-border"
             initial={{ scale: 0.92, y: 16, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.92, y: 16, opacity: 0 }}
@@ -45,7 +45,7 @@ export function KeyboardShortcutsModal({ open, onClose }: Props) {
               <h2 className="text-sm font-bold gradient-heading">Keyboard Shortcuts</h2>
               <button
                 onClick={onClose}
-                className="w-6 h-6 rounded-md text-pm-muted hover:bg-gray-100 hover:text-pm-primary flex items-center justify-center text-lg leading-none"
+                className="w-6 h-6 rounded-md text-pm-muted hover:bg-pm-surface-3 hover:text-pm-primary flex items-center justify-center text-lg leading-none"
               >
                 ×
               </button>
@@ -58,7 +58,7 @@ export function KeyboardShortcutsModal({ open, onClose }: Props) {
                     {s.keys.map((k, ki) => (
                       <kbd
                         key={ki}
-                        className="px-2 py-0.5 text-[11px] font-mono bg-gray-100 border border-gray-200 rounded-md text-pm-primary leading-tight"
+                        className="px-2 py-0.5 text-[11px] font-mono bg-pm-surface-3 border border-pm-border rounded-md text-pm-primary leading-tight"
                       >
                         {k}
                       </kbd>
@@ -67,7 +67,7 @@ export function KeyboardShortcutsModal({ open, onClose }: Props) {
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-[10px] text-pm-muted text-center">Press <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-mono">?</kbd> to toggle</p>
+            <p className="mt-4 text-[10px] text-pm-muted text-center">Press <kbd className="px-1 py-0.5 bg-pm-surface-3 border border-pm-border rounded text-[10px] font-mono">?</kbd> to toggle</p>
           </motion.div>
         </motion.div>
       )}

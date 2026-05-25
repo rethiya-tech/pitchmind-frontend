@@ -20,14 +20,14 @@ function StatCard({
   return (
     <motion.div
       className={`relative rounded-2xl border p-5 flex items-start gap-4 overflow-hidden ${accent ? 'border-pm-teal' : 'border-pm-border/60 shadow-card'}`}
-      style={accent ? { background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' } : { background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}
+      style={accent ? { background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)' } : { background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}
       whileHover={{ y: -3, boxShadow: accent ? '0 12px 32px rgba(15,110,86,0.35)' : '0 12px 36px rgba(15,110,86,0.12), 0 4px 12px rgba(0,0,0,0.05)' }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >
       {barGradient && !accent && (
         <div className="absolute left-0 inset-y-0 w-[3px] rounded-l-2xl" style={{ background: barGradient }} />
       )}
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? 'bg-white/20' : 'bg-[#E1F5EE]'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${accent ? 'bg-white/20' : 'bg-pm-teal-light'}`}>
         <span className={accent ? 'text-white' : 'text-pm-teal'}>{icon}</span>
       </div>
       <div>
@@ -59,13 +59,13 @@ function ActivityIcon() {
 }
 
 function statusDot(status: string) {
-  const map: Record<string, string> = { done: 'bg-green-500', generating: 'bg-blue-500', failed: 'bg-red-500', pending: 'bg-gray-400', cancelled: 'bg-gray-300' }
-  return map[status] ?? 'bg-gray-400'
+  const map: Record<string, string> = { done: 'bg-pm-success', generating: 'bg-pm-teal', failed: 'bg-pm-danger', pending: 'bg-pm-subtle', cancelled: 'bg-pm-border-strong' }
+  return map[status] ?? 'bg-pm-subtle'
 }
 
 function statusText(status: string) {
-  const map: Record<string, string> = { done: 'text-green-700 bg-green-50', generating: 'text-blue-700 bg-blue-50', failed: 'text-red-700 bg-red-50', pending: 'text-gray-600 bg-gray-100', cancelled: 'text-gray-500 bg-gray-100' }
-  return map[status] ?? 'text-gray-600 bg-gray-100'
+  const map: Record<string, string> = { done: 'text-green-700 bg-green-50', generating: 'text-blue-700 bg-blue-50', failed: 'text-pm-danger bg-pm-danger/10', pending: 'text-pm-muted bg-pm-surface-3', cancelled: 'text-pm-muted bg-pm-surface-3' }
+  return map[status] ?? 'text-pm-muted bg-pm-surface-3'
 }
 
 function timeAgo(dateStr: string) {
@@ -94,9 +94,9 @@ function actionLabel(action: string) {
 function actionColor(action: string) {
   if (action.includes('login') || action.includes('register')) return 'bg-blue-100 text-blue-700'
   if (action.includes('created')) return 'bg-green-100 text-green-700'
-  if (action.includes('failed') || action.includes('deleted')) return 'bg-red-100 text-red-700'
+  if (action.includes('failed') || action.includes('deleted')) return 'bg-pm-danger/15 text-pm-danger'
   if (action.includes('password')) return 'bg-orange-100 text-orange-700'
-  return 'bg-gray-100 text-gray-700'
+  return 'bg-pm-surface-3 text-pm-primary'
 }
 
 export function AdminDashboardPage() {
@@ -131,7 +131,7 @@ export function AdminDashboardPage() {
           <h1 className="text-2xl font-extrabold tracking-tight gradient-heading">Admin Overview</h1>
           <p className="text-sm text-pm-muted mt-0.5">Platform health and activity at a glance</p>
         </div>
-        <span className="text-xs text-pm-muted border border-pm-border/50 rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.70)', backdropFilter: 'blur(8px)' }}>
+        <span className="text-xs text-pm-muted border border-pm-border/50 rounded-lg px-3 py-1.5" style={{ background: 'var(--pm-glass-bg-soft)', backdropFilter: 'blur(8px)' }}>
           Auto-refreshes every 30s
         </span>
       </div>
@@ -159,7 +159,7 @@ export function AdminDashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {/* Recent Presentations */}
-        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border/60">
             <h2 className="text-sm font-bold text-pm-primary">Recent Presentations</h2>
             <Link to="/admin/projects" className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover">View all →</Link>
@@ -190,7 +190,7 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Audit Log */}
-        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-pm-border/60">
             <h2 className="text-sm font-bold text-pm-primary">Recent Activity</h2>
             <Link to="/admin/audit-log" className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover">View all →</Link>

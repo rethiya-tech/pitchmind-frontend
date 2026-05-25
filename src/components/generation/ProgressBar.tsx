@@ -27,7 +27,7 @@ export function ProgressBar({ value, max = 100, label, className, active = true 
           </motion.span>
         </div>
       )}
-      <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+      <div className="relative h-3 bg-pm-surface-3 rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
           style={{

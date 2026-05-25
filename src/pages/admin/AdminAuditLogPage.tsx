@@ -45,14 +45,14 @@ export function AdminAuditLogPage() {
           onChange={(e) => setActionInput(e.target.value)}
           placeholder="Filter by action (e.g. admin.user)…"
           className="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-pm-border/60 text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal"
-          style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'var(--pm-glass-bg-soft)', backdropFilter: 'blur(8px)' }}
         />
         <input
           value={actorInput}
           onChange={(e) => setActorInput(e.target.value)}
           placeholder="Filter by actor email…"
           className="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-pm-border/60 text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal"
-          style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'var(--pm-glass-bg-soft)', backdropFilter: 'blur(8px)' }}
         />
         <Button type="submit" variant="secondary" size="sm">Filter</Button>
         {(action || actor) && (
@@ -70,17 +70,15 @@ export function AdminAuditLogPage() {
       {isLoading ? (
         <PageLoader show={showSpinner} />
       ) : (
-        <div className="rounded-2xl border border-pm-border/60 divide-y divide-pm-border/50 shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl border border-pm-border/60 divide-y divide-pm-border/50 shadow-card" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           {data?.items.length === 0 && (
             <p className="px-4 py-8 text-center text-pm-muted text-sm">No audit log entries.</p>
           )}
           {data?.items.map((entry) => (
-            <div key={entry.id} className="px-4 py-3 flex items-start justify-between gap-4 transition-all duration-150 hover:shadow-[inset_3px_0_0_#0F6E56]"
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(238,248,242,0.55)')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+            <div key={entry.id} className="px-4 py-3 flex items-start justify-between gap-4 transition-all duration-150 hover:bg-pm-teal-light">
               <div className="space-y-0.5 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-700">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-pm-surface-3 text-pm-primary">
                     {entry.action}
                   </span>
                   {entry.target_type && (

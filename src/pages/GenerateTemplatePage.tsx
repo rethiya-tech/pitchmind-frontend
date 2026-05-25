@@ -161,7 +161,7 @@ function isValidHex(v: string) { return /^#[0-9A-Fa-f]{6}$/.test(v) }
 
 function SectionIcon({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-7 h-7 rounded-lg bg-[#F3F4F6] flex items-center justify-center flex-shrink-0">
+    <div className="w-7 h-7 rounded-lg bg-pm-surface-3 flex items-center justify-center flex-shrink-0">
       {children}
     </div>
   )
@@ -192,7 +192,7 @@ function ColorInput({
           placeholder="#RRGGBB"
           className={cn(
             'flex-1 px-2.5 py-1.5 rounded-lg border text-xs font-mono text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal/30',
-            valid ? 'border-pm-border focus:border-pm-teal' : 'border-pm-danger bg-red-50'
+            valid ? 'border-pm-border focus:border-pm-teal' : 'border-pm-danger bg-pm-danger/10'
           )}
         />
       </div>
@@ -275,7 +275,7 @@ export function GenerateTemplatePage() {
     return (
       <div className="max-w-lg mx-auto py-20 flex flex-col items-center gap-8 text-center">
         <div className="relative">
-          <div className="w-20 h-20 rounded-3xl bg-[#E1F5EE] flex items-center justify-center shadow-sm">
+          <div className="w-20 h-20 rounded-3xl bg-pm-teal-light flex items-center justify-center shadow-sm">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
               <path d="M7 18l7 7L29 11" stroke="#0F6E56" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -296,18 +296,18 @@ export function GenerateTemplatePage() {
         </div>
 
         <div className="flex items-stretch gap-3">
-          <div className="px-5 py-3 bg-white border border-pm-border rounded-xl text-center">
+          <div className="px-5 py-3 bg-pm-surface border border-pm-border rounded-xl text-center">
             <p className="text-2xl font-extrabold text-pm-primary">{generated.slide_count}</p>
             <p className="text-xs text-pm-muted mt-0.5">Slides</p>
           </div>
-          <div className="px-5 py-3 bg-white border border-pm-border rounded-xl text-center">
+          <div className="px-5 py-3 bg-pm-surface border border-pm-border rounded-xl text-center">
             <div className="flex items-center gap-1.5 justify-center">
               <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: themeColor }} />
               <p className="text-sm font-bold text-pm-primary">{themeName}</p>
             </div>
             <p className="text-xs text-pm-muted mt-0.5">Theme</p>
           </div>
-          <div className="px-5 py-3 bg-white border border-pm-border rounded-xl text-center">
+          <div className="px-5 py-3 bg-pm-surface border border-pm-border rounded-xl text-center">
             <p className="text-sm font-bold text-pm-primary capitalize">
               {FONT_STYLES.find(f => f.id === style)?.label ?? style}
             </p>
@@ -320,7 +320,7 @@ export function GenerateTemplatePage() {
         <div className="flex gap-3">
           <button
             onClick={() => { setGenerated(null); setName(''); setDescription('') }}
-            className="px-5 py-2.5 border border-pm-border rounded-xl text-sm font-semibold text-pm-primary hover:bg-gray-50 transition-colors"
+            className="px-5 py-2.5 border border-pm-border rounded-xl text-sm font-semibold text-pm-primary hover:bg-pm-surface-2 transition-colors"
           >
             Generate Another
           </button>
@@ -366,7 +366,7 @@ export function GenerateTemplatePage() {
           <button
             onClick={() => handleGenerate(false)}
             disabled={!canSubmit}
-            className="flex items-center gap-2 px-4 py-2.5 border border-pm-border bg-white hover:bg-gray-50 text-pm-primary text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2.5 border border-pm-border bg-pm-surface hover:bg-pm-surface-2 text-pm-primary text-sm font-semibold rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isNormalPending ? <Spinner size="sm" /> : (
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -397,7 +397,7 @@ export function GenerateTemplatePage() {
 
       {/* Progress banner */}
       {isPending && (
-        <div className="flex items-center gap-3 px-4 py-3.5 bg-[#E1F5EE] border border-pm-teal/20 rounded-xl text-sm text-pm-teal font-medium">
+        <div className="flex items-center gap-3 px-4 py-3.5 bg-pm-teal-light border border-pm-teal/20 rounded-xl text-sm text-pm-teal font-medium">
           <Spinner size="sm" />
           <span>
             {isAiPending
@@ -413,7 +413,7 @@ export function GenerateTemplatePage() {
         <div className="space-y-5">
 
           {/* Identity */}
-          <div className="bg-white rounded-2xl border border-pm-border p-6 space-y-4">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border p-6 space-y-4">
             <div className="flex items-center gap-2.5">
               <SectionIcon>
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -460,7 +460,7 @@ export function GenerateTemplatePage() {
           </div>
 
           {/* Slide Layouts */}
-          <div className="bg-white rounded-2xl border border-pm-border p-5 space-y-3">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border p-5 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <SectionIcon>
@@ -497,8 +497,8 @@ export function GenerateTemplatePage() {
                     className={cn(
                       'group relative flex flex-col items-center gap-1.5 px-1.5 py-3 rounded-xl border-2 transition-all text-center',
                       active
-                        ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
-                        : 'border-pm-border text-pm-muted hover:border-pm-teal/40 hover:bg-gray-50 hover:text-pm-primary'
+                        ? 'border-pm-teal bg-pm-teal-light text-pm-teal'
+                        : 'border-pm-border text-pm-muted hover:border-pm-teal/40 hover:bg-pm-surface-2 hover:text-pm-primary'
                     )}
                   >
                     {active && (
@@ -522,7 +522,7 @@ export function GenerateTemplatePage() {
                 {selectedLayouts.map(id => {
                   const l = LAYOUTS.find(x => x.id === id)
                   return (
-                    <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#E1F5EE] text-pm-teal text-[10.5px] font-semibold rounded-full">
+                    <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-pm-teal-light text-pm-teal text-[10.5px] font-semibold rounded-full">
                       {l?.label}
                       <button onClick={() => toggleLayout(id)} className="hover:text-pm-teal-hover">
                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -539,7 +539,7 @@ export function GenerateTemplatePage() {
           </div>
 
           {/* Font Style */}
-          <div className="bg-white rounded-2xl border border-pm-border p-6 space-y-4">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border p-6 space-y-4">
             <div className="flex items-center gap-2.5">
               <SectionIcon>
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -562,7 +562,7 @@ export function GenerateTemplatePage() {
                     disabled={isPending}
                     className={cn(
                       'flex flex-col gap-3 p-3 rounded-xl border-2 text-left transition-all',
-                      active ? 'border-pm-teal bg-[#E1F5EE]' : 'border-pm-border hover:border-pm-teal/40 hover:bg-gray-50'
+                      active ? 'border-pm-teal bg-pm-teal-light' : 'border-pm-border hover:border-pm-teal/40 hover:bg-pm-surface-2'
                     )}
                   >
                     {/* Mini slide preview using selected theme colors */}
@@ -587,7 +587,7 @@ export function GenerateTemplatePage() {
                         <span className={cn('text-xs font-bold', active ? 'text-pm-teal' : 'text-pm-primary')}>
                           {f.label}
                         </span>
-                        <span className="text-[9px] px-1.5 py-0.5 bg-[#F3F4F6] rounded-full text-pm-muted font-semibold">
+                        <span className="text-[9px] px-1.5 py-0.5 bg-pm-surface-3 rounded-full text-pm-muted font-semibold">
                           {f.tag}
                         </span>
                       </div>
@@ -605,7 +605,7 @@ export function GenerateTemplatePage() {
         <div className="space-y-5">
 
           {/* Theme & Colors */}
-          <div className="bg-white rounded-2xl border border-pm-border p-6 space-y-4">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border p-6 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <SectionIcon>
@@ -621,11 +621,11 @@ export function GenerateTemplatePage() {
                   <p className="text-xs text-pm-muted">Colour palette for the template</p>
                 </div>
               </div>
-              <div className="flex items-center bg-[#F3F4F6] rounded-lg p-0.5 gap-0.5">
+              <div className="flex items-center bg-pm-surface-3 rounded-lg p-0.5 gap-0.5">
                 <button
                   onClick={() => setThemeMode('preset')}
                   className={cn('px-3 py-1 rounded-md text-xs font-semibold transition-colors',
-                    themeMode === 'preset' ? 'bg-white text-pm-primary shadow-sm' : 'text-pm-muted hover:text-pm-primary'
+                    themeMode === 'preset' ? 'bg-pm-surface text-pm-primary shadow-sm' : 'text-pm-muted hover:text-pm-primary'
                   )}
                 >
                   Presets
@@ -633,7 +633,7 @@ export function GenerateTemplatePage() {
                 <button
                   onClick={() => setThemeMode('custom')}
                   className={cn('px-3 py-1 rounded-md text-xs font-semibold transition-colors',
-                    themeMode === 'custom' ? 'bg-white text-pm-primary shadow-sm' : 'text-pm-muted hover:text-pm-primary'
+                    themeMode === 'custom' ? 'bg-pm-surface text-pm-primary shadow-sm' : 'text-pm-muted hover:text-pm-primary'
                   )}
                 >
                   Custom
@@ -654,8 +654,8 @@ export function GenerateTemplatePage() {
                           className={cn(
                             'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all',
                             theme === t.id
-                              ? 'border-pm-teal ring-2 ring-pm-teal/20 bg-[#E1F5EE]'
-                              : 'border-pm-border hover:border-gray-300 hover:bg-gray-50'
+                              ? 'border-pm-teal ring-2 ring-pm-teal/20 bg-pm-teal-light'
+                              : 'border-pm-border hover:border-pm-border-strong hover:bg-pm-surface-2'
                           )}
                         >
                           <span className="relative flex-shrink-0 w-3.5 h-3.5">
@@ -701,11 +701,11 @@ export function GenerateTemplatePage() {
                     ))}
                   </div>
                 </div>
-                <div className="px-3 py-2 bg-white border-t border-pm-border/50 flex items-center gap-2">
+                <div className="px-3 py-2 bg-pm-surface border-t border-pm-border/50 flex items-center gap-2">
                   <div className="flex gap-1">
-                    <span className="w-3 h-3 rounded-sm border border-[#E5E7EB]" style={{ backgroundColor: previewTheme.bg }}/>
-                    <span className="w-3 h-3 rounded-sm border border-[#E5E7EB]" style={{ backgroundColor: previewTheme.accent }}/>
-                    <span className="w-3 h-3 rounded-sm border border-[#E5E7EB]" style={{ backgroundColor: previewTheme.text }}/>
+                    <span className="w-3 h-3 rounded-sm border border-pm-border" style={{ backgroundColor: previewTheme.bg }}/>
+                    <span className="w-3 h-3 rounded-sm border border-pm-border" style={{ backgroundColor: previewTheme.accent }}/>
+                    <span className="w-3 h-3 rounded-sm border border-pm-border" style={{ backgroundColor: previewTheme.text }}/>
                   </div>
                   <span className="text-[9px] text-pm-muted font-mono">{previewTheme.bg} · {previewTheme.accent}</span>
                   <span className="ml-auto text-[9.5px] font-semibold text-pm-primary">{previewTheme.name}</span>
@@ -715,7 +715,7 @@ export function GenerateTemplatePage() {
           </div>
 
           {/* Configuration summary */}
-          <div className="bg-[#F9FAFB] rounded-2xl border border-pm-border p-5 space-y-3">
+          <div className="bg-pm-surface-2 rounded-2xl border border-pm-border p-5 space-y-3">
             <div className="flex items-center gap-2">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none" className="text-pm-muted">
                 <path d="M1 2.5A1.5 1.5 0 012.5 1h8A1.5 1.5 0 0112 2.5v8A1.5 1.5 0 0110.5 12h-8A1.5 1.5 0 011 10.5v-8z" stroke="currentColor" strokeWidth="1.2"/>

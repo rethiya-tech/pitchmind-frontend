@@ -108,11 +108,11 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-pm-border rounded-lg shadow-lg py-1 min-w-[128px]">
+        <div className="absolute right-0 top-full mt-1 z-20 bg-pm-surface border border-pm-border rounded-lg shadow-lg py-1 min-w-[128px]">
           {(['pptx', 'pdf', 'docx'] as ExportFormat[]).map((fmt) => (
             <button
               key={fmt}
-              className="w-full text-left px-3 py-1.5 text-sm text-pm-primary hover:bg-gray-50 transition-colors whitespace-nowrap"
+              className="w-full text-left px-3 py-1.5 text-sm text-pm-primary hover:bg-pm-surface-2 transition-colors whitespace-nowrap"
               onClick={() => handle(fmt)}
             >
               Download {fmt.toUpperCase()}
@@ -157,7 +157,7 @@ function DeleteButton({ conversionId }: { conversionId: string }) {
         onClick={() => setConfirm(true)}
         disabled={loading}
         title="Delete project"
-        className="w-8 h-8 rounded-lg flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 transition-colors disabled:opacity-60"
+        className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-danger/30 bg-pm-danger/10 hover:bg-pm-danger/15 text-pm-danger transition-colors disabled:opacity-60"
       >
         {loading ? (
           <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -180,9 +180,9 @@ function statusBadge(status: string) {
   const map: Record<string, { bg: string; text: string; dot: string }> = {
     done:       { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500' },
     generating: { bg: 'bg-blue-50',   text: 'text-blue-700',   dot: 'bg-blue-500' },
-    failed:     { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500' },
-    pending:    { bg: 'bg-gray-100',  text: 'text-gray-600',   dot: 'bg-gray-400' },
-    cancelled:  { bg: 'bg-gray-100',  text: 'text-gray-500',   dot: 'bg-gray-300' },
+    failed:     { bg: 'bg-pm-danger/10',    text: 'text-pm-danger',    dot: 'bg-pm-danger' },
+    pending:    { bg: 'bg-pm-surface-3',  text: 'text-pm-muted',   dot: 'bg-gray-400' },
+    cancelled:  { bg: 'bg-pm-surface-3',  text: 'text-pm-muted',   dot: 'bg-gray-300' },
   }
   const s = map[status] ?? map.pending
   return (
@@ -264,7 +264,7 @@ function PaginationChips({
             className={`w-8 h-8 rounded-lg text-sm font-medium border transition-all duration-150 ${
               isActive
                 ? 'text-white border-transparent'
-                : 'bg-white/80 text-pm-primary border-pm-border/60 hover:bg-[#EEF8F2] hover:-translate-y-px'
+                : 'bg-pm-surface/80 text-pm-primary border-pm-border/60 hover:bg-pm-teal-light hover:-translate-y-px'
             }`}
             style={isActive ? { background: 'linear-gradient(135deg, #0F6E56, #0A9B6E)' } : {}}
           >
@@ -383,7 +383,7 @@ export function ProjectsPage() {
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search projects…"
               className="w-full pl-9 pr-9 py-2 text-sm border border-pm-border/60 rounded-xl text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors"
-              style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)' }}
+              style={{ background: 'var(--pm-glass-bg-soft)', backdropFilter: 'blur(8px)' }}
             />
             {search && (
               <button
@@ -398,7 +398,7 @@ export function ProjectsPage() {
           </div>
 
           {/* Status tabs */}
-          <div className="flex items-center gap-1 p-1 rounded-xl border border-pm-border/50" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(8px)' }}>
+          <div className="flex items-center gap-1 p-1 rounded-xl border border-pm-border/50" style={{ background: 'var(--pm-glass-bg-soft)', backdropFilter: 'blur(8px)' }}>
             {STATUS_TABS.map((tab) => {
               const count = tab.id === 'all'
                 ? rawItems.length
@@ -409,14 +409,14 @@ export function ProjectsPage() {
                   onClick={() => handleTab(tab.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                     statusTab === tab.id
-                      ? 'bg-white text-pm-teal shadow-sm border border-pm-teal/20'
+                      ? 'bg-pm-surface text-pm-teal shadow-sm border border-pm-teal/20'
                       : 'text-pm-muted hover:text-pm-primary'
                   }`}
                 >
                   {tab.label}
                   {count > 0 && (
                     <span className={`text-[10px] rounded-full px-1.5 py-0.5 font-bold leading-none ${
-                      statusTab === tab.id ? 'bg-[#F3F4F6] text-pm-muted' : 'bg-white/0 text-pm-muted'
+                      statusTab === tab.id ? 'bg-pm-surface-3 text-pm-muted' : 'bg-white/0 text-pm-muted'
                     }`}>
                       {count}
                     </span>
@@ -434,7 +434,7 @@ export function ProjectsPage() {
       ) : rawItems.length === 0 ? (
         /* Empty state — no projects at all */
         <div className="bg-pm-surface rounded-2xl border border-pm-border py-20 text-center space-y-5">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-pm-teal-light flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="4" width="20" height="20" rx="3" stroke="#0F6E56" strokeWidth="1.8" />
               <path d="M9 14h10M14 9v10" stroke="#0F6E56" strokeWidth="1.8" strokeLinecap="round" />
@@ -455,7 +455,7 @@ export function ProjectsPage() {
       ) : allItems.length === 0 ? (
         /* No results matching current search/filter */
         <div className="bg-pm-surface rounded-2xl border border-pm-border py-16 text-center space-y-3">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#F3F4F6] flex items-center justify-center">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-pm-surface-3 flex items-center justify-center">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <circle cx="9.5" cy="9.5" r="7" stroke="#6B7280" strokeWidth="1.6" />
               <path d="M15.5 15.5l4 4" stroke="#6B7280" strokeWidth="1.6" strokeLinecap="round" />
@@ -474,10 +474,10 @@ export function ProjectsPage() {
         </div>
       ) : (
         /* Table */
-        <div className="rounded-2xl shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl shadow-card border border-pm-border/60" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/60">
+              <tr className="bg-pm-surface/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">
                   Name
                 </th>
@@ -575,7 +575,7 @@ export function ProjectsPage() {
                             state={{ from: 'projects' }}
                             replace
                             title="Edit presentation"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary transition-colors"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-primary transition-colors"
                           >
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                               <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -586,7 +586,7 @@ export function ProjectsPage() {
                             state={{ from: 'projects', autoPresent: true }}
                             replace
                             title="Present"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#E1F5EE] hover:border-pm-teal/40 hover:text-pm-teal text-pm-primary transition-colors"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-pm-surface hover:bg-pm-teal-light hover:border-pm-teal/40 hover:text-pm-teal text-pm-primary transition-colors"
                           >
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                               <polygon points="3,1.5 12.5,7 3,12.5" fill="currentColor" />
@@ -622,7 +622,7 @@ export function ProjectsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3.5 border-t border-pm-border/60 bg-white/60">
+            <div className="flex items-center justify-between px-5 py-3.5 border-t border-pm-border/60 bg-pm-surface/60">
               <p className="text-xs text-pm-muted">
                 Showing{' '}
                 <span className="font-semibold text-pm-primary">{startIdx + 1}–{endIdx}</span>
@@ -634,7 +634,7 @@ export function ProjectsPage() {
                 <button
                   onClick={() => handlePage(safePage - 1)}
                   disabled={safePage === 1}
-                  className="flex items-center gap-1 px-3 h-8 rounded-lg border border-pm-border bg-white text-sm font-medium text-pm-primary hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-3 h-8 rounded-lg border border-pm-border bg-pm-surface text-sm font-medium text-pm-primary hover:bg-pm-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -653,7 +653,7 @@ export function ProjectsPage() {
                 <button
                   onClick={() => handlePage(safePage + 1)}
                   disabled={safePage === totalPages}
-                  className="flex items-center gap-1 px-3 h-8 rounded-lg border border-pm-border bg-white text-sm font-medium text-pm-primary hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-3 h-8 rounded-lg border border-pm-border bg-pm-surface text-sm font-medium text-pm-primary hover:bg-pm-surface-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Next
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -666,7 +666,7 @@ export function ProjectsPage() {
 
           {/* Showing info when only one page */}
           {totalPages === 1 && total > 0 && (
-            <div className="px-5 py-3 border-t border-pm-border/60 bg-white/60">
+            <div className="px-5 py-3 border-t border-pm-border/60 bg-pm-surface/60">
               <p className="text-xs text-pm-muted">
                 Showing{' '}
                 <span className="font-semibold text-pm-primary">{total}</span>

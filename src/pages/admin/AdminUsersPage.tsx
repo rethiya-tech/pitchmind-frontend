@@ -21,8 +21,8 @@ const STATUS_FILTERS: { label: string; value: '' | AccountStatus }[] = [
 const STATUS_BADGE: Record<AccountStatus, string> = {
   pending: 'bg-amber-50 text-amber-700',
   active: 'bg-green-50 text-green-700',
-  suspended: 'bg-red-50 text-red-600',
-  rejected: 'bg-gray-100 text-gray-500',
+  suspended: 'bg-pm-danger/10 text-pm-danger',
+  rejected: 'bg-pm-surface-3 text-pm-muted',
 }
 
 interface UserFormData {
@@ -76,10 +76,10 @@ function CreateUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+      <div className="bg-pm-surface rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-bold text-pm-primary">Create User</h2>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-pm-muted hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-pm-muted hover:bg-pm-surface-3 transition-colors">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -94,7 +94,7 @@ function CreateUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
               They'll be required to change it on first login.
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 px-3 py-2 rounded-lg bg-gray-100 text-pm-primary text-sm font-mono break-all">
+              <code className="flex-1 px-3 py-2 rounded-lg bg-pm-surface-3 text-pm-primary text-sm font-mono break-all">
                 {created.password}
               </code>
               <Button type="button" variant="secondary" size="sm" onClick={copy}>Copy</Button>
@@ -135,7 +135,7 @@ function CreateUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
               <select
                 value={form.role}
                 onChange={(e) => set('role', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-pm-border text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-white"
+                className="w-full px-3 py-2 rounded-lg border border-pm-border text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-pm-surface"
               >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
@@ -145,7 +145,7 @@ function CreateUserModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
               A one-time password is generated automatically and shown after creation.
             </p>
             <div className="flex gap-3 pt-2">
-              <button type="button" onClick={onClose} className="flex-1 py-2 rounded-xl border border-pm-border text-sm font-semibold text-pm-muted hover:bg-gray-50 transition-colors">
+              <button type="button" onClick={onClose} className="flex-1 py-2 rounded-xl border border-pm-border text-sm font-semibold text-pm-muted hover:bg-pm-surface-2 transition-colors">
                 Cancel
               </button>
               <button
@@ -199,10 +199,10 @@ function EditUserModal({ user, onClose, onSaved }: { user: AdminUser; onClose: (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+      <div className="bg-pm-surface rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-bold text-pm-primary">Edit User</h2>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-pm-muted hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-pm-muted hover:bg-pm-surface-3 transition-colors">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -233,14 +233,14 @@ function EditUserModal({ user, onClose, onSaved }: { user: AdminUser; onClose: (
             <select
               value={form.role}
               onChange={(e) => set('role', e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-pm-border text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-white"
+              className="w-full px-3 py-2 rounded-lg border border-pm-border text-sm text-pm-primary focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal bg-pm-surface"
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-2 rounded-xl border border-pm-border text-sm font-semibold text-pm-muted hover:bg-gray-50 transition-colors">
+            <button type="button" onClick={onClose} className="flex-1 py-2 rounded-xl border border-pm-border text-sm font-semibold text-pm-muted hover:bg-pm-surface-2 transition-colors">
               Cancel
             </button>
             <button
@@ -380,7 +380,7 @@ export function AdminUsersPage() {
       )}
       {resetCreds && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
+          <div className="bg-pm-surface rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
             <h2 className="text-lg font-bold text-pm-primary">Password reset</h2>
             <p className="text-sm text-pm-muted">
               New one-time password for <span className="font-semibold text-pm-primary">{resetCreds.email}</span>.
@@ -388,7 +388,7 @@ export function AdminUsersPage() {
               change it on next login.
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 px-3 py-2 rounded-lg bg-gray-100 text-pm-primary text-sm font-mono break-all">
+              <code className="flex-1 px-3 py-2 rounded-lg bg-pm-surface-3 text-pm-primary text-sm font-mono break-all">
                 {resetCreds.password}
               </code>
               <Button type="button" variant="secondary" size="sm"
@@ -425,15 +425,15 @@ export function AdminUsersPage() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-1.5 p-1 rounded-xl border border-pm-border/50" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(8px)', width: 'fit-content' }}>
+      <div className="flex flex-wrap gap-1.5 p-1 rounded-xl border border-pm-border/50" style={{ background: 'var(--pm-glass-bg-soft)', backdropFilter: 'blur(8px)', width: 'fit-content' }}>
         {STATUS_FILTERS.map((f) => (
           <button
             key={f.value || 'all'}
             onClick={() => { setStatusFilter(f.value); setPage(1) }}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
               statusFilter === f.value
-                ? 'bg-white text-pm-teal shadow-sm border border-pm-teal/20'
-                : 'text-pm-muted hover:text-pm-primary hover:bg-white/60'
+                ? 'bg-pm-surface text-pm-teal shadow-sm border border-pm-teal/20'
+                : 'text-pm-muted hover:text-pm-primary hover:bg-pm-surface/60'
             }`}
           >
             {f.label}
@@ -448,7 +448,7 @@ export function AdminUsersPage() {
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by name or email…"
           className="flex-1 px-3 py-2 rounded-xl border border-pm-border/60 text-sm text-pm-primary placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal/30 focus:border-pm-teal"
-          style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'var(--pm-glass-bg-soft)', backdropFilter: 'blur(8px)' }}
         />
         <Button type="submit" variant="secondary" size="sm">Search</Button>
         {search && (
@@ -459,7 +459,7 @@ export function AdminUsersPage() {
       </form>
 
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#E1F5EE] border border-pm-teal/30">
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-pm-teal-light border border-pm-teal/30">
           <span className="text-sm font-semibold text-pm-teal">{selected.size} selected</span>
           <Button size="sm" variant="primary" disabled={bulkBusy} onClick={() => bulkAction('approve')} title="Approves pending users; reactivates suspended/rejected ones">Approve / Reactivate</Button>
           <Button size="sm" variant="secondary" disabled={bulkBusy} onClick={() => bulkAction('suspend')} title="Only applies to active users">Suspend active</Button>
@@ -470,9 +470,9 @@ export function AdminUsersPage() {
       {isLoading ? (
         <PageLoader show={showSpinner} />
       ) : (
-        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
-            <thead className="bg-white/60">
+            <thead className="bg-pm-surface/60">
               <tr>
                 <th className="px-4 py-3 w-10"></th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Name / Email</th>
@@ -509,7 +509,7 @@ export function AdminUsersPage() {
                     </td>
                     <td className="px-5 py-3.5">
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                        u.role === 'admin' ? 'bg-[#E1F5EE] text-pm-teal' : 'bg-gray-100 text-gray-600'
+                        u.role === 'admin' ? 'bg-pm-teal-light text-pm-teal' : 'bg-pm-surface-3 text-pm-muted'
                       }`}>
                         {u.role}
                       </span>
@@ -549,7 +549,7 @@ export function AdminUsersPage() {
                         <button
                           onClick={() => setModal({ mode: 'edit', user: u })}
                           title="Edit user"
-                          className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-gray-50 text-pm-muted hover:text-pm-primary transition-colors"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-pm-surface hover:bg-pm-surface-2 text-pm-muted hover:text-pm-primary transition-colors"
                         >
                           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15.232 5.232l3.536 3.536M9 13l6.5-6.5a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H8v-2.414a2 2 0 01.586-1.414z" />
@@ -563,7 +563,7 @@ export function AdminUsersPage() {
             </tbody>
           </table>
 
-          <div className="px-5 py-3 border-t border-pm-border/60 flex items-center justify-between bg-white/60">
+          <div className="px-5 py-3 border-t border-pm-border/60 flex items-center justify-between bg-pm-surface/60">
             <p className="text-xs text-pm-muted">
               Showing <span className="font-semibold text-pm-primary">{data?.items.length ?? 0}</span> of{' '}
               <span className="font-semibold text-pm-primary">{data?.total ?? 0}</span> users

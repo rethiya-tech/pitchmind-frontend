@@ -21,10 +21,10 @@ const PAGE_SIZE = 20
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
   done:       { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500' },
-  failed:     { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500'   },
+  failed:     { bg: 'bg-pm-danger/10',    text: 'text-pm-danger',    dot: 'bg-pm-danger'   },
   generating: { bg: 'bg-blue-50',   text: 'text-blue-700',   dot: 'bg-blue-500'  },
   pending:    { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-400'},
-  cancelled:  { bg: 'bg-gray-100',  text: 'text-gray-500',   dot: 'bg-gray-300'  },
+  cancelled:  { bg: 'bg-pm-surface-3',  text: 'text-pm-muted',   dot: 'bg-gray-300'  },
 }
 
 function MiniThumb({ theme }: { theme: string | null }) {
@@ -127,11 +127,11 @@ function ExportButton({ conversionId, name }: { conversionId: string; name: stri
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-pm-border rounded-lg shadow-lg py-1 min-w-[128px]">
+        <div className="absolute right-0 top-full mt-1 z-20 bg-pm-surface border border-pm-border rounded-lg shadow-lg py-1 min-w-[128px]">
           {(['pptx', 'pdf', 'docx'] as ExportFormat[]).map((fmt) => (
             <button
               key={fmt}
-              className="w-full text-left px-3 py-1.5 text-sm text-pm-primary hover:bg-gray-50 transition-colors whitespace-nowrap"
+              className="w-full text-left px-3 py-1.5 text-sm text-pm-primary hover:bg-pm-surface-2 transition-colors whitespace-nowrap"
               onClick={() => handle(fmt)}
             >
               Download {fmt.toUpperCase()}
@@ -176,7 +176,7 @@ function DeleteButton({ conversionId }: { conversionId: string }) {
         onClick={() => setConfirm(true)}
         disabled={loading}
         title="Delete project"
-        className="w-8 h-8 rounded-lg flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 transition-colors disabled:opacity-60"
+        className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-danger/30 bg-pm-danger/10 hover:bg-pm-danger/15 text-pm-danger transition-colors disabled:opacity-60"
       >
         {loading ? (
           <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -237,10 +237,10 @@ export function AdminProjectsPage() {
           <Spinner size="lg" className="text-pm-teal" />
         </div>
       ) : (
-        <div className="rounded-2xl border border-pm-border/60 shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl border border-pm-border/60 shadow-card" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/60">
+              <tr className="bg-pm-surface/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Name</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">User</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Status</th>
@@ -309,7 +309,7 @@ export function AdminProjectsPage() {
                             state={{ from: 'admin' }}
                             replace
                             title="Edit presentation"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary transition-colors"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-primary transition-colors"
                           >
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                               <path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -334,7 +334,7 @@ export function AdminProjectsPage() {
             </tbody>
           </table>
 
-          <div className="px-5 py-3 border-t border-pm-border/60 flex items-center justify-between bg-white/60">
+          <div className="px-5 py-3 border-t border-pm-border/60 flex items-center justify-between bg-pm-surface/60">
             <p className="text-xs text-pm-muted">
               Showing <span className="font-semibold text-pm-primary">{data?.items.length ?? 0}</span> of{' '}
               <span className="font-semibold text-pm-primary">{data?.total ?? 0}</span> projects

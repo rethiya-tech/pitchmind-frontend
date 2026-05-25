@@ -82,7 +82,7 @@ export function TokenUsageTable({ metrics }: TokenUsageTableProps) {
                   {row.total.toLocaleString()}
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className="text-[11px] font-bold text-pm-muted bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded">
+                  <span className="text-[11px] font-bold text-pm-muted bg-pm-surface-2 border border-pm-border px-1.5 py-0.5 rounded">
                     {row.rate}
                   </span>
                 </td>

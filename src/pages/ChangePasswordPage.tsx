@@ -51,7 +51,7 @@ export function ChangePasswordPage() {
   }
 
   const inputCls =
-    'w-full border border-pm-border rounded-lg px-4 py-3 text-sm text-pm-primary bg-white placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors'
+    'w-full border border-pm-border rounded-lg px-4 py-3 text-sm text-pm-primary bg-pm-surface placeholder:text-pm-muted focus:outline-none focus:ring-2 focus:ring-pm-teal focus:border-transparent transition-colors'
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-pm-app px-6">

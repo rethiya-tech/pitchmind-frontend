@@ -75,7 +75,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+      <div className="bg-pm-surface rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-pm-border">
           <h2 className="text-lg font-bold text-pm-primary">Upload Template</h2>
@@ -94,7 +94,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
             onDrop={handleDrop}
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-              dragging ? 'border-pm-teal bg-[#E1F5EE]' : file ? 'border-green-400 bg-green-50' : 'border-pm-border hover:border-pm-teal hover:bg-[#F7FFFE]'
+              dragging ? 'border-pm-teal bg-pm-teal-light' : file ? 'border-pm-success bg-pm-success/10' : 'border-pm-border hover:border-pm-teal hover:bg-pm-teal-light'
             }`}
           >
             <input ref={fileRef} type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" className="hidden" onChange={e => setFile(e.target.files?.[0] ?? null)} />
@@ -105,7 +105,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
                   <path d="M6.5 10.5l2.5 2.5 4-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <span className="text-sm font-medium text-green-700">{file.name}</span>
-                <button onClick={e => { e.stopPropagation(); setFile(null) }} className="text-green-500 hover:text-red-500">✕</button>
+                <button onClick={e => { e.stopPropagation(); setFile(null) }} className="text-green-500 hover:text-pm-danger">✕</button>
               </div>
             ) : (
               <>
@@ -145,7 +145,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-pm-border bg-[#F9FAFB]">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-pm-border bg-pm-surface-2">
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-pm-muted hover:text-pm-primary transition-colors">
             Cancel
           </button>
@@ -227,7 +227,7 @@ function SlideThumbCard({ slide, index, theme }: { slide: any; index: number; th
       {/* Content */}
       <div className="flex-1 min-w-0 py-0.5">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-pm-muted bg-[#F3F4F6] px-1.5 py-0.5 rounded-full">{index + 1}</span>
+          <span className="text-[10px] font-bold text-pm-muted bg-pm-surface-3 px-1.5 py-0.5 rounded-full">{index + 1}</span>
           {hasTitle ? (
             <p className="text-sm font-semibold text-pm-primary truncate">{slide.title}</p>
           ) : (
@@ -264,7 +264,7 @@ function ViewModal({ template, onClose }: { template: Template; onClose: () => v
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+      <div className="bg-pm-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
         {/* Header with theme color strip */}
         <div className="flex-shrink-0">
           <div className="h-1.5 w-full" style={{ backgroundColor: t.accent }} />
@@ -319,7 +319,7 @@ function ViewModal({ template, onClose }: { template: Template; onClose: () => v
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-pm-border bg-[#F9FAFB] flex-shrink-0 flex justify-end">
+        <div className="px-6 py-4 border-t border-pm-border bg-pm-surface-2 flex-shrink-0 flex justify-end">
           <button onClick={onClose} className="px-5 py-2 text-sm font-semibold text-pm-muted hover:text-pm-primary transition-colors rounded-xl">
             Close
           </button>
@@ -427,12 +427,12 @@ function TemplateRow({
         <td className="px-5 py-3.5">
           <div className="flex flex-col gap-1">
             <span className={`inline-block w-fit text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-              template.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
+              template.is_active ? 'bg-green-50 text-green-700' : 'bg-pm-surface-3 text-pm-muted'
             }`}>
               {template.is_active ? 'Active' : 'Inactive'}
             </span>
             <span className={`inline-block w-fit text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-              template.is_public ? 'bg-[#E1F5EE] text-pm-teal' : 'bg-amber-50 text-amber-700'
+              template.is_public ? 'bg-pm-teal-light text-pm-teal' : 'bg-amber-50 text-amber-700'
             }`}>
               {template.is_public ? 'Public' : 'Private'}
             </span>
@@ -461,28 +461,28 @@ function TemplateRow({
             <button
               onClick={() => onRename(template)}
               title="Rename"
-              className="px-2 h-8 rounded-lg border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary text-xs font-medium transition-colors"
+              className="px-2 h-8 rounded-lg border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-primary text-xs font-medium transition-colors"
             >
               Rename
             </button>
             <button
               onClick={() => onPatch(template.id, { is_public: !template.is_public })}
               title={template.is_public ? 'Make private' : 'Make public'}
-              className="px-2 h-8 rounded-lg border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary text-xs font-medium transition-colors"
+              className="px-2 h-8 rounded-lg border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-primary text-xs font-medium transition-colors"
             >
               {template.is_public ? 'Make Private' : 'Make Public'}
             </button>
             <button
               onClick={() => onPatch(template.id, { is_active: !template.is_active })}
               title={template.is_active ? 'Deactivate' : 'Activate'}
-              className="px-2 h-8 rounded-lg border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary text-xs font-medium transition-colors"
+              className="px-2 h-8 rounded-lg border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-primary text-xs font-medium transition-colors"
             >
               {template.is_active ? 'Deactivate' : 'Activate'}
             </button>
             <button
               onClick={() => setShowView(true)}
               title="View slides"
-              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-primary transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-primary transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.3"/>
@@ -493,7 +493,7 @@ function TemplateRow({
               onClick={() => copyTemplate()}
               disabled={copying}
               title="Copy template"
-              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-teal transition-colors disabled:opacity-50"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-teal transition-colors disabled:opacity-50"
             >
               {copying ? <Spinner size="sm" /> : (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -506,7 +506,7 @@ function TemplateRow({
               onClick={() => reparse()}
               disabled={reparsing}
               title="Re-parse slides from PPTX"
-              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-white hover:bg-[#F3F4F6] text-pm-muted transition-colors disabled:opacity-50"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-border bg-pm-surface hover:bg-pm-surface-3 text-pm-muted transition-colors disabled:opacity-50"
             >
               {reparsing ? <Spinner size="sm" /> : (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -517,7 +517,7 @@ function TemplateRow({
             <button
               onClick={() => onDelete(template.id)}
               title="Remove template"
-              className="w-8 h-8 rounded-lg flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-pm-danger/30 bg-pm-danger/10 hover:bg-pm-danger/15 text-pm-danger transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M2 4h10M5 4V2.5A.5.5 0 015.5 2h3a.5.5 0 01.5.5V4M6 7v3M8 7v3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
@@ -620,8 +620,8 @@ export function AdminTemplatesPage() {
       {isLoading ? (
         <div className="flex justify-center py-20"><Spinner size="lg" className="text-pm-teal" /></div>
       ) : !data?.items.length ? (
-        <div className="bg-white rounded-2xl border border-pm-border py-20 text-center space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
+        <div className="bg-pm-surface rounded-2xl border border-pm-border py-20 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-pm-teal-light flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="6" width="20" height="16" rx="2" stroke="#0F6E56" strokeWidth="1.8"/>
               <path d="M9 14h10M14 9v10" stroke="#0F6E56" strokeWidth="1.8" strokeLinecap="round"/>
@@ -640,10 +640,10 @@ export function AdminTemplatesPage() {
           </button>
         </div>
       ) : (
-        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl border border-pm-border/60 overflow-hidden shadow-card" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/60">
+              <tr className="bg-pm-surface/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Name</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Slides</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-pm-muted">Theme</th>
@@ -667,7 +667,7 @@ export function AdminTemplatesPage() {
               ))}
             </tbody>
           </table>
-          <div className="px-5 py-3 border-t border-pm-border/60 text-xs text-pm-muted bg-white/60">
+          <div className="px-5 py-3 border-t border-pm-border/60 text-xs text-pm-muted bg-pm-surface/60">
             Showing {data.items.length} template{data.items.length !== 1 ? 's' : ''}
           </div>
         </div>

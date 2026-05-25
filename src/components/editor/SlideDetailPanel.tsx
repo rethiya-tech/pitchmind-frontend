@@ -6,14 +6,14 @@ import type { SlideTextStyle } from '@/types'
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="px-4 py-1.5 border-b border-pm-border bg-[#F9FAFB]">
+    <div className="px-4 py-1.5 border-b border-pm-border bg-pm-surface-2">
       <span className="text-[10px] font-bold text-pm-muted uppercase tracking-widest">{children}</span>
     </div>
   )
 }
 
-const inputCls = 'w-full border border-pm-border rounded-lg px-3 py-2 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-gray-300'
-const selectCls = 'w-full border border-pm-border rounded-lg px-2 py-1.5 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition'
+const inputCls = 'w-full border border-pm-border rounded-lg px-3 py-2 text-xs text-pm-primary bg-pm-surface focus:outline-none focus:ring-2 focus:ring-pm-teal transition placeholder:text-pm-subtle'
+const selectCls = 'w-full border border-pm-border rounded-lg px-2 py-1.5 text-xs text-pm-primary bg-pm-surface focus:outline-none focus:ring-2 focus:ring-pm-teal transition'
 
 const MAX_BULLETS: Record<string, number> = {
   hero: 2,
@@ -87,7 +87,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
   if (!slide) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-2 text-pm-muted px-6">
-        <div className="w-9 h-9 rounded-xl bg-[#F3F4F6] flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-pm-surface-3 flex items-center justify-center">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
             <rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
             <path d="M6 7h8M6 10h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -244,7 +244,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
           onClick={() => setActiveTab('edit')}
           className={`flex-1 py-2.5 text-[11px] font-semibold transition-colors ${
             activeTab === 'edit'
-              ? 'text-pm-primary border-b-2 border-pm-teal bg-white'
+              ? 'text-pm-primary border-b-2 border-pm-teal bg-pm-surface'
               : 'text-pm-muted hover:text-pm-primary'
           }`}
         >
@@ -254,7 +254,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
           onClick={() => setActiveTab('ai')}
           className={`flex-1 py-2.5 text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 ${
             activeTab === 'ai'
-              ? 'text-amber-600 border-b-2 border-amber-500 bg-white'
+              ? 'text-amber-600 border-b-2 border-amber-500 bg-pm-surface'
               : 'text-pm-muted hover:text-amber-600'
           }`}
         >
@@ -285,18 +285,18 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
           <div className="px-3 py-3 space-y-1.5">
             {slide.bullets.map((bullet, i) => (
               <div key={i} className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-full bg-[#E1F5EE] text-pm-teal text-[9px] font-bold flex items-center justify-center flex-shrink-0">
+                <span className="w-4 h-4 rounded-full bg-pm-teal-light text-pm-teal text-[9px] font-bold flex items-center justify-center flex-shrink-0">
                   {i + 1}
                 </span>
                 <input
-                  className="flex-1 border border-pm-border rounded-lg px-2.5 py-1.5 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition min-w-0"
+                  className="flex-1 border border-pm-border rounded-lg px-2.5 py-1.5 text-xs text-pm-primary bg-pm-surface focus:outline-none focus:ring-2 focus:ring-pm-teal transition min-w-0"
                   value={bullet}
                   placeholder={`Point ${i + 1}`}
                   onChange={(e) => handleBulletChange(i, e.target.value)}
                 />
                 <button
                   onClick={() => handleRemoveBullet(i)}
-                  className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-gray-300 hover:text-pm-danger transition-colors"
+                  className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-pm-subtle hover:text-pm-danger transition-colors"
                   aria-label="Remove bullet"
                 >
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,7 +308,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
             {slide.bullets.length < (MAX_BULLETS[slide.layout] ?? 6) && (
               <button
                 onClick={handleAddBullet}
-                className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-lg border border-dashed border-pm-border text-[11px] font-medium text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-[#E1F5EE] transition-all"
+                className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-lg border border-dashed border-pm-border text-[11px] font-medium text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-pm-teal-light transition-all"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -389,14 +389,14 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
                   type="color"
                   value={currentStyle.color ?? '#ffffff'}
                   onChange={(e) => setStyle({ color: e.target.value })}
-                  className="h-8 w-10 cursor-pointer rounded border border-pm-border bg-white p-0.5"
+                  className="h-8 w-10 cursor-pointer rounded border border-pm-border bg-pm-surface p-0.5"
                 />
                 <input
                   type="text"
                   value={currentStyle.color ?? ''}
                   placeholder="Auto"
                   onChange={(e) => setStyle({ color: e.target.value || undefined })}
-                  className="flex-1 border border-pm-border rounded-lg px-2 py-1.5 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-pm-teal transition font-mono"
+                  className="flex-1 border border-pm-border rounded-lg px-2 py-1.5 text-xs text-pm-primary bg-pm-surface focus:outline-none focus:ring-2 focus:ring-pm-teal transition font-mono"
                 />
               </div>
               {/* Swatches */}
@@ -423,7 +423,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
                 onClick={() => setStyle({ italic: !currentStyle.italic })}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold italic transition ${
                   currentStyle.italic
-                    ? 'border-pm-teal bg-[#E1F5EE] text-pm-teal'
+                    ? 'border-pm-teal bg-pm-teal-light text-pm-teal'
                     : 'border-pm-border text-pm-muted hover:text-pm-primary'
                 }`}
               >
@@ -457,7 +457,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
                   <button
                     type="button"
                     onClick={() => imageInputRef.current?.click()}
-                    className="px-2.5 py-1 rounded-lg bg-white text-[10px] font-semibold text-pm-primary hover:bg-gray-100 transition"
+                    className="px-2.5 py-1 rounded-lg bg-pm-surface text-[10px] font-semibold text-pm-primary hover:bg-pm-surface-3 transition"
                   >
                     Replace
                   </button>
@@ -475,7 +475,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 disabled={uploadingImage}
-                className="flex flex-col items-center justify-center gap-2 w-full h-20 rounded-lg border-2 border-dashed border-pm-border text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-[#E1F5EE] transition-all disabled:opacity-50"
+                className="flex flex-col items-center justify-center gap-2 w-full h-20 rounded-lg border-2 border-dashed border-pm-border text-pm-muted hover:border-pm-teal hover:text-pm-teal hover:bg-pm-teal-light transition-all disabled:opacity-50"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault()
@@ -573,7 +573,7 @@ export function SlideDetailPanel({ selectionText, onSelectionConsumed, typoFocus
             <textarea
               ref={inputRef}
               rows={5}
-              className="w-full border border-pm-border rounded-lg px-3 py-2.5 text-xs text-pm-primary bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 transition placeholder:text-gray-300 resize-none"
+              className="w-full border border-pm-border rounded-lg px-3 py-2.5 text-xs text-pm-primary bg-pm-surface focus:outline-none focus:ring-2 focus:ring-amber-400 transition placeholder:text-pm-subtle resize-none"
               placeholder={'e.g. "change color to purple and make shapes pill"'}
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}

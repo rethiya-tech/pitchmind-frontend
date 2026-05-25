@@ -73,7 +73,7 @@ function SlideThumbCard({ slide, index, theme }: { slide: any; index: number; th
       </div>
       <div className="flex-1 min-w-0 py-0.5">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-pm-muted bg-[#F3F4F6] px-1.5 py-0.5 rounded-full">{index + 1}</span>
+          <span className="text-[10px] font-bold text-pm-muted bg-pm-surface-3 px-1.5 py-0.5 rounded-full">{index + 1}</span>
           {hasTitle
             ? <p className="text-sm font-semibold text-pm-primary truncate">{slide.title}</p>
             : <p className="text-sm font-medium text-pm-muted">Slide {index + 1}</p>}
@@ -108,7 +108,7 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+      <div className="bg-pm-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
         <div className="flex-shrink-0">
           <div className="h-1.5 w-full" style={{ backgroundColor: t.accent }} />
           <div className="flex items-center justify-between px-6 py-4 border-b border-pm-border">
@@ -162,7 +162,7 @@ function ViewModal({ template, onClose, onUse }: { template: Template; onClose: 
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-pm-border bg-[#F9FAFB] flex-shrink-0 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-pm-border bg-pm-surface-2 flex-shrink-0 flex items-center justify-between">
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-pm-muted hover:text-pm-primary transition-colors">
             Close
           </button>
@@ -248,7 +248,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
+      <div className="bg-pm-surface rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-pm-border">
           <h2 className="text-lg font-bold text-pm-primary">Upload Your Template</h2>
           <button onClick={onClose} className="text-pm-muted hover:text-pm-primary transition-colors">
@@ -292,7 +292,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
               onDrop={handleDrop}
               onClick={() => fileRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-                dragOver ? 'border-pm-teal bg-[#E1F5EE]' : 'border-pm-border hover:border-pm-teal hover:bg-gray-50'
+                dragOver ? 'border-pm-teal bg-pm-teal-light' : 'border-pm-border hover:border-pm-teal hover:bg-pm-surface-2'
               }`}
             >
               <input ref={fileRef} type="file" accept=".pptx" className="hidden" onChange={handleFileChange} />
@@ -317,7 +317,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
           </p>
         </div>
 
-        <div className="px-6 py-4 border-t border-pm-border bg-[#F9FAFB] flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-pm-border bg-pm-surface-2 flex items-center justify-between">
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-pm-muted hover:text-pm-primary transition-colors">
             Cancel
           </button>
@@ -457,7 +457,7 @@ function TemplateRow({ template, currentUserId, isAdmin }: { template: Template;
                 My Template
               </span>
             ) : template.is_public && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#E1F5EE] text-pm-teal border border-pm-teal/20">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-pm-teal-light text-pm-teal border border-pm-teal/20">
                 <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
                   <path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -510,7 +510,7 @@ function TemplateRow({ template, currentUserId, isAdmin }: { template: Template;
             )}
             <button
               onClick={() => setShowView(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-pm-border rounded-lg text-xs font-medium text-pm-primary hover:bg-[#F3F4F6] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-pm-border rounded-lg text-xs font-medium text-pm-primary hover:bg-pm-surface-3 transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                 <circle cx="7" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.3" />
@@ -576,8 +576,8 @@ export function TemplatesPage() {
       {isLoading ? (
         <PageLoader show={showSpinner} />
       ) : !data?.items.length ? (
-        <div className="rounded-2xl border border-pm-border/60 py-20 text-center space-y-4 shadow-card" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
+        <div className="rounded-2xl border border-pm-border/60 py-20 text-center space-y-4 shadow-card" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-pm-teal-light flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
               <rect x="4" y="6" width="20" height="16" rx="2" stroke="#0F6E56" strokeWidth="1.8" />
               <path d="M8 14h12M8 10h5" stroke="#0F6E56" strokeWidth="1.8" strokeLinecap="round" />
@@ -589,10 +589,10 @@ export function TemplatesPage() {
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(12px)' }}>
+        <div className="rounded-2xl overflow-hidden shadow-card border border-pm-border/60" style={{ background: 'var(--pm-glass-bg)', backdropFilter: 'blur(12px)' }}>
           <table className="w-full">
             <thead>
-              <tr className="border-b border-pm-border/60 bg-white/60">
+              <tr className="border-b border-pm-border/60 bg-pm-surface/60">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-pm-muted uppercase tracking-wider w-24">Preview</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-pm-muted uppercase tracking-wider">Name</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-pm-muted uppercase tracking-wider hidden sm:table-cell">Theme</th>

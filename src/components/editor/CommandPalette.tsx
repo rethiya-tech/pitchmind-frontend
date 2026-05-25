@@ -51,7 +51,7 @@ export function CommandPalette({ open, onClose }: Props) {
         >
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
           <motion.div
-            className="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-pm-border"
+            className="relative z-10 bg-pm-surface rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-pm-border"
             initial={{ scale: 0.96, y: -16, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.96, y: -16, opacity: 0 }}
@@ -69,7 +69,7 @@ export function CommandPalette({ open, onClose }: Props) {
                 placeholder="Jump to slide…"
                 className="flex-1 text-sm text-pm-primary placeholder:text-pm-muted outline-none bg-transparent"
               />
-              <kbd className="text-[10px] font-mono px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-pm-muted">Esc</kbd>
+              <kbd className="text-[10px] font-mono px-1.5 py-0.5 bg-pm-surface-3 border border-pm-border rounded text-pm-muted">Esc</kbd>
             </div>
 
             {/* Slide list */}
@@ -84,10 +84,9 @@ export function CommandPalette({ open, onClose }: Props) {
                     <motion.button
                       key={slide.id}
                       onClick={() => handleSelect(slide.id)}
-                      whileHover={{ backgroundColor: '#F9FAFB' }}
-                      className={`w-full text-left flex items-center gap-3 px-4 py-2.5 transition-colors ${isActive ? 'bg-[#E6F2EF]' : ''}`}
+                      className={`w-full text-left flex items-center gap-3 px-4 py-2.5 transition-colors ${isActive ? 'bg-pm-teal-light' : 'hover:bg-pm-surface-2'}`}
                     >
-                      <span className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-pm-teal text-white' : 'bg-gray-100 text-pm-muted'}`}>
+                      <span className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-pm-teal text-white' : 'bg-pm-surface-3 text-pm-muted'}`}>
                         {globalIndex + 1}
                       </span>
                       <div className="min-w-0">
@@ -107,7 +106,7 @@ export function CommandPalette({ open, onClose }: Props) {
               )}
             </div>
 
-            <div className="px-4 py-2 border-t border-pm-border bg-[#F9FAFB]">
+            <div className="px-4 py-2 border-t border-pm-border bg-pm-surface-2">
               <p className="text-[10px] text-pm-muted">{filtered.length} slide{filtered.length !== 1 ? 's' : ''}</p>
             </div>
           </motion.div>

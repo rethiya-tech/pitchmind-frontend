@@ -42,7 +42,7 @@ export function DropZone({ onFile, file, disabled }: DropZoneProps) {
         'relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors',
         isDragActive
           ? 'border-pm-teal bg-pm-teal-light'
-          : 'border-pm-border hover:border-pm-teal hover:bg-gray-50',
+          : 'border-pm-border hover:border-pm-teal hover:bg-pm-surface-2',
         { 'opacity-50 cursor-not-allowed': disabled }
       )}
     >

@@ -35,12 +35,12 @@ export function ConfirmDialog({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" onClick={onCancel} />
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-pm-border w-full max-w-sm mx-4 overflow-hidden">
+      <div className="relative bg-pm-surface rounded-2xl shadow-2xl border border-pm-border w-full max-w-sm mx-4 overflow-hidden">
         {/* Icon + Header */}
         <div className="px-6 pt-6 pb-4 flex gap-4 items-start">
-          <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${danger ? 'bg-red-50' : 'bg-[#E1F5EE]'}`}>
+          <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${danger ? 'bg-pm-danger/10' : 'bg-pm-teal-light'}`}>
             {danger ? (
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-red-500">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-pm-danger">
                 <path d="M10 6v4M10 14h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                 <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/>
               </svg>
@@ -58,7 +58,7 @@ export function ConfirmDialog({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-[#F9FAFB] border-t border-pm-border">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-pm-surface-2 border-t border-pm-border">
           <button
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-pm-muted hover:text-pm-primary transition-colors rounded-xl"
@@ -69,7 +69,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className={`px-5 py-2 text-sm font-semibold rounded-xl transition-colors text-white ${
               danger
-                ? 'bg-red-500 hover:bg-red-600'
+                ? 'bg-pm-danger hover:bg-pm-danger'
                 : 'bg-pm-teal hover:bg-pm-teal-hover'
             }`}
           >

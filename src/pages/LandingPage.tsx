@@ -12,10 +12,19 @@ import { CtaBanner } from '@/components/landing/CtaBanner'
 import { LandFooter } from '@/components/landing/LandFooter'
 
 export function LandingPage() {
-  useEffect(() => { window.scrollTo(0, 0) }, [])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    // Landing page is light-only — temporarily suspend any active dark class
+    const root = document.documentElement
+    const wasDark = root.classList.contains('dark')
+    if (wasDark) root.classList.remove('dark')
+    return () => {
+      if (wasDark) root.classList.add('dark')
+    }
+  }, [])
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-pm-surface">
       <LandNav />
       <HeroSection />
       <HeroDashboard />

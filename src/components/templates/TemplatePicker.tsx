@@ -64,7 +64,7 @@ export function TemplatePicker({ onClose }: TemplatePickerProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-pm-surface rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-pm-border flex-shrink-0">
@@ -85,7 +85,7 @@ export function TemplatePicker({ onClose }: TemplatePickerProps) {
             <div className="flex justify-center py-16"><Spinner size="lg" className="text-pm-teal" /></div>
           ) : templates.length === 0 ? (
             <div className="text-center py-16 space-y-3">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-pm-teal-light flex items-center justify-center">
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                   <rect x="4" y="6" width="20" height="16" rx="2" stroke="#0F6E56" strokeWidth="1.8"/>
                   <path d="M9 14h10" stroke="#0F6E56" strokeWidth="1.8" strokeLinecap="round"/>
@@ -106,7 +106,7 @@ export function TemplatePicker({ onClose }: TemplatePickerProps) {
                       : 'border-pm-border hover:border-pm-teal/50'
                   }`}
                 >
-                  <div className="p-3 bg-[#F9FAFB]">
+                  <div className="p-3 bg-pm-surface-2">
                     {(template.preview_count ?? 0) > 0 ? (
                       <img
                         src={templateSlideImageUrl(template.id, 0)}
@@ -122,7 +122,7 @@ export function TemplatePicker({ onClose }: TemplatePickerProps) {
                     <div className="flex items-center gap-1.5 min-w-0">
                       <p className="text-sm font-bold text-pm-primary truncate">{template.name}</p>
                       {template.is_public && (
-                        <span className="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-[#E1F5EE] text-pm-teal border border-pm-teal/20">
+                        <span className="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-pm-teal-light text-pm-teal border border-pm-teal/20">
                           Admin
                         </span>
                       )}
@@ -158,7 +158,7 @@ export function TemplatePicker({ onClose }: TemplatePickerProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-pm-border bg-[#F9FAFB] flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-pm-border bg-pm-surface-2 flex-shrink-0">
           <p className="text-xs text-pm-muted">
             {selected ? `"${selected.name}" selected — ${selected.slide_count} slides` : 'No template selected'}
           </p>

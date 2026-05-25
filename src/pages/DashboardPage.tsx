@@ -43,7 +43,7 @@ function StatCard({
       variants={cardVariants}
       whileHover={{ y: -4, boxShadow: '0 14px 40px rgba(15,110,86,0.13), 0 4px 12px rgba(0,0,0,0.05)' }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="relative bg-white rounded-2xl border border-pm-border shadow-card px-6 py-5 flex items-start justify-between cursor-default overflow-hidden"
+      className="relative bg-pm-surface rounded-2xl border border-pm-border shadow-card px-6 py-5 flex items-start justify-between cursor-default overflow-hidden"
     >
       {barGradient && (
         <div
@@ -83,14 +83,14 @@ function ActionCard({
       variants={cardVariants}
       whileHover={{ y: -4, boxShadow: '0 14px 40px rgba(15,110,86,0.13), 0 4px 12px rgba(0,0,0,0.05)' }}
       transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-      className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal/40 transition-colors overflow-hidden"
+      className="group relative bg-pm-surface rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal/40 transition-colors overflow-hidden"
     >
       {/* Gradient shimmer overlay on hover */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl"
         style={{ background: 'linear-gradient(135deg, rgba(15,110,86,0.025) 0%, rgba(201,147,10,0.02) 100%)' }}
       />
-      <div className="w-10 h-10 rounded-xl bg-[#E1F5EE] flex items-center justify-center text-pm-teal">
+      <div className="w-10 h-10 rounded-xl bg-pm-teal-light flex items-center justify-center text-pm-teal">
         {icon}
       </div>
       <div>
@@ -117,9 +117,9 @@ function StatusPill({ status }: { status: string }) {
   const map: Record<string, { bg: string; text: string; dot: string; label: string }> = {
     done:       { bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500',  label: 'Done' },
     generating: { bg: 'bg-blue-50',   text: 'text-blue-700',   dot: 'bg-blue-500',   label: 'Generating' },
-    failed:     { bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-500',    label: 'Failed' },
-    pending:    { bg: 'bg-gray-100',  text: 'text-gray-500',   dot: 'bg-gray-400',   label: 'Pending' },
-    cancelled:  { bg: 'bg-gray-100',  text: 'text-gray-400',   dot: 'bg-gray-300',   label: 'Cancelled' },
+    failed:     { bg: 'bg-pm-danger/10',    text: 'text-pm-danger',    dot: 'bg-pm-danger',    label: 'Failed' },
+    pending:    { bg: 'bg-pm-surface-3',  text: 'text-pm-muted',   dot: 'bg-gray-400',   label: 'Pending' },
+    cancelled:  { bg: 'bg-pm-surface-3',  text: 'text-pm-subtle',   dot: 'bg-gray-300',   label: 'Cancelled' },
   }
   const s = map[status] ?? map.pending
   return (
@@ -211,7 +211,7 @@ function BarChart({ bars }: { bars: { label: string; value: number; color: strin
       {bars.map((bar, i) => (
         <div key={i} className="flex items-center gap-3">
           <span className="text-xs text-pm-muted truncate w-28 text-right flex-shrink-0">{bar.label}</span>
-          <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+          <div className="flex-1 bg-pm-surface-3 rounded-full h-3 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: `${(bar.value / max) * 100}%`, backgroundColor: bar.color }}
@@ -321,8 +321,8 @@ export function DashboardPage() {
           {[0, 1, 2, 3].map((i) => <SkeletonStatCard key={i} />)}
         </div>
         <div className="col-span-2 flex flex-col gap-4">
-          <div className="bg-white rounded-2xl border border-pm-border overflow-hidden shadow-card">
-            <div className="px-5 py-3 bg-[#F9FAFB] border-b border-pm-border">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border overflow-hidden shadow-card">
+            <div className="px-5 py-3 bg-pm-surface-2 border-b border-pm-border">
               <div className="skeleton-shimmer h-3 w-32 rounded-full" />
             </div>
             {[0, 1, 2, 3].map((i) => <SkeletonRow key={i} />)}
@@ -358,7 +358,7 @@ export function DashboardPage() {
           label="Total Projects"
           value={items.length}
           sub={items.length === 1 ? '1 presentation' : `${items.length} presentations`}
-          accent="bg-[#E1F5EE] text-pm-teal"
+          accent="bg-pm-teal-light text-pm-teal"
           barGradient="linear-gradient(180deg, #0F6E56 0%, #0A9B6E 100%)"
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -395,7 +395,7 @@ export function DashboardPage() {
           label="Total Slides"
           value={totalSlides}
           sub="Across all projects"
-          accent="bg-[#FFF8E3] text-pm-gold"
+          accent="bg-pm-gold-light text-pm-gold"
           barGradient="linear-gradient(180deg, #C9930A 0%, #E8B84A 100%)"
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -412,7 +412,7 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* Status donut */}
-          <div className="bg-white rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-3">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-3">
             <p className="text-sm font-bold text-pm-primary">Project Status</p>
             <div className="flex-1 flex items-center justify-center py-2">
               <DonutChart
@@ -423,7 +423,7 @@ export function DashboardPage() {
           </div>
 
           {/* Slides per project */}
-          <div className="bg-white rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-4">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-4">
             <p className="text-sm font-bold text-pm-primary">Slides per Project</p>
             {barData.length > 0 ? (
               <div className="flex-1 flex items-center">
@@ -435,7 +435,7 @@ export function DashboardPage() {
           </div>
 
           {/* 7-day activity sparkline */}
-          <div className="bg-white rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-4">
+          <div className="bg-pm-surface rounded-2xl border border-pm-border shadow-card p-5 flex flex-col gap-4">
             <div className="flex items-start justify-between">
               <p className="text-sm font-bold text-pm-primary">Activity (7 days)</p>
               <span className="text-xs font-medium px-2 py-0.5 rounded-full"
@@ -487,9 +487,9 @@ export function DashboardPage() {
             variants={cardVariants}
             whileHover={{ y: -3, boxShadow: '0 8px 32px rgba(15,110,86,0.10)' }}
             transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-            className="group relative bg-white rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal/40 transition-colors overflow-hidden text-left"
+            className="group relative bg-pm-surface rounded-2xl border border-pm-border px-6 py-5 flex flex-col gap-3 hover:border-pm-teal/40 transition-colors overflow-hidden text-left"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#E1F5EE] flex items-center justify-center text-pm-teal">
+            <div className="w-10 h-10 rounded-xl bg-pm-teal-light flex items-center justify-center text-pm-teal">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <rect x="2" y="3" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
                 <path d="M6 16h6M9 13v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
@@ -534,8 +534,8 @@ export function DashboardPage() {
           </div>
 
           {recent.length === 0 ? (
-            <div className="flex-1 bg-white rounded-2xl border border-pm-border flex flex-col items-center justify-center py-16 gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#E1F5EE] flex items-center justify-center">
+            <div className="flex-1 bg-pm-surface rounded-2xl border border-pm-border flex flex-col items-center justify-center py-16 gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-pm-teal-light flex items-center justify-center">
                 <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
                   <rect x="3.5" y="3.5" width="19" height="19" rx="2.5" stroke="#0F6E56" strokeWidth="1.6" />
                   <path d="M8.5 13h9M13 8.5v9" stroke="#0F6E56" strokeWidth="1.6" strokeLinecap="round" />
@@ -548,15 +548,15 @@ export function DashboardPage() {
               <Link
                 to="/upload"
                 replace
-                className="text-xs font-semibold text-pm-teal border border-pm-teal rounded-lg px-4 py-2 hover:bg-[#E1F5EE] transition-colors"
+                className="text-xs font-semibold text-pm-teal border border-pm-teal rounded-lg px-4 py-2 hover:bg-pm-teal-light transition-colors"
               >
                 Create presentation
               </Link>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-pm-border overflow-hidden">
+            <div className="bg-pm-surface rounded-2xl border border-pm-border overflow-hidden">
               {/* Table head */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 bg-[#F9FAFB] border-b border-pm-border">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-3 bg-pm-surface-2 border-b border-pm-border">
                 {['Name', 'Status', 'Slides', 'Action'].map(h => (
                   <span key={h} className="text-xs font-semibold uppercase tracking-wider text-pm-muted">{h}</span>
                 ))}
@@ -565,7 +565,7 @@ export function DashboardPage() {
               {recent.map((c, i) => (
                 <div
                   key={c.id}
-                  className={`grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-5 py-3.5 hover:bg-[#FAFAFA] transition-colors ${i < recent.length - 1 ? 'border-b border-pm-border' : ''}`}
+                  className={`grid grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-5 py-3.5 hover:bg-pm-surface-2 transition-colors ${i < recent.length - 1 ? 'border-b border-pm-border' : ''}`}
                 >
                   {/* Name */}
                   <div className="flex items-center gap-3 min-w-0">

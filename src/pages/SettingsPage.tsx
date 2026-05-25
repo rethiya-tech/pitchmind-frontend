@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/Button'
 import api from '@/services/api'
 import { cn } from '@/utils/cn'
+import { useThemeStore } from '@/stores/themeStore'
 
 // ── Labelled input ────────────────────────────────────────────────────────────
 function Field({
@@ -31,7 +32,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="w-full border border-pm-border rounded-xl px-4 py-2.5 text-sm text-pm-primary bg-white placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-pm-teal transition"
+        className="w-full border border-pm-border rounded-xl px-4 py-2.5 text-sm text-pm-primary bg-pm-surface placeholder:text-pm-subtle focus:outline-none focus:ring-2 focus:ring-pm-teal transition"
       />
     </div>
   )
@@ -53,13 +54,13 @@ function Card({
 }) {
   return (
     <motion.div
-      className="relative bg-white/85 backdrop-blur-sm rounded-2xl border border-pm-border/70 overflow-hidden shadow-card"
-      whileHover={{ y: -3, boxShadow: '0 12px 36px rgba(15,110,86,0.12), 0 4px 12px rgba(0,0,0,0.05)' }}
+      className="relative bg-pm-surface/85 backdrop-blur-sm rounded-2xl border border-pm-border/70 overflow-hidden shadow-card"
+      whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >
       <div className="absolute left-0 inset-y-0 w-[3px]" style={{ background: barGradient }} />
       <div className="flex items-center gap-3 px-6 py-4 border-b border-pm-border/60">
-        <div className="w-8 h-8 rounded-lg bg-[#E1F5EE] flex items-center justify-center text-pm-teal flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-pm-teal-light flex items-center justify-center text-pm-teal flex-shrink-0">
           {icon}
         </div>
         <div>
@@ -69,6 +70,75 @@ function Card({
       </div>
       <div className="px-6 py-5">{children}</div>
     </motion.div>
+  )
+}
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+function ThemeToggle() {
+  const theme = useThemeStore(s => s.theme)
+  const setTheme = useThemeStore(s => s.setTheme)
+
+  const options: Array<{ value: 'light' | 'dark'; label: string; icon: React.ReactNode }> = [
+    {
+      value: 'light',
+      label: 'Light',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+    {
+      value: 'dark',
+      label: 'Dark',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+          <path d="M16 11.5A7 7 0 018.5 4a7 7 0 105.5 11.5 5.5 5.5 0 002 -4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+  ]
+
+  return (
+    <div className="flex items-center justify-between gap-6">
+      <div>
+        <p className="text-sm font-semibold text-pm-primary">Theme</p>
+        <p className="text-xs text-pm-muted mt-0.5">Choose how PitchMind looks to you</p>
+      </div>
+      <div
+        className="relative inline-flex p-1 rounded-full bg-pm-surface-2 border border-pm-border"
+        role="radiogroup"
+        aria-label="Theme"
+      >
+        {options.map(opt => {
+          const active = theme === opt.value
+          const isDark = opt.value === 'dark'
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                'relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300',
+                active
+                  ? isDark
+                    // Dark-active: champagne gold pill — premium luxury cue
+                    ? 'bg-gradient-to-r from-[#E5B650] to-[#F2C870] text-[#08120D] shadow-[0_4px_16px_-4px_rgba(229,182,80,0.5)]'
+                    // Light-active: teal pill
+                    : 'bg-gradient-to-r from-pm-teal to-pm-teal-gradient-end text-white shadow-[0_4px_16px_-4px_rgba(15,110,86,0.5)]'
+                  : 'text-pm-muted hover:text-pm-primary'
+              )}
+            >
+              {opt.icon}
+              {opt.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -116,8 +186,22 @@ export function SettingsPage() {
         <p className="text-sm text-pm-muted mt-0.5">Manage your account and preferences</p>
       </div>
 
-      {/* ── Security + Danger ── */}
+      {/* ── Appearance + Security + Danger ── */}
       <div className="space-y-6 max-w-3xl">
+
+      {/* ── Appearance ── */}
+      <Card
+        title="Appearance"
+        subtitle="Customize how PitchMind looks"
+        icon={
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M10 2.5v15M2.5 10h15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        }
+      >
+        <ThemeToggle />
+      </Card>
 
       {/* ── Security ── */}
       <Card
@@ -159,12 +243,12 @@ export function SettingsPage() {
           </div>
 
           {pwError && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
-              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className="text-red-500 flex-shrink-0">
+            <div className="flex items-center gap-2 bg-pm-danger/10 border border-pm-danger/30 rounded-xl px-4 py-2.5">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className="text-pm-danger flex-shrink-0">
                 <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
                 <path d="M10 6v4M10 14h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
-              <p className="text-xs text-red-600 font-medium">{pwError}</p>
+              <p className="text-xs text-pm-danger font-medium">{pwError}</p>
             </div>
           )}
 
@@ -186,7 +270,7 @@ export function SettingsPage() {
         subtitle="Irreversible account actions"
         barGradient="linear-gradient(180deg, #DC2626 0%, #EF4444 100%)"
         icon={
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-red-500">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-pm-danger">
             <path d="M10 3L2 17h16L10 3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
             <path d="M10 8v4M10 14h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
@@ -201,7 +285,7 @@ export function SettingsPage() {
             type="button"
             className={cn(
               'flex-shrink-0 ml-6 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors',
-              'text-red-600 border-red-200 bg-white hover:bg-red-50'
+              'text-pm-danger border-pm-danger/30 bg-pm-surface hover:bg-pm-danger/10'
             )}
             onClick={() => toast.error('Please contact support to delete your account.')}
           >

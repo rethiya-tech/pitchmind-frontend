@@ -33,8 +33,8 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
       onClick={onSelect}
       className={cn(
         'group relative flex items-center gap-2 px-2 py-2 rounded-xl transition-all select-none',
-        isDragOverlay ? 'cursor-grabbing shadow-xl ring-2 ring-pm-teal bg-[#E1F5EE]' : 'cursor-pointer',
-        !isDragOverlay && (isActive ? 'bg-[#E1F5EE]' : 'hover:bg-gray-50')
+        isDragOverlay ? 'cursor-grabbing shadow-xl ring-2 ring-pm-teal bg-pm-teal-light' : 'cursor-pointer',
+        !isDragOverlay && (isActive ? 'bg-pm-teal-light' : 'hover:bg-pm-surface-2')
       )}
     >
       {isActive && !isDragOverlay && (
@@ -52,7 +52,7 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
           'flex-shrink-0 flex flex-col gap-[3px] py-1 px-0.5 rounded transition-colors',
           locked
             ? 'opacity-0 pointer-events-none'
-            : 'opacity-25 group-hover:opacity-70 cursor-grab active:cursor-grabbing hover:bg-gray-200'
+            : 'opacity-25 group-hover:opacity-70 cursor-grab active:cursor-grabbing hover:bg-pm-surface-3'
         )}
       >
         {[0, 1, 2].map((i) => (
@@ -117,7 +117,7 @@ export const SlideCardInner = forwardRef<HTMLDivElement, SlideCardProps & {
         <button
           data-testid="slide-delete-btn"
           onClick={(e) => { e.stopPropagation(); onDelete() }}
-          className="opacity-0 group-hover:opacity-100 flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center text-pm-muted hover:text-pm-danger hover:bg-red-50 transition-all"
+          className="opacity-0 group-hover:opacity-100 flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center text-pm-muted hover:text-pm-danger hover:bg-pm-danger/10 transition-all"
           aria-label="Delete slide"
         >
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

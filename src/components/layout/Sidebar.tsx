@@ -156,10 +156,10 @@ export function Sidebar({ open = true }: SidebarProps) {
       end={to === '/admin' || to === '/dashboard'}
       className={({ isActive }) =>
         cn(
-          'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
+          'sidebar-nav-item group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
           isActive
-            ? 'bg-[#E6F2EF] text-pm-teal'
-            : 'text-pm-muted hover:bg-gray-50 hover:text-pm-primary'
+            ? 'is-active bg-pm-teal-light text-pm-teal'
+            : 'text-pm-muted'
         )
       }
     >
@@ -197,19 +197,12 @@ export function Sidebar({ open = true }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'h-full flex flex-col transition-all duration-300 flex-shrink-0 rounded-2xl overflow-hidden',
+        'sidebar-glass h-full flex flex-col transition-all duration-300 flex-shrink-0 rounded-2xl overflow-hidden',
         open ? 'w-56' : 'w-0',
       )}
-      style={{
-        background: 'linear-gradient(to bottom, rgba(255,255,255,0.72) 0%, rgba(253,247,232,0.58) 100%)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255,255,255,0.82)',
-        boxShadow: '0 8px 32px rgba(15,110,86,0.07), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.95)',
-      }}
     >
       {/* Logo */}
-      <div className="px-5 py-5 flex items-center gap-3 border-b border-white/50">
+      <div className="px-5 py-5 flex items-center gap-3 border-b sidebar-divider-color">
         <LogoMark />
         <div>
           <span className="text-[15px] font-extrabold text-pm-teal tracking-tight leading-none">PitchMind</span>
@@ -233,16 +226,12 @@ export function Sidebar({ open = true }: SidebarProps) {
         )}
       </nav>
 
-      {/* Create CTA — green primary */}
-      <div className="px-3 pb-3 pt-3 border-t border-white/50">
+      {/* Create CTA — green primary with gold edge in dark mode */}
+      <div className="px-3 pb-3 pt-3 border-t sidebar-divider-color">
         <Link
           to="/upload"
           replace
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
-          style={{
-            background: 'linear-gradient(135deg, #0F6E56 0%, #0A9B6E 100%)',
-            boxShadow: '0 4px 16px rgba(15,110,86,0.30)',
-          }}
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-br from-pm-teal to-pm-teal-gradient-end shadow-[0_4px_16px_rgba(15,110,86,0.30)] dark:shadow-[0_4px_20px_rgba(45,212,160,0.35),inset_0_1px_0_rgba(229,182,80,0.25)]"
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

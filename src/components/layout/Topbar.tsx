@@ -37,13 +37,13 @@ function MenuIcon() {
 
 function statusDot(status: string) {
   const map: Record<string, string> = {
-    done: 'bg-green-500',
-    generating: 'bg-blue-500',
-    failed: 'bg-red-500',
-    pending: 'bg-gray-400',
-    cancelled: 'bg-gray-300',
+    done: 'bg-pm-success',
+    generating: 'bg-pm-teal',
+    failed: 'bg-pm-danger',
+    pending: 'bg-pm-subtle',
+    cancelled: 'bg-pm-border-strong',
   }
-  return map[status] ?? 'bg-gray-400'
+  return map[status] ?? 'bg-pm-subtle'
 }
 
 function statusLabel(status: string) {
@@ -77,12 +77,12 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
   const items = (data?.items ?? []).slice(0, 8)
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden">
+    <div className="absolute right-0 top-full mt-2 w-80 bg-pm-surface rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-pm-border">
         <span className="text-sm font-bold text-pm-primary">Notifications</span>
         {items.length > 0 && (
-          <span className="text-xs font-semibold text-pm-teal bg-[#E1F5EE] px-2 py-0.5 rounded-full">
+          <span className="text-xs font-semibold text-pm-teal bg-pm-teal-light px-2 py-0.5 rounded-full">
             {items.length}
           </span>
         )}
@@ -98,7 +98,7 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
               key={c.id}
               to={c.status === 'done' && c.id ? `/editor/${c.id}` : c.status === 'generating' && c.id ? `/generating/${c.id}` : '/projects'}
               onClick={onClose}
-              className="flex items-start gap-3 px-4 py-3 hover:bg-[#FAFAFA] transition-colors"
+              className="flex items-start gap-3 px-4 py-3 hover:bg-pm-surface-2 transition-colors"
             >
               <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${statusDot(c.status)}`} />
               <div className="min-w-0 flex-1">
@@ -116,7 +116,7 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2.5 border-t border-pm-border bg-[#F9FAFB]">
+      <div className="px-4 py-2.5 border-t border-pm-border bg-pm-surface-2">
         <Link
           to="/projects"
           onClick={onClose}
@@ -139,7 +139,7 @@ function AdminPendingPanel({ onClose }: { onClose: () => void }) {
   const items = data?.items ?? []
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden">
+    <div className="absolute right-0 top-full mt-2 w-80 bg-pm-surface rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-pm-border">
         <span className="text-sm font-bold text-pm-primary">Pending approvals</span>
         {items.length > 0 && (
@@ -157,7 +157,7 @@ function AdminPendingPanel({ onClose }: { onClose: () => void }) {
               key={u.id}
               to="/admin/users"
               onClick={onClose}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-[#FAFAFA] transition-colors"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-pm-surface-2 transition-colors"
             >
               <span className="mt-0.5 w-2 h-2 rounded-full flex-shrink-0 bg-amber-500" />
               <div className="min-w-0 flex-1">
@@ -168,7 +168,7 @@ function AdminPendingPanel({ onClose }: { onClose: () => void }) {
           ))
         )}
       </div>
-      <div className="px-4 py-2.5 border-t border-pm-border bg-[#F9FAFB]">
+      <div className="px-4 py-2.5 border-t border-pm-border bg-pm-surface-2">
         <Link to="/admin/users" onClick={onClose} className="text-xs font-semibold text-pm-teal hover:text-pm-teal-hover transition-colors">
           Review all users →
         </Link>
@@ -215,7 +215,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
     : user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <header className="h-14 bg-white/92 backdrop-blur-xl border-b border-pm-border/50 flex items-center justify-between px-5 flex-shrink-0 z-30 relative">
+    <header className="h-14 bg-pm-surface/92 backdrop-blur-xl border-b border-pm-border/50 flex items-center justify-between px-5 flex-shrink-0 z-30 relative">
       {/* Gradient bottom separator */}
       <div
         className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
@@ -224,7 +224,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
       <div className="flex items-center gap-6">
         <button
           onClick={onToggleSidebar}
-          className="p-1.5 rounded-lg hover:bg-gray-100 text-pm-muted hover:text-pm-primary transition-colors"
+          className="p-1.5 rounded-lg hover:bg-pm-surface-3 text-pm-muted hover:text-pm-primary transition-colors"
           aria-label="Toggle sidebar"
         >
           <MenuIcon />
@@ -237,7 +237,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setNotifOpen((o) => !o)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 text-pm-muted hover:text-pm-primary transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-pm-surface-3 text-pm-muted hover:text-pm-primary transition-colors"
           >
             <BellIcon />
           </button>
@@ -250,7 +250,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
 
         <button
           onClick={() => navigate('/settings', { replace: true })}
-          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 text-pm-muted hover:text-pm-primary transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-pm-surface-3 text-pm-muted hover:text-pm-primary transition-colors"
           title="Settings"
         >
           <GearIcon />
@@ -269,7 +269,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
           {accountOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden"
+              className="absolute right-0 top-full mt-2 w-48 bg-pm-surface rounded-2xl border border-pm-border shadow-xl z-50 overflow-hidden"
             >
               <div className="px-4 py-3 border-b border-pm-border">
                 <p className="text-sm font-bold text-pm-primary truncate">{user?.name ?? 'Account'}</p>
@@ -278,7 +278,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
               <button
                 role="menuitem"
                 onClick={() => { setAccountOpen(false); navigate('/profile', { replace: true }) }}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-pm-primary hover:bg-[#FAFAFA] transition-colors"
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-pm-primary hover:bg-pm-surface-2 transition-colors"
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                   <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5" />
@@ -289,7 +289,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
               <button
                 role="menuitem"
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-pm-border"
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-pm-danger hover:bg-pm-danger/10 transition-colors border-t border-pm-border"
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                   <path d="M8 5V3.5A1.5 1.5 0 019.5 2h6A1.5 1.5 0 0117 3.5v13a1.5 1.5 0 01-1.5 1.5h-6A1.5 1.5 0 018 16.5V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

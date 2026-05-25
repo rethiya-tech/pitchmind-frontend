@@ -183,7 +183,7 @@ export function GeneratingPage() {
         </div>
 
         {error && !conversion && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center space-y-2">
+          <div className="bg-pm-danger/10 border border-pm-danger/30 rounded-xl p-4 text-center space-y-2">
             <p className="text-pm-danger font-medium">{error}</p>
             <p className="text-xs text-pm-muted">The AI service may be starting up — checking status automatically…</p>
             <Link to="/upload" replace className="text-sm text-pm-teal hover:underline block">
@@ -192,7 +192,7 @@ export function GeneratingPage() {
           </div>
         )}
         {error && conversion && conversion.status !== 'done' && conversion.status !== 'generating' && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center space-y-2">
+          <div className="bg-pm-danger/10 border border-pm-danger/30 rounded-xl p-4 text-center space-y-2">
             <p className="text-pm-danger font-medium">Generation failed</p>
             <p className="text-xs text-pm-muted">{conversion.status === 'failed' ? 'Something went wrong with the AI service.' : 'Presentation was cancelled.'}</p>
             <Link to="/upload" replace className="text-sm text-pm-teal hover:underline block">
