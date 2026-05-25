@@ -4,10 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 
+// Routes that must fully fit the viewport — they manage their own internal scrolling
+// instead of letting the AppShell scroll container grow with their content.
+const NO_OUTER_SCROLL_ROUTES = new Set(['/upload'])
+
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const location = useLocation()
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  const lockedHeight = NO_OUTER_SCROLL_ROUTES.has(location.pathname)
 
   return (
     <div className="flex h-screen bg-pm-app overflow-hidden">
@@ -19,7 +25,7 @@ export function AppShell() {
         <Topbar onToggleSidebar={() => setSidebarOpen((o) => !o)} />
         <main className="flex-1 overflow-hidden">
           {/* Stable scroll container — persists across route changes so we can reset scrollTop */}
-          <div ref={scrollRef} className="h-full overflow-y-auto">
+          <div ref={scrollRef} className={lockedHeight ? 'h-full overflow-hidden' : 'h-full overflow-y-auto'}>
             <AnimatePresence
               mode="wait"
               initial={false}
@@ -30,7 +36,7 @@ export function AppShell() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' as const } }}
                 exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                className="min-h-full p-6 flex flex-col"
+                className={lockedHeight ? 'h-full p-6 flex flex-col overflow-hidden' : 'min-h-full p-6 flex flex-col'}
               >
                 <Outlet />
               </motion.div>

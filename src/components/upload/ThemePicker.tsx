@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/utils/cn'
 import { THEMES } from '@/types'
@@ -118,11 +118,6 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
     return theme?.category ?? 'professional'
   })
 
-  const scrollRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = 0
-  }, [activeCategory])
-
   const categories = hasUserTemplates
     ? [...BUILT_IN_CATEGORIES, { id: 'my_templates' as Category, label: 'Templates' }]
     : BUILT_IN_CATEGORIES
@@ -140,10 +135,10 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
   }
 
   return (
-    <div className={cn('flex flex-col gap-3 h-full', { 'opacity-50 pointer-events-none': disabled })}>
+    <div className={cn('flex flex-col gap-3', { 'opacity-50 pointer-events-none': disabled })}>
 
-      {/* Category tabs — gliding pill indicator */}
-      <div className="relative flex gap-1 bg-pm-app rounded-lg p-1 border border-pm-border flex-shrink-0">
+      {/* Category tabs — gliding pill indicator — sticky within Section scroll */}
+      <div className="sticky top-0 z-20 flex gap-1 bg-white rounded-lg p-1 border border-pm-border shadow-[0_4px_8px_-4px_rgba(0,0,0,0.06)]">
         {categories.map(cat => (
           <button
             key={cat.id}
@@ -164,11 +159,6 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
         ))}
       </div>
 
-      {/* Theme / template grid — scroll container resets on tab change */}
-      <div
-        ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-      >
       <AnimatePresence mode="wait">
         {activeCategory !== 'my_templates' ? (
           <motion.div
@@ -273,7 +263,6 @@ export function ThemePicker({ value, onChange, disabled, userTemplates, selected
           </motion.div>
         )}
       </AnimatePresence>
-      </div>
     </div>
   )
 }

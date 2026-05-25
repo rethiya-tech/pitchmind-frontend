@@ -105,15 +105,19 @@ function Section({
   subtitle,
   done,
   children,
+  footer,
+  scrollable = false,
 }: {
   step: number
   title: string
   subtitle: string
   done?: boolean
   children: React.ReactNode
+  footer?: React.ReactNode
+  scrollable?: boolean
 }) {
   return (
-    <div className="flex flex-col bg-white rounded-2xl border border-pm-border overflow-hidden h-full">
+    <div className="flex flex-col bg-white rounded-2xl border border-pm-border overflow-hidden h-full min-h-0">
       <div className="flex items-start gap-3 px-5 py-4 border-b border-pm-border flex-shrink-0">
         <motion.span
           animate={{
@@ -159,7 +163,27 @@ function Section({
           <p className="text-xs text-pm-muted mt-0.5">{subtitle}</p>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">{children}</div>
+      {/* Content area. In scrollable mode, the top padding is kept OUTSIDE
+          the scroll container as a fixed white spacer so scrolling tiles
+          never appear in the gap between the section header and a sticky child. */}
+      {scrollable ? (
+        <div className="flex-1 min-h-0 flex flex-col bg-white">
+          <div className="flex-shrink-0 h-5" aria-hidden />
+          <div className="flex-1 min-h-0 px-5 pb-5 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-pm-border [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
+            {children}
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 p-5 overflow-hidden">
+          {children}
+        </div>
+      )}
+      {/* Pinned footer — always visible, outside the scroll area */}
+      {footer && (
+        <div className="flex-shrink-0 px-5 pb-4 pt-4 border-t border-pm-border bg-white">
+          {footer}
+        </div>
+      )}
     </div>
   )
 }
@@ -426,7 +450,7 @@ export function UploadForm() {
     const progress = progressOverride !== null ? progressOverride : naturalProgress
 
     return (
-      <div className="flex flex-col h-full bg-white rounded-2xl border border-pm-border overflow-hidden">
+      <div className="flex flex-col bg-white rounded-2xl border border-pm-border overflow-hidden h-full">
 
         {/* Header */}
         <div className="flex items-center gap-3 px-6 py-4 border-b border-pm-border flex-shrink-0">
@@ -533,7 +557,10 @@ export function UploadForm() {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-5 h-full" style={{ minHeight: 0 }}>
+    <div
+      className="grid grid-cols-3 gap-5 h-full overflow-hidden"
+      style={{ minHeight: 0, gridTemplateRows: 'minmax(0, 1fr)' }}
+    >
 
       {/* ── Panel 1: Input ── */}
       <Section
@@ -868,25 +895,10 @@ export function UploadForm() {
         title="Choose Theme"
         subtitle="Select a visual style for your slides"
         done={false}
-      >
-        <div className="flex flex-col h-full">
-          {/* ThemePicker manages its own scroll internally */}
-          <div className="flex-1 min-h-0">
-            <ThemePicker
-              value={theme}
-              onChange={(id) => {
-                setTheme(id)
-                const category = THEMES.find(t => t.id === id)?.category
-                if (category) setStyles(new Set([category]))
-              }}
-              userTemplates={userTemplates}
-              selectedTemplateId={selectedTemplateId}
-              onTemplateSelect={setSelectedTemplateId}
-            />
-          </div>
-
-          {/* Pinned footer — always visible */}
-          <div className="flex-shrink-0 space-y-2 pt-4 mt-4 border-t border-pm-border">
+        scrollable
+        scrollable
+        footer={
+          <div className="space-y-2">
             {inputMode === 'file' ? (
               <StatusRow done={fileReady} label={fileReady ? `${file?.name} uploaded` : 'No document uploaded'} />
             ) : (
@@ -904,18 +916,29 @@ export function UploadForm() {
                   : theme ? `Theme: ${THEMES.find(t => t.id === theme)?.name ?? theme}` : 'Theme selected'
               }
             />
+            <Button
+              className="w-full mt-1"
+              size="lg"
+              loading={createMutation.isPending || presignMutation.isPending || loadingQuestions}
+              disabled={!canGenerate || loadingQuestions}
+              onClick={handleGenerateClick}
+            >
+              {loadingQuestions ? 'Generating questions…' : inputMode === 'prompt' ? 'Continue →' : 'Create Presentation'}
+            </Button>
           </div>
-
-          <Button
-            className="w-full flex-shrink-0 mt-3"
-            size="lg"
-            loading={createMutation.isPending || presignMutation.isPending || loadingQuestions}
-            disabled={!canGenerate || loadingQuestions}
-            onClick={handleGenerateClick}
-          >
-            {loadingQuestions ? 'Generating questions…' : inputMode === 'prompt' ? 'Continue →' : 'Generate Presentation'}
-          </Button>
-        </div>
+        }
+      >
+        <ThemePicker
+          value={theme}
+          onChange={(id) => {
+            setTheme(id)
+            const category = THEMES.find(t => t.id === id)?.category
+            if (category) setStyles(new Set([category]))
+          }}
+          userTemplates={userTemplates}
+          selectedTemplateId={selectedTemplateId}
+          onTemplateSelect={setSelectedTemplateId}
+        />
       </Section>
 
     </div>
