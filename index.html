@@ -9,6 +9,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="PitchMind — Turn documents into polished presentations with AI" />
     <title>PitchMind</title>
+    <!--
+      Inline theme bootstrap — runs synchronously in <head> before any UI
+      is parsed, so the initial paint matches the user's saved theme with
+      zero flash. Sets both .dark class and a base background-color on
+      <html> so even pre-CSS, the body shows the correct backdrop.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('pm-theme');
+          var theme = 'light';
+          if (stored) {
+            var parsed = JSON.parse(stored);
+            if (parsed && parsed.state && parsed.state.theme === 'dark') theme = 'dark';
+          }
+          var root = document.documentElement;
+          if (theme === 'dark') {
+            root.classList.add('dark');
+            root.style.colorScheme = 'dark';
+            root.style.backgroundColor = '#0B0F0D';
+          } else {
+            root.style.colorScheme = 'light';
+            root.style.backgroundColor = '#F4FCF8';
+          }
+        } catch (e) {
+          // localStorage unavailable — default to light
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
