@@ -17,13 +17,13 @@ export function PaletteSection() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section className="bg-[#f8f9f7] py-20 md:py-28">
+    <section className="bg-[#f7f8f6] py-24 md:py-32">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <motion.div ref={ref} initial={{ opacity: 0, x: -32 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.55 }}>
-            <p className="text-xs font-bold tracking-widest uppercase text-pm-teal mb-3">Design system</p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-pm-primary mb-4 leading-tight">A palette built to command attention.</h2>
-            <p className="text-pm-muted text-lg leading-relaxed">Six professional themes, each crafted for a different audience — from boardroom to startup pitch.</p>
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          <motion.div ref={ref} initial={{ opacity: 0, x: -32 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.6 }}>
+            <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted mb-5">Design system</p>
+            <h2 className="text-[32px] md:text-[44px] font-extrabold text-pm-primary mb-5 leading-[1.08] tracking-[-0.025em]">A palette built to command attention.</h2>
+            <p className="text-pm-muted text-[17px] leading-[1.65] max-w-md">Six professional themes, each crafted for a different audience — from boardroom to startup pitch.</p>
           </motion.div>
           <div className="grid grid-cols-4 gap-3">
             {SWATCHES.map((swatch, i) => (

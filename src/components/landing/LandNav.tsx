@@ -27,7 +27,7 @@ export function LandNav() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-pm-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-pm-border/60">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
@@ -58,9 +58,12 @@ export function LandNav() {
           </Link>
           <Link
             to="/register"
-            className="bg-pm-teal hover:bg-pm-teal-hover text-white text-sm font-bold px-5 py-2.5 rounded-full transition-colors"
+            className="inline-flex items-center gap-1.5 bg-[#1A1A1A] hover:bg-black text-white text-[13px] font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             Get Started
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+              <path d="M3 7h8m0 0L8 4m3 3l-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </Link>
         </div>
 

@@ -1,279 +1,265 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 
-/* ─── Reusable chart elements ─── */
-
-function PieChartLarge() {
+/* ── Realistic slide preview cards ── */
+function SlideCard({ gradient, accent, title, subtitle, type, delay = 0, inView }: {
+  gradient: string; accent: string; title: string; subtitle: string
+  type: 'chart' | 'bullets' | 'split' | 'title' | 'data'
+  delay?: number; inView: boolean
+}) {
   return (
-    <svg viewBox="0 0 120 120" className="w-full h-full">
-      <path d="M60 60 L60 10 A50 50 0 0 1 107 85 Z" fill="#0F6E56" opacity="0.9" />
-      <path d="M60 60 L107 85 A50 50 0 0 1 20 90 Z" fill="#C8850A" opacity="0.85" />
-      <path d="M60 60 L20 90 A50 50 0 0 1 60 10 Z" fill="#5DCAA5" opacity="0.75" />
-      <circle cx="60" cy="60" r="22" fill="white" />
-      <circle cx="88" cy="30" r="5" fill="#0F6E56" opacity="0.6" />
-      <circle cx="95" cy="48" r="4" fill="#C8850A" opacity="0.6" />
-      <circle cx="90" cy="68" r="4" fill="#5DCAA5" opacity="0.6" />
-    </svg>
+    <motion.div
+      initial={{ opacity: 0, y: 24, scale: 0.96 }}
+      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.55, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      whileHover={{ y: -6, boxShadow: '0 24px 60px rgba(0,0,0,0.22)' }}
+      className="rounded-2xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.16)] border border-white/10 flex-shrink-0 cursor-pointer"
+      style={{ background: gradient, aspectRatio: '16/9', width: '100%' }}
+    >
+      <div className="w-full h-full p-4 flex flex-col justify-between">
+        {/* Top bar */}
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="h-1.5 rounded-full mb-1.5" style={{ width: 48, backgroundColor: accent, opacity: 0.9 }} />
+            <p className="text-white font-bold text-xs leading-tight">{title}</p>
+            <p className="text-white/50 text-[9px] mt-0.5">{subtitle}</p>
+          </div>
+          <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: `${accent}33` }}>
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accent }} />
+          </div>
+        </div>
+
+        {/* Content area by type */}
+        {type === 'chart' && (
+          <div className="flex items-end gap-1 h-14">
+            {[55, 72, 48, 88, 62, 95, 70, 82].map((h, i) => (
+              <div key={i} className="flex-1 rounded-t-sm" style={{ height: `${h}%`, backgroundColor: i % 2 === 0 ? `${accent}cc` : 'rgba(255,255,255,0.2)' }} />
+            ))}
+          </div>
+        )}
+        {type === 'bullets' && (
+          <div className="space-y-1.5">
+            {['Increased ARR by 38% YoY', 'Enterprise pipeline: $4.2M', 'Churn reduced to 2.1%', 'NPS score: 74'].map((_b, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />
+                <div className="h-1 rounded-full flex-1" style={{ backgroundColor: 'rgba(255,255,255,0.2)', maxWidth: `${[85, 70, 65, 55][i]}%` }} />
+              </div>
+            ))}
+          </div>
+        )}
+        {type === 'split' && (
+          <div className="flex gap-2 h-14">
+            <div className="flex-1 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="p-2 h-full flex flex-col justify-center gap-1">
+                <div className="h-1 rounded-full w-3/4" style={{ backgroundColor: accent, opacity: 0.8 }} />
+                <div className="h-0.5 rounded-full w-full bg-white/20" />
+                <div className="h-0.5 rounded-full w-4/5 bg-white/15" />
+              </div>
+            </div>
+            <div className="flex-1 rounded-lg" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="p-2 h-full flex flex-col justify-end gap-0.5">
+                {[80, 60, 90].map((h, i) => (
+                  <div key={i} className="h-1.5 rounded-full" style={{ width: `${h}%`, backgroundColor: `${accent}aa` }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        {type === 'title' && (
+          <div className="space-y-1">
+            <div className="h-0.5 rounded-full bg-white/15 w-full" />
+            <div className="h-0.5 rounded-full bg-white/10 w-4/5" />
+            <div className="h-0.5 rounded-full bg-white/10 w-3/5" />
+          </div>
+        )}
+        {type === 'data' && (
+          <div className="flex gap-2">
+            {[{ v: '38%', l: 'Growth' }, { v: '$4.2M', l: 'Pipeline' }, { v: '94', l: 'Score' }].map(d => (
+              <div key={d.l} className="flex-1 rounded-lg p-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                <p className="text-white font-extrabold text-xs leading-none">{d.v}</p>
+                <p className="text-white/40 text-[7px] mt-0.5">{d.l}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
   )
 }
 
-function BarChartMain() {
-  const bars = [
-    { h: 62, c: '#5DCAA5' }, { h: 80, c: '#C8850A' }, { h: 48, c: '#5DCAA5' },
-    { h: 95, c: '#C8850A' }, { h: 55, c: '#5DCAA5' }, { h: 72, c: '#C8850A' },
-    { h: 85, c: '#5DCAA5' }, { h: 40, c: '#C8850A' },
-  ]
+/* ── Upload → Generate flow mockup ── */
+function FlowMockup({ inView }: { inView: boolean }) {
   return (
-    <svg viewBox="0 0 160 100" className="w-full h-full">
-      {bars.map((b, i) => (
-        <rect key={i} x={i * 20 + 4} y={100 - b.h} width="14" height={b.h} rx="3" fill={b.c} opacity="0.9" />
-      ))}
-      <line x1="0" y1="100" x2="160" y2="100" stroke="#e5e7eb" strokeWidth="1" />
-    </svg>
+    <motion.div
+      initial={{ opacity: 0, y: 32 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.65, delay: 0.1 }}
+      className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+    >
+      {/* App topbar */}
+      <div className="bg-white border-b border-gray-100 px-5 py-3 flex items-center gap-3">
+        <div className="w-6 h-6 rounded-md bg-[#0F6E56] flex items-center justify-center">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5L7.2 4.5L10.5 5L8 7.5L8.8 10.5L6 9L3.2 10.5L4 7.5L1.5 5L4.8 4.5L6 1.5Z" fill="white"/></svg>
+        </div>
+        <p className="text-xs font-bold text-pm-primary">PitchMind</p>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="text-[10px] font-semibold text-[#059669] flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#059669] animate-pulse" />
+            AI generating
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-4">
+        {/* Step indicators */}
+        <div className="flex items-center gap-2">
+          {['Upload', 'Configure', 'Generate', 'Export'].map((step, i) => (
+            <div key={step} className="flex items-center gap-2">
+              <div className={`flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full ${i < 3 ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'bg-gray-100 text-gray-400'}`}>
+                {i < 2 ? (
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#0F6E56" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                ) : i === 2 ? (
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#0F6E56] animate-pulse" />
+                ) : null}
+                {step}
+              </div>
+              {i < 3 && <div className="w-4 h-px bg-gray-200" />}
+            </div>
+          ))}
+        </div>
+
+        {/* Main area: progress + slide preview */}
+        <div className="flex gap-4">
+          {/* Left: progress */}
+          <div className="w-48 space-y-3">
+            <div className="bg-[#F4FCF8] rounded-xl p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold text-pm-primary">Q4 Growth Report.pdf</p>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5l2.5 2.5 5.5-5" stroke="#0F6E56" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </div>
+              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-[#0F6E56] rounded-full" style={{ width: '78%' }} />
+              </div>
+              <p className="text-[9px] text-pm-muted">6 of 8 slides complete</p>
+            </div>
+
+            <div className="space-y-1.5">
+              {[
+                { label: 'Executive Summary', done: true },
+                { label: 'Revenue Overview', done: true },
+                { label: 'Market Analysis', done: true },
+                { label: 'Growth Metrics', done: true },
+                { label: 'Team & Operations', done: true },
+                { label: 'Financials', done: true },
+                { label: 'Roadmap 2026', done: false, active: true },
+                { label: 'Call to Action', done: false },
+              ].map((s, i) => (
+                <div key={i} className={`flex items-center gap-2 px-2 py-1 rounded-lg ${s.active ? 'bg-[#E1F5EE]' : ''}`}>
+                  {s.done ? (
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" fill="#0F6E56"/><path d="M3 5l1.5 1.5 2.5-2.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                  ) : s.active ? (
+                    <div className="w-2.5 h-2.5 rounded-full border-2 border-[#0F6E56] border-t-transparent animate-spin flex-shrink-0" />
+                  ) : (
+                    <div className="w-2.5 h-2.5 rounded-full border border-gray-300 flex-shrink-0" />
+                  )}
+                  <span className={`text-[9px] font-medium truncate ${s.done ? 'text-pm-primary' : s.active ? 'text-[#0F6E56] font-bold' : 'text-gray-400'}`}>{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: live slide preview */}
+          <div className="flex-1 space-y-2">
+            <p className="text-[10px] font-bold text-pm-muted uppercase tracking-wider">Live preview</p>
+            <div className="rounded-xl overflow-hidden shadow-md" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F6E56 0%, #1a9470 60%, #0a4a38 100%)' }}>
+              <div className="w-full h-full p-4 flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-1 rounded-full bg-white/40 mb-2" />
+                  <p className="text-white font-extrabold text-sm leading-tight">Roadmap 2026</p>
+                  <p className="text-white/50 text-[9px] mt-0.5">Strategic initiatives & milestones</p>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { q: 'Q1', label: 'Product launch', color: 'rgba(255,255,255,0.15)' },
+                    { q: 'Q2', label: 'Series B close', color: 'rgba(201,147,10,0.4)' },
+                    { q: 'Q3–Q4', label: 'Global expansion', color: 'rgba(255,255,255,0.1)' },
+                  ].map(item => (
+                    <div key={item.q} className="rounded-lg p-1.5" style={{ backgroundColor: item.color }}>
+                      <p className="text-white font-bold text-[8px]">{item.q}</p>
+                      <p className="text-white/60 text-[7px] mt-0.5">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* AI note */}
+            <div className="bg-[#FFF8E3] rounded-xl p-2.5 flex gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#C9930A]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1L5 3.5L7.5 4L5.5 6L6 8.5L4 7.2L2 8.5L2.5 6L0.5 4L3 3.5L4 1Z" fill="#C9930A"/></svg>
+              </div>
+              <p className="text-[9px] text-gray-600 leading-relaxed"><span className="font-bold text-[#C9930A]">AI tip:</span> Use the Q2 milestone to anchor your Series B ask — investors connect timeline to capital deployment.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   )
 }
 
-function BarChartSmall() {
-  const bars = [
-    { h: 55, c: '#0F6E56' }, { h: 80, c: '#C8850A' }, { h: 40, c: '#0F6E56' },
-    { h: 70, c: '#C8850A' }, { h: 60, c: '#0F6E56' }, { h: 90, c: '#C8850A' },
-  ]
-  return (
-    <svg viewBox="0 0 110 80" className="w-full h-full">
-      {bars.map((b, i) => (
-        <rect key={i} x={i * 18 + 4} y={80 - b.h} width="12" height={b.h} rx="2.5" fill={b.c} opacity="0.88" />
-      ))}
-    </svg>
-  )
-}
-
-function DonutSmall() {
-  return (
-    <svg viewBox="0 0 80 80" className="w-full h-full">
-      <circle cx="40" cy="40" r="28" fill="none" stroke="#e5e7eb" strokeWidth="12" />
-      <circle cx="40" cy="40" r="28" fill="none" stroke="#0F6E56" strokeWidth="12"
-        strokeDasharray="105 71" strokeDashoffset="21" strokeLinecap="round" />
-      <circle cx="40" cy="40" r="28" fill="none" stroke="#C8850A" strokeWidth="12"
-        strokeDasharray="50 126" strokeDashoffset="-84" strokeLinecap="round" />
-      <circle cx="40" cy="40" r="14" fill="white" />
-    </svg>
-  )
-}
-
-function DonutTop() {
-  return (
-    <svg viewBox="0 0 100 60" className="w-full h-full">
-      <circle cx="30" cy="30" r="22" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-      <circle cx="30" cy="30" r="22" fill="none" stroke="#0F6E56" strokeWidth="10"
-        strokeDasharray="90 48" strokeDashoffset="23" strokeLinecap="round" />
-      <circle cx="30" cy="30" r="22" fill="none" stroke="#C8850A" strokeWidth="10"
-        strokeDasharray="48 90" strokeDashoffset="-67" strokeLinecap="round" />
-      <circle cx="30" cy="30" r="10" fill="white" />
-      <rect x="65" y="10" width="30" height="6" rx="3" fill="#e5e7eb" />
-      <rect x="65" y="22" width="22" height="5" rx="2.5" fill="#e5e7eb" />
-      <rect x="65" y="33" width="26" height="5" rx="2.5" fill="#e5e7eb" />
-      <rect x="65" y="44" width="18" height="5" rx="2.5" fill="#e5e7eb" />
-    </svg>
-  )
-}
-
-function PhotoGrid() {
-  const blocks = [
-    '#0F6E56', '#1D9E75', '#2a4a3a',
-    '#5DCAA5', '#0a2a20', '#3a5a4a',
-    '#C8850A', '#8a5a0a', '#4a3a1a',
-  ]
-  return (
-    <div className="grid grid-cols-3 gap-0.5 w-full h-full rounded overflow-hidden">
-      {blocks.map((c, i) => (
-        <div key={i} style={{ backgroundColor: c }} className="opacity-90" />
-      ))}
-    </div>
-  )
-}
-
-function TextLines({ count = 3, widths }: { count?: number; widths?: string[] }) {
-  const defaults = ['70%', '90%', '55%', '80%']
-  return (
-    <div className="space-y-1.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="h-1.5 rounded-full bg-gray-200" style={{ width: widths?.[i] ?? defaults[i % 4] }} />
-      ))}
-    </div>
-  )
-}
-
-/* ─── Slide card wrapper ─── */
-function Slide({ className = '', children }: { className?: string; children: React.ReactNode }) {
-  return (
-    <div className={`bg-white rounded-2xl shadow-2xl border border-gray-100/80 overflow-hidden ${className}`}>
-      {children}
-    </div>
-  )
-}
-
-/* ─── Main component ─── */
 export function HeroDashboard() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-40px' })
 
+  const slides = [
+    { gradient: 'linear-gradient(135deg, #0F2E22 0%, #1D6E50 100%)', accent: '#5DCAA5', title: 'Executive Summary', subtitle: 'Q4 Growth Report · 2025', type: 'bullets' as const, delay: 0.05 },
+    { gradient: 'linear-gradient(135deg, #0F6E56 0%, #1a9470 100%)', accent: '#C9930A', title: 'Q4 Revenue Overview', subtitle: 'October – December 2025', type: 'chart' as const, delay: 0.12 },
+    { gradient: 'linear-gradient(135deg, #1a2a4a 0%, #2a4a8a 100%)', accent: '#60A5FA', title: 'Market Opportunity', subtitle: '$8.4B addressable market', type: 'split' as const, delay: 0.19 },
+    { gradient: 'linear-gradient(135deg, #2a1800 0%, #6a4800 100%)', accent: '#F59E0B', title: 'Growth Metrics', subtitle: 'Key performance indicators', type: 'data' as const, delay: 0.26 },
+    { gradient: 'linear-gradient(135deg, #111111 0%, #2d2d2d 100%)', accent: '#A78BFA', title: 'Team & Operations', subtitle: '42 team members across 3 hubs', type: 'bullets' as const, delay: 0.33 },
+  ]
+
   return (
-    <section className="relative bg-white overflow-hidden" style={{ minHeight: 680 }}>
-      {/* Background gradient — white with green glow left-center */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-[55%] h-full bg-gradient-to-r from-[#d4ede5]/60 via-[#e8f7f1]/40 to-transparent" />
-        <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] rounded-full bg-[#5DCAA5]/15 blur-[90px]" />
-      </div>
+    <section className="relative overflow-hidden py-20 md:py-28" style={{ background: 'linear-gradient(to bottom, #f7faf8, #ffffff)' }}>
+      {/* Subtle top divider gradient */}
+      <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#e8f5f0]/60 to-transparent pointer-events-none" />
 
       <motion.div
         ref={ref}
-        initial={{ opacity: 0 }}
-        animate={inView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.7 }}
-        className="relative w-full"
-        style={{ height: 680 }}
+        className="max-w-7xl mx-auto px-6 space-y-12"
       >
-        {/* ── Isometric card container ── */}
-        <div
-          className="absolute"
-          style={{
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -52%) rotateX(52deg) rotateZ(-28deg)',
-            transformStyle: 'preserve-3d',
-            perspective: '1400px',
-            width: 900,
-            height: 620,
-          }}
+        {/* Section label */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-2xl mx-auto"
         >
-          {/* TOP card (center-top) */}
-          <div className="absolute" style={{ top: '0%', left: '37%', width: 220 }}>
-            <Slide>
-              <div className="p-4">
-                <TextLines count={1} widths={['60%']} />
-                <div className="mt-2 h-16"><DonutTop /></div>
-                <div className="mt-2"><TextLines count={2} widths={['80%', '55%']} /></div>
-              </div>
-            </Slide>
-          </div>
+          <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted mb-5">See it in action</p>
+          <h2 className="text-[32px] md:text-[46px] font-extrabold text-pm-primary leading-[1.08] tracking-[-0.025em]">
+            From document to deck<br className="hidden sm:block" /> in <span className="text-pm-teal">under 60 seconds.</span>
+          </h2>
+          <p className="text-pm-muted text-[17px] mt-5 leading-relaxed">Upload any file. Watch PitchMind structure your story slide by slide, live.</p>
+        </motion.div>
 
-          {/* LEFT card (pie chart) */}
-          <div className="absolute" style={{ top: '24%', left: '1%', width: 270 }}>
-            <Slide>
-              <div className="p-4">
-                <TextLines count={1} widths={['50%']} />
-                <div className="mt-2 h-28"><PieChartLarge /></div>
-                <div className="mt-2"><TextLines count={2} widths={['75%', '55%']} /></div>
-              </div>
-            </Slide>
-          </div>
+        {/* Generation flow mockup */}
+        <FlowMockup inView={inView} />
 
-          {/* CENTER card — largest, focal point */}
-          <div className="absolute" style={{ top: '28%', left: '30%', width: 340, zIndex: 10 }}>
-            <Slide className="shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
-              <div className="bg-gradient-to-r from-[#0F6E56] to-[#1D9E75] px-4 py-2 flex items-center gap-2">
-                <div className="h-2 w-20 bg-white/40 rounded-full" />
-                <div className="ml-auto h-2 w-8 bg-white/25 rounded-full" />
-              </div>
-              <div className="p-4">
-                <TextLines count={1} widths={['45%']} />
-                <div className="mt-3 h-28"><BarChartMain /></div>
-                <div className="mt-3 flex gap-3">
-                  <div className="h-2 flex-1 bg-gray-200 rounded-full" />
-                  <div className="h-2 flex-1 bg-gray-100 rounded-full" />
-                  <div className="h-2 w-10 bg-gray-100 rounded-full" />
-                </div>
-              </div>
-            </Slide>
-          </div>
-
-          {/* RIGHT card (top-right) */}
-          <div className="absolute" style={{ top: '6%', left: '64%', width: 230 }}>
-            <Slide>
-              <div className="p-4">
-                <TextLines count={1} widths={['65%']} />
-                <div className="mt-2 h-20">
-                  <svg viewBox="0 0 120 60" className="w-full h-full">
-                    <circle cx="40" cy="30" r="22" fill="none" stroke="#e5e7eb" strokeWidth="9" />
-                    <circle cx="40" cy="30" r="22" fill="none" stroke="#C8850A" strokeWidth="9"
-                      strokeDasharray="80 58" strokeDashoffset="21" strokeLinecap="round" />
-                    <circle cx="40" cy="30" r="22" fill="none" stroke="#5DCAA5" strokeWidth="9"
-                      strokeDasharray="58 80" strokeDashoffset="-59" strokeLinecap="round" />
-                    <circle cx="40" cy="30" r="11" fill="white" />
-                    <rect x="75" y="8" width="38" height="6" rx="3" fill="#e5e7eb" />
-                    <rect x="75" y="20" width="28" height="5" rx="2.5" fill="#e5e7eb" />
-                    <rect x="75" y="31" width="33" height="5" rx="2.5" fill="#e5e7eb" />
-                    <rect x="75" y="42" width="22" height="5" rx="2.5" fill="#e5e7eb" />
-                  </svg>
-                </div>
-                <TextLines count={2} widths={['70%', '50%']} />
-              </div>
-            </Slide>
-          </div>
-
-          {/* BOTTOM-LEFT card (bar chart) */}
-          <div className="absolute" style={{ top: '60%', left: '4%', width: 250 }}>
-            <Slide>
-              <div className="p-4">
-                <TextLines count={1} widths={['55%']} />
-                <div className="mt-2 h-20"><BarChartSmall /></div>
-                <TextLines count={1} widths={['65%']} />
-              </div>
-            </Slide>
-          </div>
-
-          {/* BOTTOM-CENTER card (donut) */}
-          <div className="absolute" style={{ top: '72%', left: '36%', width: 220 }}>
-            <Slide>
-              <div className="p-4 flex gap-3 items-center">
-                <div className="w-16 h-16 flex-shrink-0"><DonutSmall /></div>
-                <div className="flex-1"><TextLines count={3} widths={['90%', '65%', '75%']} /></div>
-              </div>
-            </Slide>
-          </div>
-
-          {/* BOTTOM-RIGHT card (photo grid) */}
-          <div className="absolute" style={{ top: '54%', left: '63%', width: 250 }}>
-            <Slide>
-              <div className="p-4">
-                <TextLines count={1} widths={['60%']} />
-                <div className="mt-2 h-20"><PhotoGrid /></div>
-              </div>
-            </Slide>
+        {/* Output — slide previews */}
+        <div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.5 }}
+            className="text-xs font-bold uppercase tracking-widest text-pm-muted mb-4"
+          >
+            Generated slides output
+          </motion.p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {slides.map(s => (
+              <SlideCard key={s.title} {...s} inView={inView} />
+            ))}
           </div>
         </div>
-
-        {/* ── Floating badge: Generating ── */}
-        <motion.div
-          initial={{ opacity: 0, x: -16, y: -8 }}
-          animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
-          transition={{ duration: 0.55, delay: 0.5 }}
-          className="absolute top-8 left-8 bg-white rounded-2xl shadow-xl border border-gray-100 px-5 py-3.5 flex items-center gap-3 z-20"
-        >
-          <span className="w-10 h-10 rounded-xl bg-[#e8f5f0] flex items-center justify-center text-pm-teal flex-shrink-0">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2L12.5 7.5L18.5 8.3L14 12.5L15.2 18.5L10 15.5L4.8 18.5L6 12.5L1.5 8.3L7.5 7.5L10 2Z" fill="#0F6E56" opacity="0.85" />
-            </svg>
-          </span>
-          <div>
-            <p className="text-[10px] font-bold tracking-widest uppercase text-pm-muted leading-none mb-1">Generating</p>
-            <p className="text-sm font-extrabold text-pm-primary leading-none">Q4 Investor Deck</p>
-          </div>
-        </motion.div>
-
-        {/* ── Floating badge: Pitch Score ── */}
-        <motion.div
-          initial={{ opacity: 0, x: 16, y: -8 }}
-          animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
-          transition={{ duration: 0.55, delay: 0.65 }}
-          className="absolute top-8 right-8 bg-white rounded-2xl shadow-xl border border-gray-100 px-5 py-3.5 flex items-center gap-3 z-20"
-        >
-          <span className="w-10 h-10 rounded-xl bg-[#fff4e0] flex items-center justify-center text-xl flex-shrink-0">🏆</span>
-          <div>
-            <p className="text-[10px] font-bold tracking-widest uppercase text-pm-muted leading-none mb-1">Pitch Score</p>
-            <p className="text-xl font-extrabold text-pm-primary leading-none">94 / 100</p>
-          </div>
-        </motion.div>
       </motion.div>
     </section>
   )
