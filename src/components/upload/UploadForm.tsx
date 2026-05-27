@@ -894,7 +894,6 @@ export function UploadForm() {
         subtitle="Select a visual style for your slides"
         done={false}
         scrollable
-        scrollable
         footer={
           <div className="space-y-2">
             {inputMode === 'file' ? (
