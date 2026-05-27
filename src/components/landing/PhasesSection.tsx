@@ -47,31 +47,31 @@ export function PhasesSection() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section id="how-it-works" className="bg-white py-24 md:py-32">
+    <section id="how-it-works" className="bg-white dark:bg-[#0B0F0D] py-24 md:py-32">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div ref={ref} initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6 }} className="text-center mb-16 md:mb-20">
-          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-pm-muted mb-4">The process</p>
-          <h2 className="text-3xl md:text-[44px] font-extrabold text-pm-primary mb-4 leading-[1.08] tracking-tight">Four phases. One vision.</h2>
-          <p className="text-pm-muted text-[17px] max-w-xl mx-auto leading-relaxed">From raw document to polished download — fully automated.</p>
+          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-pm-muted dark:text-white/55 mb-4">The process</p>
+          <h2 className="text-3xl md:text-[44px] font-extrabold text-pm-primary dark:text-white mb-4 leading-[1.08] tracking-tight">Four phases. One vision.</h2>
+          <p className="text-pm-muted dark:text-white/65 text-[17px] max-w-xl mx-auto leading-relaxed">From raw document to polished download — fully automated.</p>
         </motion.div>
 
-        <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-pm-border rounded-3xl overflow-hidden border border-pm-border">
+        <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-pm-border dark:bg-white/[0.08] rounded-3xl overflow-hidden border border-pm-border dark:border-white/[0.08]">
           {PHASES.map((phase, i) => (
             <motion.div
               key={phase.num}
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.55, delay: i * 0.08 }}
-              className="bg-white p-8 md:p-10 group hover:bg-[#fafbfa] transition-colors"
+              className="bg-white dark:bg-[#181C1A] p-8 md:p-10 group hover:bg-[#fafbfa] dark:hover:bg-[#222825] transition-colors"
             >
               <div className="flex items-center justify-between mb-8">
-                <div className="w-11 h-11 rounded-xl bg-[#F4FCF8] text-pm-teal flex items-center justify-center group-hover:bg-pm-teal group-hover:text-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-[#F4FCF8] dark:bg-[#2DD4A0]/12 text-pm-teal dark:text-[#5DE5B8] flex items-center justify-center group-hover:bg-pm-teal dark:group-hover:bg-[#2DD4A0] group-hover:text-white dark:group-hover:text-[#0B0F0D] transition-colors">
                   <phase.Icon />
                 </div>
-                <span className="text-[11px] font-semibold tracking-[0.18em] text-pm-muted/60 tabular-nums">{phase.num}</span>
+                <span className="text-[11px] font-semibold tracking-[0.18em] text-pm-muted/60 dark:text-white/35 tabular-nums">{phase.num}</span>
               </div>
-              <h3 className="text-xl font-extrabold text-pm-primary mb-2 tracking-tight">{phase.title}</h3>
-              <p className="text-[14px] text-pm-muted leading-relaxed">{phase.desc}</p>
+              <h3 className="text-xl font-extrabold text-pm-primary dark:text-white mb-2 tracking-tight">{phase.title}</h3>
+              <p className="text-[14px] text-pm-muted dark:text-white/60 leading-relaxed">{phase.desc}</p>
             </motion.div>
           ))}
         </div>

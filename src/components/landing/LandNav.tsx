@@ -27,12 +27,12 @@ export function LandNav() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-pm-border/60">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-[#0B0F0D]/80 backdrop-blur-md border-b border-pm-border/60 dark:border-white/[0.06]">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
           <LogoIcon />
-          <span className="text-lg font-extrabold text-pm-teal tracking-tight">PitchMind</span>
+          <span className="text-lg font-extrabold text-pm-teal dark:text-[#5DE5B8] tracking-tight">PitchMind</span>
         </Link>
 
         {/* Desktop nav */}
@@ -41,7 +41,7 @@ export function LandNav() {
             <a
               key={href}
               href={href}
-              className="text-sm font-medium text-pm-primary hover:text-pm-teal transition-colors"
+              className="text-sm font-medium text-pm-primary dark:text-white/75 hover:text-pm-teal dark:hover:text-[#5DE5B8] transition-colors"
             >
               {label}
             </a>
@@ -52,13 +52,13 @@ export function LandNav() {
         <div className="hidden md:flex items-center gap-4">
           <Link
             to="/login"
-            className="text-sm font-semibold text-pm-primary hover:text-pm-teal transition-colors"
+            className="text-sm font-semibold text-pm-primary dark:text-white/85 hover:text-pm-teal dark:hover:text-[#5DE5B8] transition-colors"
           >
             Sign in
           </Link>
           <Link
             to="/register"
-            className="inline-flex items-center gap-1.5 bg-[#1A1A1A] hover:bg-black text-white text-[13px] font-semibold px-4 py-2 rounded-lg transition-colors"
+            className="inline-flex items-center gap-1.5 bg-[#1A1A1A] hover:bg-black dark:bg-white dark:text-[#0B0F0D] dark:hover:bg-white/90 text-white text-[13px] font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             Get Started
             <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
@@ -73,19 +73,19 @@ export function LandNav() {
           onClick={() => setMenuOpen(o => !o)}
           aria-label="Toggle menu"
         >
-          <span className="block w-5 h-0.5 mb-1 bg-pm-primary" />
-          <span className="block w-5 h-0.5 mb-1 bg-pm-primary" />
-          <span className="block w-5 h-0.5 bg-pm-primary" />
+          <span className="block w-5 h-0.5 mb-1 bg-pm-primary dark:bg-white" />
+          <span className="block w-5 h-0.5 mb-1 bg-pm-primary dark:bg-white" />
+          <span className="block w-5 h-0.5 bg-pm-primary dark:bg-white" />
         </button>
       </div>
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-b border-pm-border px-6 py-4 flex flex-col gap-4">
+        <div className="md:hidden bg-white dark:bg-[#0B0F0D] border-b border-pm-border dark:border-white/[0.08] px-6 py-4 flex flex-col gap-4">
           {NAV_LINKS.map(({ href, label }) => (
-            <a key={href} href={href} className="text-sm font-medium text-pm-primary" onClick={() => setMenuOpen(false)}>{label}</a>
+            <a key={href} href={href} className="text-sm font-medium text-pm-primary dark:text-white/80" onClick={() => setMenuOpen(false)}>{label}</a>
           ))}
-          <Link to="/login" className="text-sm font-medium text-pm-primary" onClick={() => setMenuOpen(false)}>Sign in</Link>
+          <Link to="/login" className="text-sm font-medium text-pm-primary dark:text-white/80" onClick={() => setMenuOpen(false)}>Sign in</Link>
           <Link to="/register" className="bg-pm-teal text-white text-sm font-bold px-4 py-2.5 rounded-full text-center" onClick={() => setMenuOpen(false)}>Get Started</Link>
         </div>
       )}

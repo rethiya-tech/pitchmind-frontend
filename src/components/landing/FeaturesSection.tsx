@@ -300,7 +300,7 @@ function FeatureRow({ feature, index }: { feature: typeof FEATURES[0]; index: nu
       initial={{ opacity: 0, y: 40 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      className={`flex flex-col ${isEven ? 'md:flex-row-reverse' : 'md:flex-row'} gap-10 md:gap-20 items-center py-16 md:py-20 border-b border-pm-border/70 last:border-0`}
+      className={`flex flex-col ${isEven ? 'md:flex-row-reverse' : 'md:flex-row'} gap-10 md:gap-20 items-center py-16 md:py-20 border-b border-pm-border/70 dark:border-white/[0.08] last:border-0`}
     >
       {/* Mockup side */}
       <div className="w-full md:w-1/2" style={{ minHeight: 280 }}>
@@ -309,16 +309,16 @@ function FeatureRow({ feature, index }: { feature: typeof FEATURES[0]; index: nu
 
       {/* Copy side */}
       <div className="w-full md:w-1/2 space-y-5">
-        <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-pm-muted">
-          <span className="w-6 h-px bg-pm-teal/60" />
+        <div className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-pm-muted dark:text-white/55">
+          <span className="w-6 h-px bg-pm-teal/60 dark:bg-[#5DE5B8]/60" />
           {feature.tag}
         </div>
-        <h3 className="text-[26px] md:text-[34px] font-extrabold text-pm-primary leading-[1.12] tracking-tight">{feature.title}</h3>
-        <p className="text-pm-muted text-[16px] leading-[1.65] max-w-lg">{feature.desc}</p>
+        <h3 className="text-[26px] md:text-[34px] font-extrabold text-pm-primary dark:text-white leading-[1.12] tracking-tight">{feature.title}</h3>
+        <p className="text-pm-muted dark:text-white/65 text-[16px] leading-[1.65] max-w-lg">{feature.desc}</p>
         <ul className="space-y-2.5 pt-3">
           {feature.bullets.map(b => (
-            <li key={b} className="flex items-center gap-3 text-[14px] text-pm-primary">
-              <span className="w-5 h-5 rounded-full bg-pm-teal/10 text-pm-teal flex items-center justify-center flex-shrink-0">
+            <li key={b} className="flex items-center gap-3 text-[14px] text-pm-primary dark:text-white/85">
+              <span className="w-5 h-5 rounded-full bg-pm-teal/10 dark:bg-[#5DE5B8]/15 text-pm-teal dark:text-[#5DE5B8] flex items-center justify-center flex-shrink-0">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                   <path d="M2 5l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -337,7 +337,7 @@ export function FeaturesSection() {
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section id="features" className="bg-white py-24 md:py-32">
+    <section id="features" className="bg-white dark:bg-[#08120D] py-24 md:py-32">
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           ref={ref}
@@ -346,12 +346,12 @@ export function FeaturesSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20 md:mb-24 max-w-2xl mx-auto"
         >
-          <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted mb-5">What you get</p>
-          <h2 className="text-[34px] md:text-[52px] font-extrabold text-pm-primary mb-5 leading-[1.05] tracking-[-0.025em]">
+          <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted dark:text-white/55 mb-5">What you get</p>
+          <h2 className="text-[34px] md:text-[52px] font-extrabold text-pm-primary dark:text-white mb-5 leading-[1.05] tracking-[-0.025em]">
             Everything you need to<br />
-            <span className="text-pm-teal">win the room.</span>
+            <span className="text-pm-teal dark:text-[#5DE5B8]">win the room.</span>
           </h2>
-          <p className="text-pm-muted text-[17px] leading-relaxed">Four intelligent features — designed to impress, inform, and close.</p>
+          <p className="text-pm-muted dark:text-white/65 text-[17px] leading-relaxed">Four intelligent features — designed to impress, inform, and close.</p>
         </motion.div>
         {FEATURES.map((f, i) => <FeatureRow key={f.tag} feature={f} index={i} />)}
       </div>

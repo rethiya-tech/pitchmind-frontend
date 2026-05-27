@@ -183,12 +183,13 @@ export function HeroSection() {
   return (
     <>
       <section className="relative overflow-hidden pt-16" style={{ minHeight: '94vh' }}>
-        {/* Background — subtle, off-white with restrained accents */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#f4f8f5] via-[#fafbfa] to-white" />
-        <div className="absolute top-[-200px] left-1/3 w-[820px] h-[820px] rounded-full bg-[#5DCAA5]/10 blur-[160px] pointer-events-none" />
-        <div className="absolute bottom-[-160px] right-[10%] w-[420px] h-[420px] rounded-full bg-[#f5c080]/10 blur-[140px] pointer-events-none" />
+        {/* Background — subtle, off-white with restrained accents (light)
+            Dark: forest near-black with teal/gold atmospheric glows */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#f4f8f5] via-[#fafbfa] to-white dark:from-[#0B0F0D] dark:via-[#08120D] dark:to-[#08120D]" />
+        <div className="absolute top-[-200px] left-1/3 w-[820px] h-[820px] rounded-full bg-[#5DCAA5]/10 dark:bg-[#2DD4A0]/15 blur-[160px] pointer-events-none" />
+        <div className="absolute bottom-[-160px] right-[10%] w-[420px] h-[420px] rounded-full bg-[#f5c080]/10 dark:bg-[#E5B650]/12 blur-[140px] pointer-events-none" />
         {/* Faint grid overlay for premium texture */}
-        <div className="absolute inset-0 opacity-[0.025] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#0F2E22 1px, transparent 1px), linear-gradient(90deg, #0F2E22 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+        <div className="absolute inset-0 opacity-[0.025] dark:opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)', backgroundSize: '48px 48px', color: 'rgb(var(--pm-text-primary))' }} />
 
         <div className="relative max-w-7xl mx-auto px-6 h-full flex items-center" style={{ minHeight: 'calc(94vh - 64px)' }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full py-16">
@@ -199,14 +200,14 @@ export function HeroSection() {
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45 }}
-                className="inline-flex items-center gap-2.5 bg-white/70 backdrop-blur border border-pm-border/80 text-pm-primary text-[12px] font-semibold px-3.5 py-1.5 rounded-full mb-8"
+                className="inline-flex items-center gap-2.5 bg-white/70 dark:bg-white/[0.04] backdrop-blur border border-pm-border/80 dark:border-white/10 text-pm-primary dark:text-white/85 text-[12px] font-semibold px-3.5 py-1.5 rounded-full mb-8"
               >
                 <span className="relative flex w-1.5 h-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-pm-teal opacity-60 animate-ping" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-pm-teal" />
                 </span>
-                <span className="text-pm-muted">New</span>
-                <span className="w-px h-3 bg-pm-border" />
+                <span className="text-pm-muted dark:text-white/55">New</span>
+                <span className="w-px h-3 bg-pm-border dark:bg-white/15" />
                 Phase 3 · Talking AI Assistant
               </motion.div>
 
@@ -216,16 +217,16 @@ export function HeroSection() {
                 transition={{ duration: 0.55, delay: 0.1 }}
                 className="text-[44px] md:text-[64px] font-extrabold leading-[1.02] tracking-[-0.025em] mb-6"
               >
-                <span className="text-pm-primary">Create. Present.</span>
+                <span className="text-pm-primary dark:text-white">Create. Present.</span>
                 <br />
-                <span className="text-pm-teal">Win with AI.</span>
+                <span className="text-pm-teal dark:text-[#5DE5B8]">Win with AI.</span>
               </motion.h1>
 
               <motion.p
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.2 }}
-                className="text-pm-muted text-[17px] leading-[1.65] mb-9 max-w-[480px]"
+                className="text-pm-muted dark:text-white/65 text-[17px] leading-[1.65] mb-9 max-w-[480px]"
               >
                 PitchMind turns any document into a polished deck in seconds —
                 answers audience questions live, narrates with AI voice, and
@@ -240,7 +241,7 @@ export function HeroSection() {
               >
                 <Link
                   to="/register"
-                  className="group relative inline-flex items-center gap-2 bg-[#1A1A1A] hover:bg-black text-white font-semibold px-7 py-3.5 rounded-xl transition-all text-[15px] shadow-[0_8px_24px_-8px_rgba(15,46,34,0.5)] hover:shadow-[0_12px_32px_-8px_rgba(15,46,34,0.6)]"
+                  className="group relative inline-flex items-center gap-2 bg-[#1A1A1A] hover:bg-black dark:bg-white dark:text-[#0B0F0D] dark:hover:bg-white/90 text-white font-semibold px-7 py-3.5 rounded-xl transition-all text-[15px] shadow-[0_8px_24px_-8px_rgba(15,46,34,0.5)] hover:shadow-[0_12px_32px_-8px_rgba(15,46,34,0.6)] dark:shadow-[0_8px_24px_-8px_rgba(45,212,160,0.35)]"
                 >
                   Try PitchMind Free
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="transition-transform group-hover:translate-x-0.5">
@@ -249,7 +250,7 @@ export function HeroSection() {
                 </Link>
                 <button
                   onClick={() => setVideoOpen(true)}
-                  className="inline-flex items-center gap-2.5 bg-white/80 backdrop-blur hover:bg-white border border-pm-border text-pm-primary font-semibold px-6 py-3.5 rounded-xl transition-colors text-[15px]"
+                  className="inline-flex items-center gap-2.5 bg-white/80 dark:bg-white/[0.06] backdrop-blur hover:bg-white dark:hover:bg-white/[0.10] border border-pm-border dark:border-white/15 text-pm-primary dark:text-white/90 font-semibold px-6 py-3.5 rounded-xl transition-colors text-[15px]"
                 >
                   <span className="w-5 h-5 rounded-full bg-pm-teal/10 flex items-center justify-center flex-shrink-0">
                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -264,7 +265,7 @@ export function HeroSection() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.45 }}
-                className="flex items-center gap-4 text-[13px] text-pm-muted"
+                className="flex items-center gap-4 text-[13px] text-pm-muted dark:text-white/55"
               >
                 <span className="inline-flex items-center gap-1.5">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -282,7 +283,7 @@ export function HeroSection() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.55 }}
-                className="flex items-center gap-10 mt-12 pt-8 border-t border-pm-border/70 w-full max-w-md"
+                className="flex items-center gap-10 mt-12 pt-8 border-t border-pm-border/70 dark:border-white/10 w-full max-w-md"
               >
                 {[
                   { val: '10k+', label: 'Decks created' },
@@ -290,8 +291,8 @@ export function HeroSection() {
                   { val: '<60s', label: 'Generation time' },
                 ].map(s => (
                   <div key={s.label}>
-                    <p className="text-2xl font-extrabold text-pm-primary leading-none tracking-tight tabular-nums">{s.val}</p>
-                    <p className="text-[11px] text-pm-muted mt-1.5 font-medium tracking-wide uppercase">{s.label}</p>
+                    <p className="text-2xl font-extrabold text-pm-primary dark:text-white leading-none tracking-tight tabular-nums">{s.val}</p>
+                    <p className="text-[11px] text-pm-muted dark:text-white/55 mt-1.5 font-medium tracking-wide uppercase">{s.label}</p>
                   </div>
                 ))}
               </motion.div>

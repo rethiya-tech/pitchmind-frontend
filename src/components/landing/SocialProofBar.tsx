@@ -20,10 +20,10 @@ export function SocialProofBar() {
       initial={{ opacity: 0 }}
       animate={inView ? { opacity: 1 } : {}}
       transition={{ duration: 0.6 }}
-      className="relative bg-white py-16 border-y border-pm-border/60"
+      className="relative bg-white dark:bg-[#08120D] py-16 border-y border-pm-border/60 dark:border-white/[0.06]"
     >
       <div className="relative max-w-6xl mx-auto px-6">
-        <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted/70 text-center mb-10">
+        <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted/70 dark:text-white/40 text-center mb-10">
           Trusted by teams building tomorrow's decks
         </p>
 
@@ -31,7 +31,7 @@ export function SocialProofBar() {
           {COMPANIES.map(c => (
             <span
               key={c.name}
-              className="text-xl text-pm-primary/55 hover:text-pm-primary/85 transition-colors whitespace-nowrap"
+              className="text-xl text-pm-primary/55 hover:text-pm-primary/85 dark:text-white/45 dark:hover:text-white/75 transition-colors whitespace-nowrap"
               style={{ fontWeight: c.weight, fontStyle: c.italic ? 'italic' : 'normal', letterSpacing: c.tracking }}
             >
               {c.name}

@@ -219,9 +219,9 @@ export function HeroDashboard() {
   ]
 
   return (
-    <section className="relative overflow-hidden py-20 md:py-28" style={{ background: 'linear-gradient(to bottom, #f7faf8, #ffffff)' }}>
+    <section className="relative overflow-hidden py-20 md:py-28 bg-gradient-to-b from-[#f7faf8] to-white dark:from-[#0B0F0D] dark:to-[#08120D]">
       {/* Subtle top divider gradient */}
-      <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#e8f5f0]/60 to-transparent pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#e8f5f0]/60 dark:from-[#2DD4A0]/8 to-transparent pointer-events-none" />
 
       <motion.div
         ref={ref}
@@ -234,11 +234,11 @@ export function HeroDashboard() {
           transition={{ duration: 0.6 }}
           className="text-center max-w-2xl mx-auto"
         >
-          <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted mb-5">See it in action</p>
-          <h2 className="text-[32px] md:text-[46px] font-extrabold text-pm-primary leading-[1.08] tracking-[-0.025em]">
-            From document to deck<br className="hidden sm:block" /> in <span className="text-pm-teal">under 60 seconds.</span>
+          <p className="text-[11px] font-semibold tracking-[0.22em] uppercase text-pm-muted dark:text-white/55 mb-5">See it in action</p>
+          <h2 className="text-[32px] md:text-[46px] font-extrabold text-pm-primary dark:text-white leading-[1.08] tracking-[-0.025em]">
+            From document to deck<br className="hidden sm:block" /> in <span className="text-pm-teal dark:text-[#5DE5B8]">under 60 seconds.</span>
           </h2>
-          <p className="text-pm-muted text-[17px] mt-5 leading-relaxed">Upload any file. Watch PitchMind structure your story slide by slide, live.</p>
+          <p className="text-pm-muted dark:text-white/65 text-[17px] mt-5 leading-relaxed">Upload any file. Watch PitchMind structure your story slide by slide, live.</p>
         </motion.div>
 
         {/* Generation flow mockup */}
@@ -250,7 +250,7 @@ export function HeroDashboard() {
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ delay: 0.5 }}
-            className="text-xs font-bold uppercase tracking-widest text-pm-muted mb-4"
+            className="text-xs font-bold uppercase tracking-widest text-pm-muted dark:text-white/55 mb-4"
           >
             Generated slides output
           </motion.p>
